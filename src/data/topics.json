@@ -1,0 +1,414 @@
+{
+  "version": 1,
+  "domain": "physics",
+  "topics": [
+    {
+      "id": "hs-math",
+      "title": "High-School Algebra & Trigonometry",
+      "level": "foundation",
+      "description": "Comfort with algebraic manipulation, functions, trigonometry and basic vectors. The entry point of the whole graph.",
+      "prerequisites": [],
+      "content": [
+        {
+          "type": "course",
+          "title": "Khan Academy — Algebra II & Trigonometry",
+          "url": "https://www.khanacademy.org/math",
+          "note": "Free, self-paced refresher. Skim and only fill gaps."
+        }
+      ]
+    },
+    {
+      "id": "calculus-1",
+      "title": "Calculus I — Differentiation & Integration",
+      "level": "foundation",
+      "description": "Limits, derivatives, integrals, Taylor series. The language every physics topic above this node is written in.",
+      "prerequisites": ["hs-math"],
+      "content": [
+        {
+          "type": "video",
+          "title": "Essence of Calculus",
+          "author": "3Blue1Brown",
+          "url": "https://www.3blue1brown.com/topics/calculus",
+          "note": "Watch first for intuition — one evening well spent."
+        },
+        {
+          "type": "book",
+          "title": "Calculus",
+          "author": "James Stewart",
+          "note": "Standard reference with lots of exercises; any edition works."
+        },
+        {
+          "type": "course",
+          "title": "MIT OCW 18.01 Single Variable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+          "note": "Full course with problem sets and exams."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra",
+      "title": "Linear Algebra",
+      "level": "foundation",
+      "description": "Vectors, matrices, eigenvalues, vector spaces. Essential for quantum mechanics and for the tensor language of relativity.",
+      "prerequisites": ["hs-math"],
+      "content": [
+        {
+          "type": "video",
+          "title": "Essence of Linear Algebra",
+          "author": "3Blue1Brown",
+          "url": "https://www.3blue1brown.com/topics/linear-algebra",
+          "note": "Geometric intuition first — makes everything after easier."
+        },
+        {
+          "type": "course",
+          "title": "MIT OCW 18.06 Linear Algebra (Gilbert Strang)",
+          "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/",
+          "note": "Legendary lectures; do the problem sets."
+        }
+      ]
+    },
+    {
+      "id": "multivariable-calculus",
+      "title": "Multivariable & Vector Calculus",
+      "level": "foundation",
+      "description": "Partial derivatives, multiple integrals, gradient/divergence/curl, line and surface integrals. Needed for electromagnetism and field theories.",
+      "prerequisites": ["calculus-1", "linear-algebra"],
+      "content": [
+        {
+          "type": "course",
+          "title": "MIT OCW 18.02 Multivariable Calculus",
+          "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/",
+          "note": "Covers everything electromagnetism will ask of you."
+        },
+        {
+          "type": "book",
+          "title": "Div, Grad, Curl, and All That",
+          "author": "H. M. Schey",
+          "note": "Short, informal — the vector-calculus survival kit for physicists."
+        }
+      ]
+    },
+    {
+      "id": "differential-equations",
+      "title": "Ordinary Differential Equations",
+      "level": "foundation",
+      "description": "Solving and interpreting ODEs: physics is written as differential equations, from oscillators to the Friedmann equation.",
+      "prerequisites": ["calculus-1"],
+      "content": [
+        {
+          "type": "video",
+          "title": "Differential Equations series",
+          "author": "3Blue1Brown",
+          "url": "https://www.3blue1brown.com/topics/differential-equations",
+          "note": "Intuition for what ODEs are before solving techniques."
+        },
+        {
+          "type": "course",
+          "title": "MIT OCW 18.03 Differential Equations",
+          "url": "https://ocw.mit.edu/courses/18-03sc-differential-equations-fall-2011/",
+          "note": "The standard toolkit course."
+        }
+      ]
+    },
+    {
+      "id": "classical-mechanics",
+      "title": "Classical Mechanics (Newtonian)",
+      "level": "core",
+      "description": "Newton's laws, energy, momentum, rotation, gravitation, orbits. The first real physics course and the root of physical intuition.",
+      "prerequisites": ["calculus-1"],
+      "content": [
+        {
+          "type": "course",
+          "title": "MIT OCW 8.01 Classical Mechanics",
+          "url": "https://ocw.mit.edu/courses/8-01sc-classical-mechanics-fall-2016/",
+          "note": "Complete introductory course with problem sets."
+        },
+        {
+          "type": "book",
+          "title": "An Introduction to Mechanics",
+          "author": "Kleppner & Kolenkow",
+          "note": "Harder than average but builds real problem-solving strength."
+        },
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — Classical Mechanics",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Also covers the Lagrangian view — pairs well with the advanced mechanics node."
+        }
+      ]
+    },
+    {
+      "id": "waves-oscillations",
+      "title": "Waves & Oscillations",
+      "level": "core",
+      "description": "Harmonic oscillators, coupled oscillators, wave equation, interference. The mathematical warm-up for quantum mechanics and light.",
+      "prerequisites": ["classical-mechanics", "differential-equations"],
+      "content": [
+        {
+          "type": "course",
+          "title": "MIT OCW 8.03 Vibrations and Waves",
+          "url": "https://ocw.mit.edu/courses/8-03sc-physics-iii-vibrations-and-waves-fall-2016/",
+          "note": "Everything oscillates — this course makes that concrete."
+        }
+      ]
+    },
+    {
+      "id": "electromagnetism",
+      "title": "Electromagnetism",
+      "level": "core",
+      "description": "Electric and magnetic fields, Maxwell's equations, electromagnetic waves. Understanding light is a prerequisite for relativity and astrophysics.",
+      "prerequisites": ["classical-mechanics", "multivariable-calculus"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Introduction to Electrodynamics",
+          "author": "David J. Griffiths",
+          "note": "The classic — clear, conversational, excellent problems."
+        },
+        {
+          "type": "course",
+          "title": "MIT OCW 8.02 Electricity and Magnetism",
+          "url": "https://ocw.mit.edu/courses/8-02-physics-ii-electricity-and-magnetism-spring-2007/",
+          "note": "Introductory level; do this before (or alongside) Griffiths."
+        }
+      ]
+    },
+    {
+      "id": "thermodynamics",
+      "title": "Thermodynamics",
+      "level": "core",
+      "description": "Temperature, heat, entropy, the laws of thermodynamics. The macroscopic half of understanding hot early-universe physics.",
+      "prerequisites": ["calculus-1"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Concepts in Thermal Physics",
+          "author": "Blundell & Blundell",
+          "note": "Short chapters, physical intuition, covers thermo and a bridge to statistical mechanics."
+        }
+      ]
+    },
+    {
+      "id": "statistical-mechanics",
+      "title": "Statistical Mechanics",
+      "level": "advanced",
+      "description": "Entropy from counting, partition functions, Boltzmann and quantum statistics, blackbody radiation. Directly used for the cosmic microwave background and the thermal history of the universe.",
+      "prerequisites": ["thermodynamics", "classical-mechanics", "quantum-mechanics"],
+      "content": [
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — Statistical Mechanics",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Focused exactly on what later physics needs."
+        },
+        {
+          "type": "book",
+          "title": "An Introduction to Thermal Physics",
+          "author": "Daniel V. Schroeder",
+          "note": "Friendly and modern; blackbody chapter feeds straight into CMB physics."
+        }
+      ]
+    },
+    {
+      "id": "lagrangian-mechanics",
+      "title": "Advanced Mechanics (Lagrangian & Hamiltonian)",
+      "level": "advanced",
+      "description": "Action principles, Lagrangians, Hamiltonians, symmetries and conservation laws. The formulation of mechanics that general relativity and field theory are built on.",
+      "prerequisites": ["classical-mechanics", "multivariable-calculus"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Classical Mechanics",
+          "author": "John R. Taylor",
+          "note": "Chapters 6–7 and 13 are the Lagrangian/Hamiltonian core."
+        },
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — Classical Mechanics",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Susskind teaches mechanics through the action principle from the start."
+        }
+      ]
+    },
+    {
+      "id": "special-relativity",
+      "title": "Special Relativity",
+      "level": "advanced",
+      "description": "Spacetime, Lorentz transformations, time dilation, E=mc², four-vectors. A complete, satisfying goal in itself — and the gateway to general relativity.",
+      "prerequisites": ["classical-mechanics", "electromagnetism", "linear-algebra"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Spacetime Physics",
+          "author": "Taylor & Wheeler",
+          "note": "The most beloved introduction; geometric from page one."
+        },
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — Special Relativity and Classical Field Theory",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Includes the four-vector machinery you need for GR."
+        },
+        {
+          "type": "video",
+          "title": "Special Relativity series",
+          "author": "minutephysics (Henry Reich)",
+          "url": "https://www.youtube.com/@MinutePhysics",
+          "note": "Short visual chapters — good as a first pass or refresher."
+        }
+      ]
+    },
+    {
+      "id": "quantum-mechanics",
+      "title": "Quantum Mechanics",
+      "level": "advanced",
+      "description": "Wavefunctions, Schrödinger equation, operators, spin, hydrogen atom. Needed for atomic physics, particle physics and the statistical mechanics of the early universe.",
+      "prerequisites": ["linear-algebra", "differential-equations", "waves-oscillations"],
+      "featured": true,
+      "content": [
+        {
+          "type": "course",
+          "title": "MIT OCW 8.04 Quantum Physics I (Allan Adams)",
+          "url": "https://ocw.mit.edu/courses/8-04-quantum-physics-i-spring-2013/",
+          "note": "Famously engaging lectures, all on video."
+        },
+        {
+          "type": "book",
+          "title": "Introduction to Quantum Mechanics",
+          "author": "David J. Griffiths",
+          "note": "The standard first textbook."
+        }
+      ]
+    },
+    {
+      "id": "differential-geometry",
+      "title": "Differential Geometry & Tensors",
+      "level": "advanced",
+      "description": "Manifolds, tensors, metrics, covariant derivatives, curvature. The mathematics of curved spacetime — the steepest single step on the road to general relativity.",
+      "prerequisites": ["multivariable-calculus", "linear-algebra"],
+      "content": [
+        {
+          "type": "video",
+          "title": "The WE-Heraeus International Winter School on Gravity and Light",
+          "author": "Frederic P. Schuller",
+          "url": "https://www.youtube.com/results?search_query=WE-Heraeus+gravity+and+light+Schuller",
+          "note": "Exceptionally clear lecture series building the geometry from scratch."
+        },
+        {
+          "type": "book",
+          "title": "A Student's Guide to Vectors and Tensors",
+          "author": "Daniel Fleisch",
+          "note": "Gentle on-ramp to tensor notation before the heavy machinery."
+        }
+      ]
+    },
+    {
+      "id": "general-relativity",
+      "title": "General Relativity",
+      "level": "advanced",
+      "description": "Einstein's field equations, geodesics, black holes, gravitational waves — and the FLRW metric that cosmology is built on.",
+      "prerequisites": ["special-relativity", "differential-geometry", "lagrangian-mechanics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "A First Course in General Relativity",
+          "author": "Bernard Schutz",
+          "note": "The most accessible serious GR textbook."
+        },
+        {
+          "type": "book",
+          "title": "Spacetime and Geometry",
+          "author": "Sean Carroll",
+          "note": "A step up from Schutz; the free lecture-notes version is also excellent."
+        },
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — General Relativity",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Lighter on math than the books; good in parallel."
+        }
+      ]
+    },
+    {
+      "id": "nuclear-particle-physics",
+      "title": "Nuclear & Particle Physics",
+      "level": "advanced",
+      "description": "Nuclei, radioactivity, the particle zoo, the Standard Model at survey level. Needed for Big Bang nucleosynthesis and the particle content of the early universe.",
+      "prerequisites": ["quantum-mechanics", "special-relativity"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Introduction to Elementary Particles",
+          "author": "David J. Griffiths",
+          "note": "Survey level is enough for cosmology — you don't need full QFT."
+        }
+      ]
+    },
+    {
+      "id": "astrophysics",
+      "title": "Introductory Astrophysics",
+      "level": "advanced",
+      "description": "Stars, stellar evolution, galaxies, distance ladder, telescopes and observations. The observational context that cosmology's data comes from.",
+      "prerequisites": ["classical-mechanics", "electromagnetism", "thermodynamics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Foundations of Astrophysics",
+          "author": "Ryden & Peterson",
+          "note": "Broad, readable survey of the whole field."
+        },
+        {
+          "type": "video",
+          "title": "Crash Course Astronomy",
+          "author": "Phil Plait",
+          "url": "https://www.youtube.com/playlist?list=PL8dPuuaLjXtPAJr1ysd5yGIyiSFuh0mIL",
+          "note": "Zero-prerequisite overview — watch early for motivation."
+        }
+      ]
+    },
+    {
+      "id": "cosmology",
+      "title": "Cosmology",
+      "level": "goal",
+      "description": "The universe as a whole: expansion, the Big Bang, cosmic microwave background, nucleosynthesis, dark matter and dark energy, inflation. The summit of this graph.",
+      "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Introduction to Cosmology",
+          "author": "Barbara Ryden",
+          "note": "The standard first cosmology textbook — clear and self-contained."
+        },
+        {
+          "type": "video",
+          "title": "The Theoretical Minimum — Cosmology",
+          "author": "Leonard Susskind (Stanford)",
+          "url": "https://theoreticalminimum.com/courses",
+          "note": "Full lecture course pitched exactly at this graph's level."
+        },
+        {
+          "type": "video",
+          "title": "The Biggest Ideas in the Universe",
+          "author": "Sean Carroll",
+          "url": "https://www.preposterousuniverse.com/biggestideas/",
+          "note": "Equation-light video series — great parallel track for intuition."
+        },
+        {
+          "type": "book",
+          "title": "The First Three Minutes",
+          "author": "Steven Weinberg",
+          "note": "Popular-level classic on the early universe — motivation reading, no math."
+        }
+      ]
+    }
+  ]
+}
