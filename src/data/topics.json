@@ -379,7 +379,7 @@
       "title": "Cosmology",
       "level": "goal",
       "description": "The universe as a whole: expansion, the Big Bang, cosmic microwave background, nucleosynthesis, dark matter and dark energy, inflation. The summit of this graph.",
-      "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics"],
+      "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics", "galaxies-large-scale-structure"],
       "featured": true,
       "content": [
         {
@@ -407,6 +407,269 @@
           "title": "The First Three Minutes",
           "author": "Steven Weinberg",
           "note": "Popular-level classic on the early universe — motivation reading, no math."
+        }
+      ]
+    },
+    {
+      "id": "probability-statistics",
+      "title": "Probability & Statistics",
+      "level": "foundation",
+      "description": "Random variables, distributions, expectation, statistical inference. The language of measurement, quantum amplitudes and statistical physics.",
+      "prerequisites": ["calculus-1"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Introduction to Probability",
+          "author": "Blitzstein & Hwang",
+          "note": "Companion to Harvard's Stat 110; the lectures are free on YouTube."
+        }
+      ]
+    },
+    {
+      "id": "complex-analysis",
+      "title": "Complex Analysis",
+      "level": "foundation",
+      "description": "Analytic functions, contour integrals, residues. A workhorse for waves, quantum mechanics and field theory calculations.",
+      "prerequisites": ["multivariable-calculus"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Visual Complex Analysis",
+          "author": "Tristan Needham",
+          "note": "Geometry-first — makes the subject feel discovered rather than defined."
+        }
+      ]
+    },
+    {
+      "id": "computational-physics",
+      "title": "Computational Physics",
+      "level": "core",
+      "description": "Solving physics numerically: integration, ODE solvers, Monte Carlo, simulations. Modern physics is done with code as much as with pencils.",
+      "prerequisites": ["calculus-1", "linear-algebra"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Computational Physics",
+          "author": "Mark Newman",
+          "note": "Python-based, self-contained, excellent exercises."
+        }
+      ]
+    },
+    {
+      "id": "optics",
+      "title": "Optics & Light",
+      "level": "core",
+      "description": "Geometric and wave optics, interference, diffraction, polarization, lasers. How we actually see the universe — every telescope is applied optics.",
+      "prerequisites": ["waves-oscillations", "electromagnetism"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Optics",
+          "author": "Eugene Hecht",
+          "note": "The standard text; readable and comprehensive."
+        }
+      ]
+    },
+    {
+      "id": "fluid-dynamics",
+      "title": "Fluid Dynamics",
+      "level": "advanced",
+      "description": "Flow, viscosity, turbulence, the Navier–Stokes equations. From weather to stellar interiors to accretion disks.",
+      "prerequisites": ["classical-mechanics", "multivariable-calculus", "differential-equations"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Elementary Fluid Dynamics",
+          "author": "D. J. Acheson",
+          "note": "Compact and physical — the friendliest serious introduction."
+        }
+      ]
+    },
+    {
+      "id": "chaos-nonlinear-dynamics",
+      "title": "Chaos & Nonlinear Dynamics",
+      "level": "advanced",
+      "description": "Attractors, bifurcations, sensitivity to initial conditions. Why deterministic systems can still be unpredictable.",
+      "prerequisites": ["classical-mechanics", "differential-equations"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Nonlinear Dynamics and Chaos",
+          "author": "Steven Strogatz",
+          "note": "Legendarily readable; Strogatz's Cornell lectures are free on YouTube."
+        }
+      ]
+    },
+    {
+      "id": "atomic-molecular-physics",
+      "title": "Atomic & Molecular Physics",
+      "level": "advanced",
+      "description": "Atomic structure, spectra, transitions, lasers and cold atoms. Where quantum mechanics meets the lab bench — and where spectral lines from distant stars are decoded.",
+      "prerequisites": ["quantum-mechanics", "electromagnetism"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Atomic Physics",
+          "author": "C. J. Foot",
+          "note": "Oxford Master Series; standard modern treatment."
+        }
+      ]
+    },
+    {
+      "id": "plasma-physics",
+      "title": "Plasma Physics",
+      "level": "advanced",
+      "description": "Ionized matter — most of the visible universe. Magnetohydrodynamics, waves in plasmas, fusion.",
+      "prerequisites": ["electromagnetism", "fluid-dynamics", "statistical-mechanics"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Introduction to Plasma Physics and Controlled Fusion",
+          "author": "Francis F. Chen",
+          "note": "The classic first plasma book."
+        }
+      ]
+    },
+    {
+      "id": "condensed-matter",
+      "title": "Condensed Matter Physics",
+      "level": "goal",
+      "description": "Crystals, electrons in solids, semiconductors, superconductivity. The physics of materials — and the biggest field of physics by far.",
+      "prerequisites": ["quantum-mechanics", "statistical-mechanics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "The Oxford Solid State Basics",
+          "author": "Steven H. Simon",
+          "note": "Witty and clear; Simon's Oxford lectures are free on YouTube."
+        }
+      ]
+    },
+    {
+      "id": "quantum-field-theory",
+      "title": "Quantum Field Theory",
+      "level": "advanced",
+      "description": "Fields as the fundamental objects; particles as their excitations. The framework beneath particle physics and much of modern theory.",
+      "prerequisites": ["quantum-mechanics", "special-relativity", "lagrangian-mechanics"],
+      "content": [
+        {
+          "type": "notes",
+          "title": "Lectures on Quantum Field Theory",
+          "author": "David Tong (Cambridge)",
+          "url": "https://www.damtp.cam.ac.uk/user/tong/qft.html",
+          "note": "Free, famously clear lecture notes — the standard starting point."
+        },
+        {
+          "type": "book",
+          "title": "Quantum Field Theory for the Gifted Amateur",
+          "author": "Lancaster & Blundell",
+          "note": "The gentlest real QFT book."
+        }
+      ]
+    },
+    {
+      "id": "standard-model",
+      "title": "The Standard Model",
+      "level": "goal",
+      "description": "Quarks, leptons, gauge bosons, the Higgs — our best theory of matter and forces, tested to extraordinary precision.",
+      "prerequisites": ["quantum-field-theory", "nuclear-particle-physics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Modern Particle Physics",
+          "author": "Mark Thomson",
+          "note": "Modern, experiment-aware treatment of the full Standard Model."
+        }
+      ]
+    },
+    {
+      "id": "quantum-computing",
+      "title": "Quantum Computing & Information",
+      "level": "goal",
+      "description": "Qubits, entanglement, quantum algorithms and error correction. A young field where the quantum weirdness becomes a resource.",
+      "prerequisites": ["quantum-mechanics", "linear-algebra", "probability-statistics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Quantum Computation and Quantum Information",
+          "author": "Nielsen & Chuang",
+          "note": "\"Mike & Ike\" — the field's reference text."
+        },
+        {
+          "type": "course",
+          "title": "IBM Quantum Learning",
+          "url": "https://learning.quantum.ibm.com",
+          "note": "Free interactive courses; run real circuits on actual quantum hardware."
+        }
+      ]
+    },
+    {
+      "id": "stellar-astrophysics",
+      "title": "Stellar Structure & Evolution",
+      "level": "advanced",
+      "description": "How stars work: hydrostatic balance, fusion, the life cycle from cloud to white dwarf, neutron star or black hole.",
+      "prerequisites": ["astrophysics", "thermodynamics", "nuclear-particle-physics"],
+      "content": [
+        {
+          "type": "book",
+          "title": "An Introduction to the Theory of Stellar Structure and Evolution",
+          "author": "Dina Prialnik",
+          "note": "Compact and quantitative without being overwhelming."
+        }
+      ]
+    },
+    {
+      "id": "galaxies-large-scale-structure",
+      "title": "Galaxies & Large-Scale Structure",
+      "level": "advanced",
+      "description": "Galaxy types, dynamics, dark-matter halos, and the cosmic web that galaxy surveys map — the observational backbone of cosmology.",
+      "prerequisites": ["astrophysics"],
+      "content": [
+        {
+          "type": "book",
+          "title": "Galaxies in the Universe",
+          "author": "Sparke & Gallagher",
+          "note": "Broad survey-level introduction to galactic astronomy."
+        }
+      ]
+    },
+    {
+      "id": "black-holes-gravitational-waves",
+      "title": "Black Holes & Gravitational Waves",
+      "level": "goal",
+      "description": "Event horizons, mergers, and the ripples in spacetime LIGO hears. General relativity's most dramatic predictions, now observational science.",
+      "prerequisites": ["general-relativity", "stellar-astrophysics"],
+      "featured": true,
+      "content": [
+        {
+          "type": "book",
+          "title": "Gravity: An Introduction to Einstein's General Relativity",
+          "author": "James Hartle",
+          "note": "Physics-first GR with strong black-hole and gravitational-wave chapters."
+        }
+      ]
+    },
+    {
+      "id": "quantum-gravity-frontiers",
+      "title": "Quantum Gravity Frontiers",
+      "level": "goal",
+      "description": "String theory, loop quantum gravity, holography — the open problem of uniting general relativity with quantum mechanics.",
+      "prerequisites": ["general-relativity", "quantum-field-theory"],
+      "content": [
+        {
+          "type": "book",
+          "title": "A First Course in String Theory",
+          "author": "Barton Zwiebach",
+          "note": "The most accessible technical entry point."
+        },
+        {
+          "type": "book",
+          "title": "Reality Is Not What It Seems",
+          "author": "Carlo Rovelli",
+          "note": "Popular-level view from the loop-quantum-gravity side."
         }
       ]
     }
