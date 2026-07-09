@@ -17,6 +17,12 @@ interface GraphViewProps {
   focus?: { id: string | null; tick: number };
   /** Roomier layout + bigger labels for the full-screen map. */
   large?: boolean;
+  /**
+   * Clicking a node sticks the full silver/gold tree (prerequisites +
+   * everything it unlocks) until another node is clicked. When false, the
+   * `highlightIds` set drives an ancestors-only dim (goal / curriculum view).
+   */
+  directionalSelect?: boolean;
   onSelect: (id: string | null) => void;
 }
 
@@ -76,7 +82,35 @@ const styleFor = (large: boolean) => [
     },
   },
   { selector: 'edge.dimmed', style: { opacity: 0.08 } },
-  // Hover states — defined last so they win over dimmed/onpath while active.
+  // Persistent selection tree (a click) — same silver/gold coding as hover,
+  // but sticky. Defined before hover so a live hover still wins on top.
+  { selector: 'node.sel-soft', style: { opacity: 0.4 } },
+  { selector: 'edge.sel-soft', style: { opacity: 0.14 } },
+  {
+    selector: 'node.sel-pre',
+    style: { 'border-width': 2.5, 'border-color': '#cdd6e8', 'background-opacity': 0.3 },
+  },
+  {
+    selector: 'edge.sel-pre',
+    style: {
+      width: 2.5,
+      'line-color': 'rgba(205, 214, 232, 0.85)',
+      'target-arrow-color': 'rgba(205, 214, 232, 0.9)',
+    },
+  },
+  {
+    selector: 'node.sel-post',
+    style: { 'border-width': 2.5, 'border-color': '#e6b566', 'background-opacity': 0.3 },
+  },
+  {
+    selector: 'edge.sel-post',
+    style: {
+      width: 2.5,
+      'line-color': 'rgba(230, 181, 102, 0.85)',
+      'target-arrow-color': 'rgba(230, 181, 102, 0.9)',
+    },
+  },
+  // Hover states — defined last so they win over dimmed/onpath/sel while active.
   // Others recede but stay clearly visible. Direction is color-coded:
   // silver = prerequisites (what it stands on), gold = what it unlocks.
   { selector: 'node.hover-soft', style: { opacity: 0.45 } },
@@ -150,6 +184,7 @@ export default function GraphView({
   doneIds,
   focus,
   large = false,
+  directionalSelect = false,
   onSelect,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -216,7 +251,7 @@ export default function GraphView({
     const cy = cyRef.current;
     if (!cy) return;
     cy.batch(() => {
-      cy.elements().removeClass('chosen dimmed onpath done');
+      cy.elements().removeClass('chosen dimmed onpath done sel-soft sel-pre sel-post');
       cy.nodes().forEach((n) => {
         const topic = topics.find((t) => t.id === n.id());
         if (!topic) return;
@@ -224,19 +259,31 @@ export default function GraphView({
         n.data('label', isDone ? `✓ ${topic.title}` : topic.title);
         if (isDone) n.addClass('done');
       });
-      if (selectedId) cy.$id(selectedId).addClass('chosen');
-      if (highlightIds) {
-        cy.nodes().forEach((n) => {
-          if (!highlightIds.has(n.id())) n.addClass('dimmed');
-        });
-        cy.edges().forEach((e) => {
-          if (highlightIds.has(e.source().id()) && highlightIds.has(e.target().id()))
-            e.addClass('onpath');
-          else e.addClass('dimmed');
-        });
+      if (directionalSelect) {
+        // Sticky both-directions tree: silver up (prerequisites), gold down
+        // (everything it unlocks); the rest recede but stay legible.
+        if (selectedId) {
+          const n = cy.$id(selectedId);
+          cy.elements().addClass('sel-soft');
+          n.predecessors().removeClass('sel-soft').addClass('sel-pre');
+          n.successors().removeClass('sel-soft').addClass('sel-post');
+          n.removeClass('sel-soft').addClass('chosen');
+        }
+      } else {
+        if (selectedId) cy.$id(selectedId).addClass('chosen');
+        if (highlightIds) {
+          cy.nodes().forEach((n) => {
+            if (!highlightIds.has(n.id())) n.addClass('dimmed');
+          });
+          cy.edges().forEach((e) => {
+            if (highlightIds.has(e.source().id()) && highlightIds.has(e.target().id()))
+              e.addClass('onpath');
+            else e.addClass('dimmed');
+          });
+        }
       }
     });
-  }, [selectedId, highlightIds, doneIds, topics]);
+  }, [selectedId, highlightIds, doneIds, topics, directionalSelect]);
 
   // Center the viewport on the focused node (search jumps)
   useEffect(() => {

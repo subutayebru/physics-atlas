@@ -19,6 +19,32 @@ export function ancestorsOf(goalId: string, map: TopicMap): Set<string> {
   return seen;
 }
 
+/** Reverse adjacency: topic id → ids of topics that list it as a prerequisite. */
+export function dependentsMap(topics: Topic[]): Map<string, string[]> {
+  const children = new Map<string, string[]>();
+  for (const t of topics)
+    for (const p of t.prerequisites) {
+      const list = children.get(p);
+      if (list) list.push(t.id);
+      else children.set(p, [t.id]);
+    }
+  return children;
+}
+
+/** All transitive dependents of `id` — everything it is (in)directly used in. */
+export function descendantsOf(id: string, topics: Topic[]): Set<string> {
+  const children = dependentsMap(topics);
+  const seen = new Set<string>();
+  const stack = [...(children.get(id) ?? [])];
+  while (stack.length) {
+    const cur = stack.pop()!;
+    if (seen.has(cur)) continue;
+    seen.add(cur);
+    stack.push(...(children.get(cur) ?? []));
+  }
+  return seen;
+}
+
 /** Longest-path depth from entry points; used for ordering ties. */
 function depths(topics: Topic[], map: TopicMap): Map<string, number> {
   const memo = new Map<string, number>();

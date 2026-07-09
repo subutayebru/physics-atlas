@@ -566,6 +566,60 @@ body {
   color: var(--ink);
 }
 
+/* forward / backward relationship blocks in the map card */
+.rel-block {
+  margin-top: 12px;
+}
+
+.rel-swatch {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.rel-swatch-pre {
+  background: #cdd6e8;
+  box-shadow: 0 0 6px rgba(205, 214, 232, 0.6);
+}
+
+.rel-swatch-post {
+  background: #e6b566;
+  box-shadow: 0 0 6px rgba(230, 181, 102, 0.6);
+}
+
+.rel-count {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.block-heading {
+  display: flex;
+  align-items: center;
+}
+
+.prereq-chip-post:hover {
+  border-color: rgba(230, 181, 102, 0.7);
+  color: #f0d29a;
+}
+
+/* silver/gold accents in the map hint */
+.ink-pre {
+  color: #cdd6e8;
+  font-weight: 600;
+}
+
+.ink-post {
+  color: #e6b566;
+  font-weight: 600;
+}
+
 /* ---------- goal picker ---------- */
 .goal-picker {
   display: flex;

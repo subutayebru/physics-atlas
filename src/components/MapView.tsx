@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Topic } from '../data/types';
-import { buildTopicMap, ancestorsOf } from '../graph/dag';
+import { buildTopicMap, dependentsMap, descendantsOf } from '../graph/dag';
 import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import GraphView from './GraphView';
 import Legend from './Legend';
@@ -24,14 +24,16 @@ export default function MapView({
   focus,
 }: MapViewProps) {
   const map = useMemo(() => buildTopicMap(topics), [topics]);
+  const dependents = useMemo(() => dependentsMap(topics), [topics]);
   const selected = selectedId ? map.get(selectedId) : undefined;
 
-  const highlight = useMemo(() => {
-    if (!selectedId) return null;
-    const set = ancestorsOf(selectedId, map);
-    set.add(selectedId);
-    return set;
-  }, [selectedId, map]);
+  // Direct forward neighbours (topics that list this as a prerequisite) and
+  // the full transitive count of everything it is ultimately used in.
+  const directUses = selected ? (dependents.get(selected.id) ?? []) : [];
+  const totalUses = useMemo(
+    () => (selected ? descendantsOf(selected.id, topics).size : 0),
+    [selected, topics],
+  );
 
   return (
     <div className="view map-view">
@@ -39,17 +41,18 @@ export default function MapView({
         <GraphView
           topics={topics}
           selectedId={selectedId}
-          highlightIds={highlight}
+          highlightIds={null}
           doneIds={progress.done}
           focus={focus}
           onSelect={onSelect}
           large
+          directionalSelect
         />
         <Legend />
         {!selected && (
           <p className="map-hint">
-            Arrows point from prerequisite to what it unlocks. Click any concept to light up
-            everything it stands on.
+            Click a concept to keep its whole tree lit — <span className="ink-pre">silver</span> is
+            what it builds on, <span className="ink-post">gold</span> is everything it unlocks.
           </p>
         )}
         {selected && (
@@ -64,9 +67,12 @@ export default function MapView({
             </h2>
             <p className="map-card-level">{LEVEL_LABELS[selected.level]}</p>
             <p className="topic-description">{selected.description}</p>
+
             {selected.prerequisites.length > 0 && (
-              <div className="prereq-block">
-                <h3 className="block-heading">Directly builds on</h3>
+              <div className="rel-block">
+                <h3 className="block-heading">
+                  <span className="rel-swatch rel-swatch-pre" aria-hidden /> Builds on
+                </h3>
                 <div className="prereq-chips">
                   {selected.prerequisites.map((p) => (
                     <button key={p} className="prereq-chip" onClick={() => onSelect(p)}>
@@ -76,6 +82,25 @@ export default function MapView({
                 </div>
               </div>
             )}
+
+            {directUses.length > 0 && (
+              <div className="rel-block">
+                <h3 className="block-heading">
+                  <span className="rel-swatch rel-swatch-post" aria-hidden /> Used in
+                  {totalUses > directUses.length && (
+                    <span className="rel-count">{totalUses} downstream</span>
+                  )}
+                </h3>
+                <div className="prereq-chips">
+                  {directUses.map((d) => (
+                    <button key={d} className="prereq-chip prereq-chip-post" onClick={() => onSelect(d)}>
+                      {map.get(d)?.title ?? d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="map-card-actions">
               <label className="learned-toggle">
                 <input
@@ -86,7 +111,7 @@ export default function MapView({
                 Learned this
               </label>
               <button className="map-card-goal" onClick={() => onMakeGoal(selected.id)}>
-                Build curriculum →
+                Full curriculum →
               </button>
             </div>
             <button className="map-card-close" onClick={() => onSelect(null)} aria-label="Close">
