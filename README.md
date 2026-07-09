@@ -6,6 +6,14 @@ goal — ambitious like Cosmology or humbler like Special Relativity — and see
 everything it stands on, in an order you can actually follow, with books,
 video lectures and courses attached to every topic. Fully static, no backend.
 
+**Live:** https://subutayebru.github.io/physics-atlas/
+
+![Home — animated galaxy landing page](docs/screenshots/home.png)
+
+![Full map — hover shows prerequisites in silver, unlocks in gold](docs/screenshots/map-hover-silver-gold.png)
+
+More views in [docs/screenshots/](docs/screenshots/).
+
 ## Run
 
 ```bash
