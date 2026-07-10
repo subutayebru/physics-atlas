@@ -47,6 +47,10 @@ const styleFor = (large: boolean) => [
       'text-halign': 'center',
       'text-wrap': 'wrap',
       'text-max-width': large ? '170px' : '130px',
+      // Tween highlight/dim changes instead of snapping — the "flowing" feel.
+      'transition-property': 'opacity, background-opacity, border-width, border-color',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out',
     },
   },
   {
@@ -71,6 +75,9 @@ const styleFor = (large: boolean) => [
       'target-arrow-shape': 'triangle',
       'target-arrow-color': 'rgba(160, 180, 224, 0.35)',
       'arrow-scale': 0.8,
+      'transition-property': 'opacity, width, line-color, target-arrow-color',
+      'transition-duration': '0.3s',
+      'transition-timing-function': 'ease-in-out',
     },
   },
   {
@@ -230,11 +237,11 @@ export default function GraphView({
         n.successors().removeClass('hover-soft').addClass('hover-post');
         n.removeClass('hover-soft').addClass('hovered');
       });
-      window.dispatchEvent(new CustomEvent('cursor-hover', { detail: true }));
+      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
     });
     cy.on('mouseout', 'node', () => {
       cy.batch(() => cy.elements().removeClass('hover-soft hover-pre hover-post hovered'));
-      window.dispatchEvent(new CustomEvent('cursor-hover', { detail: false }));
+      if (containerRef.current) containerRef.current.style.cursor = '';
     });
 
     if (import.meta.env.DEV) (window as unknown as { __cy?: cytoscape.Core }).__cy = cy;
@@ -285,13 +292,23 @@ export default function GraphView({
     });
   }, [selectedId, highlightIds, doneIds, topics, directionalSelect]);
 
-  // Center the viewport on the focused node (search jumps)
+  // Glide to the focused concept (search / home jumps) — a smooth pan+zoom
+  // that frames the concept with its immediate connections, rather than a
+  // sudden cut. Reduced-motion gets an instant fit.
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy || !focus?.id) return;
     const node = cy.$id(focus.id);
-    if (node.length) cy.animate({ center: { eles: node } }, { duration: 300 });
-  }, [focus]);
+    if (!node.length) return;
+    const eles = node.closedNeighborhood();
+    const padding = large ? 130 : 80;
+    cy.stop();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cy.fit(eles, padding);
+      return;
+    }
+    cy.animate({ fit: { eles, padding } }, { duration: 900, easing: 'ease-in-out-cubic' });
+  }, [focus, large]);
 
   return <div ref={containerRef} className="graph-canvas" />;
 }
