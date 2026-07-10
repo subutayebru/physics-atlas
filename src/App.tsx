@@ -6,6 +6,7 @@ import GoalView from './components/GoalView';
 import MapView from './components/MapView';
 import SearchBox from './components/SearchBox';
 import Starfield from './components/Starfield';
+import CustomCursor from './components/CustomCursor';
 import { curriculumFor } from './graph/dag';
 import { useProgress } from './lib/useProgress';
 import './App.css';
@@ -67,6 +68,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <CustomCursor />
       <Starfield />
       <div className="nebula nebula-a" aria-hidden />
       <div className="nebula nebula-b" aria-hidden />

@@ -230,11 +230,11 @@ export default function GraphView({
         n.successors().removeClass('hover-soft').addClass('hover-post');
         n.removeClass('hover-soft').addClass('hovered');
       });
-      if (containerRef.current) containerRef.current.style.cursor = 'pointer';
+      window.dispatchEvent(new CustomEvent('cursor-hover', { detail: true }));
     });
     cy.on('mouseout', 'node', () => {
       cy.batch(() => cy.elements().removeClass('hover-soft hover-pre hover-post hovered'));
-      if (containerRef.current) containerRef.current.style.cursor = '';
+      window.dispatchEvent(new CustomEvent('cursor-hover', { detail: false }));
     });
 
     if (import.meta.env.DEV) (window as unknown as { __cy?: cytoscape.Core }).__cy = cy;

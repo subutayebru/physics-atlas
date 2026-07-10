@@ -18,6 +18,75 @@ body {
   color: var(--ink);
 }
 
+/* ---------- custom cursor (dreiraum-style) ---------- */
+/* Hidden until JS adds .has-custom-cursor, so the native cursor survives if
+   JS is off. Only fine-pointer devices opt in. */
+@media (hover: hover) and (pointer: fine) {
+  .has-custom-cursor,
+  .has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  will-change: left, top, width, height;
+}
+
+.cursor-active .cursor-dot,
+.cursor-active .cursor-ring {
+  opacity: 1;
+}
+
+.cursor-dot {
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  mix-blend-mode: difference;
+  transition: opacity 0.25s ease;
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgba(143, 183, 255, 0.5);
+  box-shadow: 0 0 14px rgba(57, 135, 229, 0.25);
+  transition:
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.28s ease,
+    background 0.28s ease,
+    opacity 0.25s ease;
+}
+
+/* over anything clickable: swell and warm toward the nebula violet */
+.cursor-hovering .cursor-ring {
+  width: 62px;
+  height: 62px;
+  border-color: rgba(160, 145, 235, 0.8);
+  background: radial-gradient(circle, rgba(160, 145, 235, 0.16) 0%, transparent 68%);
+}
+
+/* click feedback: ring pulls in */
+.cursor-down .cursor-ring {
+  width: 26px;
+  height: 26px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-ring {
+    transition: opacity 0.25s ease;
+  }
+}
+
 .app {
   position: relative;
   display: flex;
