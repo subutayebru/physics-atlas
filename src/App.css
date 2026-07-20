@@ -1218,6 +1218,16 @@ body {
   align-self: center;
 }
 
+.topic-page-graph {
+  position: relative;
+  height: 360px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(9, 13, 25, 0.35);
+  overflow: hidden;
+  margin-top: 10px;
+}
+
 /* ---------- print sheet ---------- */
 .print-sheet {
   display: none;

@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import type { Topic } from '../data/types';
 import {
+  ancestorsOf,
   buildTopicMap,
   dependentsMap,
+  descendantsOf,
   subtopicsInOrder,
   topicDone,
   unitDone,
@@ -10,6 +12,8 @@ import {
 } from '../graph/dag';
 import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import ContentList from './ContentList';
+import GraphView from './GraphView';
+import Legend from './Legend';
 import type { Progress } from '../lib/useProgress';
 
 interface TopicPageProps {
@@ -33,6 +37,16 @@ export default function TopicPage({
   const dependents = useMemo(() => dependentsMap(topics), [topics]);
   const unitMap = useMemo(() => buildUnitGraph(topics), [topics]);
   const topic = map.get(topicId);
+
+  // The topic's whole relation tree: everything it builds on plus everything
+  // it unlocks, as an induced subgraph for the mini relations map.
+  const relatedTopics = useMemo(() => {
+    if (!map.has(topicId)) return [];
+    const keep = ancestorsOf(topicId, map);
+    keep.add(topicId);
+    for (const d of descendantsOf(topicId, topics)) keep.add(d);
+    return topics.filter((t) => keep.has(t.id));
+  }, [topicId, topics, map]);
 
   if (!topic) return <div className="view topic-page">Topic not found.</div>;
 
@@ -69,6 +83,30 @@ export default function TopicPage({
             </button>
           </div>
         </header>
+
+        {relatedTopics.length > 1 && (
+          <section className="topic-page-rel">
+            <h3 className="block-heading">Relations map</h3>
+            <p className="topic-page-hint">
+              <span className="ink-pre">Silver</span> is what this builds on,{' '}
+              <span className="ink-post">gold</span> is everything it unlocks. Click a topic to open
+              its page.
+            </p>
+            <div className="topic-page-graph">
+              <GraphView
+                topics={relatedTopics}
+                selectedId={topic.id}
+                highlightIds={null}
+                doneIds={progress.done}
+                directionalSelect
+                onSelect={(id) => {
+                  if (id && id !== topic.id) onOpenTopic(id);
+                }}
+              />
+              <Legend />
+            </div>
+          </section>
+        )}
 
         {(topic.prerequisites.length > 0 || (topic.optionalPrerequisites?.length ?? 0) > 0) && (
           <section className="topic-page-rel">
