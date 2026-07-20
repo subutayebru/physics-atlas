@@ -1194,6 +1194,30 @@ body {
   margin-top: 10px;
 }
 
+.row-open-page {
+  flex: none;
+  margin-left: auto;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.row-open-page:hover {
+  color: var(--ink);
+  border-color: var(--border);
+  background: rgba(57, 135, 229, 0.08);
+}
+
+.curriculum-group-head .row-open-page {
+  align-self: center;
+}
+
 /* ---------- print sheet ---------- */
 .print-sheet {
   display: none;

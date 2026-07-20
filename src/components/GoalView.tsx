@@ -135,6 +135,16 @@ export default function GoalView({
             <span className="curriculum-name">{title}</span>
             {e.optional && !groupOptional && <span className="optional-badge">optional</span>}
           </button>
+          {!isSub && (
+            <button
+              className="row-open-page"
+              title="Open content page"
+              aria-label={`Open ${title} content page`}
+              onClick={() => onOpenTopic(u.topic.id)}
+            >
+              ↗
+            </button>
+          )}
         </div>
         {open && (
           <div className="curriculum-detail">
@@ -157,9 +167,11 @@ export default function GoalView({
             ) : (
               <ContentList items={ownContent} />
             )}
-            <button className="open-topic-link" onClick={() => onOpenTopic(u.topic.id)}>
-              Open {u.topic.title} page →
-            </button>
+            {isSub && (
+              <button className="open-topic-link" onClick={() => onOpenTopic(u.topic.id)}>
+                Open {u.topic.title} page →
+              </button>
+            )}
           </div>
         )}
       </li>
@@ -273,6 +285,14 @@ export default function GoalView({
                     />
                     <span className="curriculum-group-name">{g.topic.title}</span>
                     {g.optional && <span className="optional-badge">optional</span>}
+                    <button
+                      className="row-open-page"
+                      title="Open content page"
+                      aria-label={`Open ${g.topic.title} content page`}
+                      onClick={() => onOpenTopic(g.topic.id)}
+                    >
+                      ↗
+                    </button>
                     {partialVisible && (
                       <span className="curriculum-only">
                         only: {g.units.map((e) => e.unit.subtopic!.title).join(', ')}
