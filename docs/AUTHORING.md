@@ -78,7 +78,13 @@ Linear Algebra, not the whole course. Annotate incrementally — topics without
 | `title` | Shown as a curriculum step. |
 | `description` | Optional, shown when the step is expanded. |
 | `prerequisites` | Refs in three forms — see below. |
+| `optionalPrerequisites` | Same ref forms; *enrichment*, not required. Curriculum shows these steps with an "optional" badge and a hide toggle; the map draws optional topic edges dashed. On overlap with `prerequisites`, mandatory wins. |
+| `objectives` | Optional list of "after this step you can …" outcomes; shown in the step detail, the map card, and the PDF export. |
 | `content` | Optional own resources; when empty/absent the step shows the parent topic's resources. |
+
+Topics support `optionalPrerequisites` (topic ids) and `objectives` too.
+Keep the union of mandatory + optional edges acyclic — the validator checks it,
+because the curriculum ordering runs on both together.
 
 Prerequisite refs, resolved in this order:
 

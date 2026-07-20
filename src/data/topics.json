@@ -394,6 +394,12 @@
       "level": "advanced",
       "description": "Wavefunctions, Schrödinger equation, operators, spin, hydrogen atom. Needed for atomic physics, particle physics and the statistical mechanics of the early universe.",
       "prerequisites": ["linear-algebra", "differential-equations", "waves-oscillations"],
+      "optionalPrerequisites": ["lagrangian-mechanics"],
+      "objectives": [
+        "Explain how quantum states, operators, and the measurement postulates replace classical trajectories",
+        "Solve the Schrödinger equation for the standard one-dimensional and central-potential model systems",
+        "Compute measurement probabilities, expectation values, and uncertainties for a given state"
+      ],
       "featured": true,
       "content": [
         {
@@ -414,49 +420,90 @@
           "id": "wavefunctions-and-probability",
           "title": "Wavefunctions & Probability",
           "description": "The state as a wave; Born rule, normalization, expectation values.",
-          "prerequisites": ["waves-oscillations/wave-equation", "calculus-1/integrals"]
+          "prerequisites": ["waves-oscillations/wave-equation", "calculus-1/integrals"],
+          "optionalPrerequisites": ["waves-oscillations/fourier-analysis"],
+          "objectives": [
+            "Interpret |ψ|² as a probability density and normalize a given wavefunction",
+            "Compute expectation values and standard deviations of position and momentum",
+            "State the Born rule and describe what a single measurement can yield"
+          ]
         },
         {
           "id": "schroedinger-equation",
           "title": "The Schrödinger Equation",
           "description": "The equation of motion for quantum states, time-dependent and stationary.",
-          "prerequisites": ["wavefunctions-and-probability", "differential-equations/second-order-linear-odes"]
+          "prerequisites": ["wavefunctions-and-probability", "differential-equations/second-order-linear-odes"],
+          "objectives": [
+            "Write down the time-dependent and time-independent Schrödinger equations and explain when each applies",
+            "Use separation of variables to reduce the time-dependent equation to a stationary eigenvalue problem",
+            "Build general solutions as superpositions of stationary states"
+          ]
         },
         {
           "id": "operators-and-observables",
           "title": "Operators & Observables",
           "description": "Measurement as eigenvalue problem: Hermitian operators, commutators, uncertainty.",
-          "prerequisites": ["wavefunctions-and-probability", "linear-algebra/eigenvalues-and-eigenvectors", "linear-algebra/inner-products-and-orthogonality"]
+          "prerequisites": ["wavefunctions-and-probability", "linear-algebra/eigenvalues-and-eigenvectors", "linear-algebra/inner-products-and-orthogonality"],
+          "objectives": [
+            "Represent observables as Hermitian operators and explain why eigenvalues are the possible outcomes",
+            "Expand a state in an eigenbasis and read off measurement probabilities",
+            "Compute commutators and connect them to uncertainty relations"
+          ]
         },
         {
           "id": "one-dimensional-potentials",
           "title": "One-Dimensional Potentials",
           "description": "Infinite well, finite well, tunneling — solving the Schrödinger equation in simple landscapes.",
-          "prerequisites": ["schroedinger-equation"]
+          "prerequisites": ["schroedinger-equation"],
+          "objectives": [
+            "Solve the infinite and finite square wells and interpret bound-state quantization",
+            "Compute reflection and transmission coefficients for steps and barriers",
+            "Explain quantum tunnelling and give a physical example"
+          ]
         },
         {
           "id": "quantum-harmonic-oscillator",
           "title": "Quantum Harmonic Oscillator",
           "description": "Ladder operators and quantized energy levels of the oscillator.",
-          "prerequisites": ["one-dimensional-potentials", "operators-and-observables", "waves-oscillations/harmonic-oscillator"]
+          "prerequisites": ["one-dimensional-potentials", "operators-and-observables", "waves-oscillations/harmonic-oscillator"],
+          "objectives": [
+            "Solve the oscillator with ladder operators and derive Eₙ = ħω(n + ½)",
+            "Use creation and annihilation operators to compute matrix elements",
+            "Explain why the oscillator is the template for quantizing fields"
+          ]
         },
         {
           "id": "angular-momentum",
           "title": "Angular Momentum",
           "description": "Orbital angular momentum operators, spherical harmonics, quantization of rotation.",
-          "prerequisites": ["operators-and-observables", "linear-algebra/diagonalization"]
+          "prerequisites": ["operators-and-observables", "linear-algebra/diagonalization"],
+          "objectives": [
+            "Derive the angular-momentum commutation relations and the ℓ and m quantum numbers",
+            "Use spherical harmonics as simultaneous eigenfunctions of L² and L_z",
+            "Determine which total-j values occur when adding two angular momenta"
+          ]
         },
         {
           "id": "hydrogen-atom",
           "title": "The Hydrogen Atom",
           "description": "The crown jewel: separating the Coulomb problem, radial series solution, quantum numbers and orbitals.",
-          "prerequisites": ["angular-momentum", "one-dimensional-potentials", "differential-equations/series-solutions"]
+          "prerequisites": ["angular-momentum", "one-dimensional-potentials", "differential-equations/series-solutions"],
+          "objectives": [
+            "Separate the Coulomb problem into radial and angular parts",
+            "Derive the Eₙ ∝ −1/n² spectrum and explain its degeneracies",
+            "Relate orbitals to radial and angular probability distributions"
+          ]
         },
         {
           "id": "spin",
           "title": "Spin",
           "description": "Intrinsic angular momentum, Pauli matrices, two-level systems.",
-          "prerequisites": ["angular-momentum"]
+          "prerequisites": ["angular-momentum"],
+          "objectives": [
+            "Describe spin-½ states in a two-dimensional Hilbert space using Pauli matrices",
+            "Predict outcomes of sequential Stern–Gerlach measurements",
+            "Explain how spin differs from orbital angular momentum"
+          ]
         }
       ]
     },

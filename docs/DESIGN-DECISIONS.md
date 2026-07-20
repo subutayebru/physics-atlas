@@ -104,6 +104,23 @@ hydrogen path further) — pure data work, no code.
 | Skill nodes in the graph | ↩ pathway | Would let topics require skills; revisit if skills ever gate content. |
 | Per-topic skill tags | ↩ pathway | Finer targeting ("this topic is where you start computing"); revisit with more skills. |
 
+## Decision 9 — Client feedback round 1: optional prerequisites, objectives, PDF export (2026-07-20)
+
+Client asked for "clear learning goals; label mandatory and optional" and
+"option to download material as PDF".
+
+| Option | Status | Notes |
+|---|---|---|
+| **Optionality as `optionalPrerequisites` + two-closure curriculum** | ✅ Chosen | Mandatory closure M vs union closure F from the goal; a step is optional iff in F but not M (so an optional step's own prerequisites stay optional unless independently required). Order always computed on F — hiding optional steps is a pure filter, mandatory steps never reorder. Default: shown with "optional" badges + hide toggle. Dashed edges on the map. |
+| Weighted/leveled edges (recommended/helpful/…) | ↩ pathway | More nuance than binary; revisit if Sophie needs it. |
+| **`objectives` per topic/subtopic** | ✅ Chosen | "After this step you can …" bullets in step detail, map card, PDF. Pilot: QM + its 8 subtopics. |
+| **PDF via always-rendered print sheet + `window.print()`** | ✅ Chosen | Dedicated `.print-sheet` (dark-on-white serif, checkbox glyphs, explicit URLs) shown only in `@media print`, scoped with `body:has(.print-sheet)`; no dependency. |
+| Client-side PDF library (jsPDF etc.) | ↩ pathway | Real download button without print dialog; revisit if the print flow confuses users. |
+
+Remaining client asks (simulations, exercises w/ hidden solutions, equation
+popups, approach labels, ratings) recorded as feature-8…12 in BACKLOG.md with
+the client's reference links.
+
 ## Multi-agent workflow (web-dev-agent-system)
 
 **Installed 2026-07-02** (Setup B from `../web-dev-agent-system-main`):

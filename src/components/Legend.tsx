@@ -9,6 +9,10 @@ export default function Legend() {
           {LEVEL_LABELS[level]}
         </span>
       ))}
+      <span className="legend-entry">
+        <span className="legend-dash" aria-hidden />
+        optional prerequisite
+      </span>
     </div>
   );
 }

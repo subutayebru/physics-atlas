@@ -22,6 +22,10 @@ export interface Subtopic {
    * or a whole topic without subtopics "hs-math"
    */
   prerequisites: string[];
+  /** Same ref forms; enrichment — not required to reach a goal */
+  optionalPrerequisites?: string[];
+  /** "After this step you can …" outcomes */
+  objectives?: string[];
   content?: ContentItem[];
 }
 
@@ -42,6 +46,10 @@ export interface Topic {
   description: string;
   /** ids of topics that should be learned first (direct edges only) */
   prerequisites: string[];
+  /** Topic ids; enrichment/context edges, drawn dashed on the map */
+  optionalPrerequisites?: string[];
+  /** "After this step you can …" outcomes */
+  objectives?: string[];
   /** Show in the goal picker on the landing view */
   featured?: boolean;
   content: ContentItem[];

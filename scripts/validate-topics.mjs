@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Validates src/data/topics.json: schema shape, unique ids, resolvable
-// prerequisites (topic- and subtopic-level), and acyclicity.
+// prerequisites (topic- and subtopic-level, mandatory and optional), and
+// acyclicity (also over the union of mandatory+optional edges — curriculum
+// ordering runs on that union).
 // Subtopic ref-resolution rules mirror src/graph/dag.ts — keep them in sync.
 // Run via `npm run validate`.
 import { readFileSync } from 'node:fs';
@@ -37,8 +39,17 @@ function checkContentItems(where, content) {
   }
 }
 
+function checkObjectives(where, objectives) {
+  if (objectives === undefined) return;
+  if (!Array.isArray(objectives)) errors.push(`${where}: "objectives" must be an array`);
+  else
+    for (const o of objectives)
+      if (typeof o !== 'string' || !o.trim()) errors.push(`${where}: objectives must be non-empty strings`);
+}
+
 const ids = new Set();
 let subtopicCount = 0;
+let optionalEdgeCount = 0;
 for (const t of data.topics) {
   const where = `topic "${t.id ?? t.title ?? '<unnamed>'}"`;
   if (!t.id || typeof t.id !== 'string') errors.push(`${where}: missing string "id"`);
@@ -50,6 +61,9 @@ for (const t of data.topics) {
   if (!LEVELS.includes(t.level)) errors.push(`${where}: level must be one of ${LEVELS.join(', ')}`);
   if (!t.description) warn.push(`${where}: empty description`);
   if (!Array.isArray(t.prerequisites)) errors.push(`${where}: "prerequisites" must be an array (use [] for none)`);
+  if (t.optionalPrerequisites !== undefined && !Array.isArray(t.optionalPrerequisites))
+    errors.push(`${where}: "optionalPrerequisites" must be an array`);
+  checkObjectives(where, t.objectives);
   if (!Array.isArray(t.content)) errors.push(`${where}: "content" must be an array (use [] for none)`);
   else {
     checkContentItems(where, t.content);
@@ -69,6 +83,9 @@ for (const t of data.topics) {
         else subIds.add(s.id);
         if (!s.title) errors.push(`${sw}: missing "title"`);
         if (!Array.isArray(s.prerequisites)) errors.push(`${sw}: "prerequisites" must be an array (use [] for none)`);
+        if (s.optionalPrerequisites !== undefined && !Array.isArray(s.optionalPrerequisites))
+          errors.push(`${sw}: "optionalPrerequisites" must be an array`);
+        checkObjectives(sw, s.objectives);
         if (s.content !== undefined) {
           if (!Array.isArray(s.content)) errors.push(`${sw}: "content" must be an array`);
           else checkContentItems(sw, s.content);
@@ -98,11 +115,18 @@ else {
   }
 }
 
-// Prerequisite references must resolve
+// Topic-level prerequisite references (mandatory and optional) must resolve
 for (const t of data.topics) {
   for (const p of t.prerequisites ?? []) {
     if (!ids.has(p)) errors.push(`topic "${t.id}": unknown prerequisite "${p}"`);
     if (p === t.id) errors.push(`topic "${t.id}": lists itself as a prerequisite`);
+  }
+  for (const p of Array.isArray(t.optionalPrerequisites) ? t.optionalPrerequisites : []) {
+    optionalEdgeCount++;
+    if (!ids.has(p)) errors.push(`topic "${t.id}": unknown optional prerequisite "${p}"`);
+    if (p === t.id) errors.push(`topic "${t.id}": lists itself as an optional prerequisite`);
+    if ((t.prerequisites ?? []).includes(p))
+      warn.push(`topic "${t.id}": "${p}" is both mandatory and optional — mandatory wins, drop the optional copy`);
   }
 }
 
@@ -111,41 +135,62 @@ const byId = new Map(data.topics.map((t) => [t.id, t]));
 const isAnnotated = (t) => Array.isArray(t?.subtopics) && t.subtopics.length > 0;
 const subIdsOf = (t) => new Set(Array.isArray(t?.subtopics) ? t.subtopics.map((s) => s.id) : []);
 
-// "parentTopic/subId" -> resolved unit ids of its prerequisites
+// "parentTopic/subId" -> resolved unit ids of its (optional) prerequisites
 const resolvedBySub = new Map();
+const resolvedOptBySub = new Map();
+
+function resolveRef(raw, t, siblings, sw, kind) {
+  if (typeof raw !== 'string' || !raw) {
+    errors.push(`${sw}: ${kind} must be a non-empty string`);
+    return null;
+  }
+  if (raw.includes('/')) {
+    const parts = raw.split('/');
+    const [topicId, subId] = parts;
+    if (parts.length !== 2 || !topicId || !subId) errors.push(`${sw}: malformed ref "${raw}" — use "topic/subtopic"`);
+    else if (!byId.has(topicId)) errors.push(`${sw}: unknown topic in ref "${raw}"`);
+    else if (!subIdsOf(byId.get(topicId)).has(subId)) errors.push(`${sw}: topic "${topicId}" has no subtopic "${subId}"`);
+    else return `${topicId}/${subId}`;
+    return null;
+  }
+  if (siblings.has(raw)) {
+    if (ids.has(raw)) warn.push(`${sw}: ref "${raw}" matches both a sibling subtopic and a topic id — sibling wins; use "${t.id}/${raw}" or rename to disambiguate`);
+    return `${t.id}/${raw}`;
+  }
+  if (ids.has(raw)) {
+    if (isAnnotated(byId.get(raw))) {
+      errors.push(`${sw}: "${raw}" has subtopics — pick a specific one, e.g. "${raw}/<subtopic-id>"`);
+      return null;
+    }
+    return raw;
+  }
+  errors.push(`${sw}: unknown ${kind} "${raw}"`);
+  return null;
+}
 
 for (const t of data.topics) {
   if (!isAnnotated(t)) continue;
   const siblings = subIdsOf(t);
   for (const s of t.subtopics) {
     const sw = `topic "${t.id}" subtopic "${s.id}"`;
+    const self = `${t.id}/${s.id}`;
     const resolved = [];
     for (const raw of s.prerequisites ?? []) {
-      if (typeof raw !== 'string' || !raw) {
-        errors.push(`${sw}: prerequisite must be a non-empty string`);
-        continue;
-      }
-      let unit = null;
-      if (raw.includes('/')) {
-        const parts = raw.split('/');
-        const [topicId, subId] = parts;
-        if (parts.length !== 2 || !topicId || !subId) errors.push(`${sw}: malformed ref "${raw}" — use "topic/subtopic"`);
-        else if (!byId.has(topicId)) errors.push(`${sw}: unknown topic in ref "${raw}"`);
-        else if (!subIdsOf(byId.get(topicId)).has(subId)) errors.push(`${sw}: topic "${topicId}" has no subtopic "${subId}"`);
-        else unit = `${topicId}/${subId}`;
-      } else if (siblings.has(raw)) {
-        if (ids.has(raw)) warn.push(`${sw}: ref "${raw}" matches both a sibling subtopic and a topic id — sibling wins; use "${t.id}/${raw}" or rename to disambiguate`);
-        unit = `${t.id}/${raw}`;
-      } else if (ids.has(raw)) {
-        if (isAnnotated(byId.get(raw))) errors.push(`${sw}: "${raw}" has subtopics — pick a specific one, e.g. "${raw}/<subtopic-id>"`);
-        else unit = raw;
-      } else {
-        errors.push(`${sw}: unknown prerequisite "${raw}"`);
-      }
-      if (unit === `${t.id}/${s.id}`) errors.push(`${sw}: lists itself as a prerequisite`);
+      const unit = resolveRef(raw, t, siblings, sw, 'prerequisite');
+      if (unit === self) errors.push(`${sw}: lists itself as a prerequisite`);
       else if (unit && !resolved.includes(unit)) resolved.push(unit);
     }
-    resolvedBySub.set(`${t.id}/${s.id}`, resolved);
+    resolvedBySub.set(self, resolved);
+    const resolvedOpt = [];
+    for (const raw of Array.isArray(s.optionalPrerequisites) ? s.optionalPrerequisites : []) {
+      optionalEdgeCount++;
+      const unit = resolveRef(raw, t, siblings, sw, 'optional prerequisite');
+      if (unit === self) errors.push(`${sw}: lists itself as an optional prerequisite`);
+      else if (unit && resolved.includes(unit))
+        warn.push(`${sw}: "${raw}" is both mandatory and optional — mandatory wins, drop the optional copy`);
+      else if (unit && !resolvedOpt.includes(unit)) resolvedOpt.push(unit);
+    }
+    resolvedOptBySub.set(self, resolvedOpt);
   }
 }
 
@@ -177,69 +222,120 @@ function findCycle(prereqsByNode) {
 }
 
 if (errors.length === 0) {
+  const optTopic = (t) => (Array.isArray(t?.optionalPrerequisites) ? t.optionalPrerequisites : []);
+
+  // Mandatory-only checks first (cleaner messages for pure-mandatory cycles)
   const topicGraph = new Map(data.topics.map((t) => [t.id, t.prerequisites]));
   const stuckTopics = findCycle(topicGraph);
   if (stuckTopics.length) errors.push(`cycle detected among: ${stuckTopics.join(', ')} — a prerequisite chain loops back on itself`);
 
   // Unit graph: annotated topics contribute one node per subtopic,
   // unannotated topics one node depending on all subtopics of annotated prereqs.
-  const unitGraph = new Map();
-  for (const t of data.topics) {
-    if (isAnnotated(t)) {
-      for (const s of t.subtopics) unitGraph.set(`${t.id}/${s.id}`, resolvedBySub.get(`${t.id}/${s.id}`) ?? []);
-    } else {
-      const prereqUnits = [];
-      for (const p of t.prerequisites) {
-        const pt = byId.get(p);
-        if (isAnnotated(pt)) for (const ps of pt.subtopics) prereqUnits.push(`${p}/${ps.id}`);
-        else prereqUnits.push(p);
+  const unitEdges = (withOptional) => {
+    const graph = new Map();
+    for (const t of data.topics) {
+      if (isAnnotated(t)) {
+        for (const s of t.subtopics) {
+          const id = `${t.id}/${s.id}`;
+          const prereqs = [...(resolvedBySub.get(id) ?? [])];
+          if (withOptional) prereqs.push(...(resolvedOptBySub.get(id) ?? []));
+          graph.set(id, prereqs);
+        }
+      } else {
+        const prereqUnits = [];
+        const expand = (p) => {
+          const pt = byId.get(p);
+          if (isAnnotated(pt)) for (const ps of pt.subtopics) prereqUnits.push(`${p}/${ps.id}`);
+          else prereqUnits.push(p);
+        };
+        for (const p of t.prerequisites) expand(p);
+        if (withOptional) for (const p of optTopic(t)) expand(p);
+        graph.set(t.id, prereqUnits);
       }
-      unitGraph.set(t.id, prereqUnits);
     }
-  }
-  const stuckUnits = findCycle(unitGraph);
+    return graph;
+  };
+  const stuckUnits = findCycle(unitEdges(false));
   if (stuckUnits.length) errors.push(`subtopic cycle detected among: ${stuckUnits.join(', ')}`);
 
   // Contracted graph: topic-level edges plus cross-topic subtopic edges
   // collapsed to their parent topics — guarantees a valid group order.
-  const contracted = new Map(data.topics.map((t) => [t.id, new Set(t.prerequisites)]));
-  for (const [unit, prereqs] of resolvedBySub) {
-    const topicId = unit.split('/')[0];
-    for (const p of prereqs) {
-      const pTopic = p.split('/')[0];
-      if (pTopic !== topicId) contracted.get(topicId).add(pTopic);
-    }
-  }
-  const stuckContracted = findCycle(new Map([...contracted].map(([id, set]) => [id, [...set]])));
+  const contractedEdges = (withOptional) => {
+    const contracted = new Map(
+      data.topics.map((t) => [
+        t.id,
+        new Set(withOptional ? [...t.prerequisites, ...optTopic(t)] : t.prerequisites),
+      ]),
+    );
+    const collapse = (resolvedMap) => {
+      for (const [unit, prereqs] of resolvedMap) {
+        const topicId = unit.split('/')[0];
+        for (const p of prereqs) {
+          const pTopic = p.split('/')[0];
+          if (pTopic !== topicId) contracted.get(topicId).add(pTopic);
+        }
+      }
+    };
+    collapse(resolvedBySub);
+    if (withOptional) collapse(resolvedOptBySub);
+    return new Map([...contracted].map(([id, set]) => [id, [...set]]));
+  };
+  const stuckContracted = findCycle(contractedEdges(false));
   if (stuckContracted.length) errors.push(`topic-level cycle via subtopic refs among: ${stuckContracted.join(', ')} — cross-topic subtopic prerequisites make these topics mutually dependent`);
 
+  // Union checks: curriculum ordering runs on mandatory+optional together,
+  // so the union graphs must stay acyclic too.
+  if (errors.length === 0) {
+    const stuckTopicsU = findCycle(new Map(data.topics.map((t) => [t.id, [...new Set([...t.prerequisites, ...optTopic(t)])]])));
+    if (stuckTopicsU.length) errors.push(`cycle involving optional edges among: ${stuckTopicsU.join(', ')} — ordering runs on mandatory+optional together, so this union must stay acyclic`);
+    const stuckUnitsU = findCycle(unitEdges(true));
+    if (stuckUnitsU.length) errors.push(`subtopic cycle involving optional refs among: ${stuckUnitsU.join(', ')}`);
+    const stuckContractedU = findCycle(contractedEdges(true));
+    if (stuckContractedU.length) errors.push(`topic-level cycle involving optional edges among: ${stuckContractedU.join(', ')}`);
+  }
+
   // Consistency warnings for annotated topics
-  const topicAncestors = (id) => {
+  const topicAncestors = (id, withOptional) => {
     const seen = new Set();
-    const stack = [...(byId.get(id)?.prerequisites ?? [])];
+    const edges = (t) => (withOptional ? [...(t?.prerequisites ?? []), ...optTopic(t)] : (t?.prerequisites ?? []));
+    const stack = [...edges(byId.get(id))];
     while (stack.length) {
       const cur = stack.pop();
       if (seen.has(cur)) continue;
       seen.add(cur);
-      stack.push(...(byId.get(cur)?.prerequisites ?? []));
+      stack.push(...edges(byId.get(cur)));
     }
     return seen;
   };
   for (const t of data.topics) {
     if (!isAnnotated(t)) continue;
-    const ancestors = topicAncestors(t.id);
-    const refTopics = new Set();
+    const unionAncestors = topicAncestors(t.id, true);
+    const mandAncestors = topicAncestors(t.id, false);
+    const mandRefTopics = new Set();
+    const allRefTopics = new Set();
     for (const s of t.subtopics) {
-      for (const p of resolvedBySub.get(`${t.id}/${s.id}`) ?? []) {
+      const self = `${t.id}/${s.id}`;
+      for (const p of resolvedBySub.get(self) ?? []) {
         const pTopic = p.split('/')[0];
-        if (pTopic !== t.id) refTopics.add(pTopic);
+        if (pTopic !== t.id) {
+          mandRefTopics.add(pTopic);
+          allRefTopics.add(pTopic);
+        }
+      }
+      for (const p of resolvedOptBySub.get(self) ?? []) {
+        const pTopic = p.split('/')[0];
+        if (pTopic !== t.id) allRefTopics.add(pTopic);
       }
     }
-    for (const rt of refTopics) {
-      if (!ancestors.has(rt)) warn.push(`topic "${t.id}": subtopics reference "${rt}" but it is not among the topic's (transitive) prerequisites — consider adding a topic-level edge`);
+    for (const rt of allRefTopics) {
+      if (!unionAncestors.has(rt)) warn.push(`topic "${t.id}": subtopics reference "${rt}" but it is not among the topic's (transitive) prerequisites — consider adding a topic-level edge`);
+    }
+    for (const rt of mandRefTopics) {
+      if (unionAncestors.has(rt) && !mandAncestors.has(rt))
+        warn.push(`topic "${t.id}": mandatory subtopic ref into "${rt}" which is only optionally connected — add a mandatory topic-level edge or make the ref optional`);
     }
     for (const p of t.prerequisites) {
-      if (!refTopics.has(p)) warn.push(`topic "${t.id}": topic-level prerequisite "${p}" is not referenced by any subtopic (coverage gap)`);
+      if (!allRefTopics.has(p)) warn.push(`topic "${t.id}": topic-level prerequisite "${p}" is not referenced by any subtopic (coverage gap)`);
     }
   }
 }
@@ -250,4 +346,6 @@ if (errors.length) {
   console.error(`\n${errors.length} error(s) in topics.json`);
   process.exit(1);
 }
-console.log(`✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${skills.length} skills, DAG is acyclic`);
+console.log(
+  `✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${skills.length} skills, ${optionalEdgeCount} optional edges, DAG is acyclic (incl. optional edges)`,
+);

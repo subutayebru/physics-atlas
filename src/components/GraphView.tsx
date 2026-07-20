@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import type { Topic } from '../data/types';
+import { buildTopicMap, parseUnitId, resolveSubtopicRef } from '../graph/dag';
 import { LEVEL_COLORS } from '../graph/levelColors';
 
 cytoscape.use(dagre);
@@ -23,6 +24,10 @@ interface GraphViewProps {
    * `highlightIds` set drives an ancestors-only dim (goal / curriculum view).
    */
   directionalSelect?: boolean;
+  /** Annotated topics rendered as compound nodes with their subtopics inside. */
+  expandedIds?: Set<string>;
+  /** Double-tapping an annotated topic toggles its expansion. */
+  onToggleExpand?: (id: string) => void;
   onSelect: (id: string | null) => void;
 }
 
@@ -67,6 +72,27 @@ const styleFor = (large: boolean) => [
   { selector: 'node.dimmed', style: { opacity: 0.16 } },
   { selector: 'node.done', style: { 'background-opacity': 0.06, 'border-style': 'dashed' } },
   {
+    selector: 'node:parent',
+    style: {
+      'background-opacity': 0.05,
+      'border-opacity': 0.5,
+      'border-style': 'dashed',
+      'text-valign': 'top',
+      'text-margin-y': large ? -6 : -4,
+      padding: large ? '18px' : '12px',
+      'font-weight': 'bold',
+    },
+  },
+  {
+    selector: 'node.subtopic-node',
+    style: {
+      'font-size': large ? 12 : 10.5,
+      'background-opacity': 0.14,
+      padding: large ? '9px' : '7px',
+      'text-max-width': large ? '130px' : '100px',
+    },
+  },
+  {
     selector: 'edge',
     style: {
       'curve-style': 'bezier',
@@ -79,6 +105,10 @@ const styleFor = (large: boolean) => [
       'transition-duration': '0.3s',
       'transition-timing-function': 'ease-in-out',
     },
+  },
+  {
+    selector: 'edge.optional-edge',
+    style: { 'line-style': 'dashed', 'line-dash-pattern': [6, 5] },
   },
   {
     selector: 'edge.onpath',
@@ -192,14 +222,19 @@ export default function GraphView({
   focus,
   large = false,
   directionalSelect = false,
+  expandedIds,
+  onToggleExpand,
   onSelect,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onToggleExpandRef = useRef(onToggleExpand);
+  onToggleExpandRef.current = onToggleExpand;
+  const lastTapRef = useRef<{ id: string; t: number }>({ id: '', t: 0 });
 
-  // (Re)build the graph when the topic set changes
+  // (Re)build the graph when the topic set (or expansion) changes
   useEffect(() => {
     const present = new Set(topics.map((t) => t.id));
     const elements: cytoscape.ElementDefinition[] = [
@@ -211,7 +246,41 @@ export default function GraphView({
           .filter((p) => present.has(p))
           .map((p) => ({ data: { id: `${p}->${t.id}`, source: p, target: t.id } })),
       ),
+      ...topics.flatMap((t) =>
+        (t.optionalPrerequisites ?? [])
+          .filter((p) => present.has(p) && !t.prerequisites.includes(p))
+          .map((p) => ({
+            data: { id: `${p}~opt->${t.id}`, source: p, target: t.id },
+            classes: 'optional-edge',
+          })),
+      ),
     ];
+
+    // Compound expansion: an opened annotated topic renders its subtopics as
+    // child nodes with their internal (same-topic) prerequisite order. Edges
+    // to other topics stay at the topic level (drawn to the compound box).
+    const tmap = buildTopicMap(topics);
+    for (const t of topics) {
+      if (!expandedIds?.has(t.id) || !t.subtopics?.length) continue;
+      for (const s of t.subtopics)
+        elements.push({
+          data: { id: `${t.id}/${s.id}`, parent: t.id, label: s.title, color: LEVEL_COLORS[t.level] },
+          classes: 'subtopic-node',
+        });
+      for (const s of t.subtopics) {
+        const uid = `${t.id}/${s.id}`;
+        const addInternal = (raw: string, optional: boolean) => {
+          const r = resolveSubtopicRef(raw, t, tmap);
+          if (r && r !== uid && parseUnitId(r).topicId === t.id)
+            elements.push({
+              data: { id: `${r}=>${uid}${optional ? '~o' : ''}`, source: r, target: uid },
+              classes: optional ? 'optional-edge' : undefined,
+            });
+        };
+        for (const raw of s.prerequisites) addInternal(raw, false);
+        for (const raw of s.optionalPrerequisites ?? []) addInternal(raw, true);
+      }
+    }
 
     const cy = cytoscape({
       container: containerRef.current,
@@ -222,9 +291,29 @@ export default function GraphView({
     });
     cy.layout(layoutFor(large)).run();
     cy.fit(undefined, large ? 40 : 24);
-    cy.on('tap', 'node', (e) => onSelectRef.current(e.target.id()));
+
+    // One core-level tap handler (not a delegated 'node' one) so a tap on a
+    // subtopic child fires exactly once with the true target — a delegated
+    // handler would also fire for the compound parent it bubbles through and
+    // re-select the whole topic. Single tap selects; a quick second tap on an
+    // annotated topic toggles it open/closed into its subtopics.
+    const annotated = new Set(topics.filter((t) => t.subtopics?.length).map((t) => t.id));
     cy.on('tap', (e) => {
-      if (e.target === cy) onSelectRef.current(null);
+      const tgt = e.target;
+      if (tgt === cy) {
+        onSelectRef.current(null);
+        return;
+      }
+      if (typeof tgt.isNode !== 'function' || !tgt.isNode()) return;
+      const id = tgt.id();
+      const now = performance.now();
+      const prev = lastTapRef.current;
+      lastTapRef.current = { id, t: now };
+      if (onToggleExpandRef.current && annotated.has(id) && prev.id === id && now - prev.t < 350) {
+        onToggleExpandRef.current(id);
+        return;
+      }
+      onSelectRef.current(id);
     });
 
     // Hover: grow the node a touch and light up its related tree —
@@ -251,7 +340,7 @@ export default function GraphView({
       cy.destroy();
       cyRef.current = null;
     };
-  }, [topics, large]);
+  }, [topics, large, expandedIds]);
 
   // Apply selection/path highlighting without re-layout
   useEffect(() => {

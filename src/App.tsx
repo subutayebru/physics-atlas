@@ -4,6 +4,7 @@ import rawData from './data/topics.json';
 import Home from './components/Home';
 import GoalView from './components/GoalView';
 import MapView from './components/MapView';
+import TopicPage from './components/TopicPage';
 import SearchBox from './components/SearchBox';
 import Starfield from './components/Starfield';
 import { expandedCurriculumFor, parseUnitId } from './graph/dag';
@@ -12,13 +13,19 @@ import './App.css';
 
 const data = rawData as TopicGraph;
 
-type Mode = 'home' | 'map' | 'goal';
+type Mode = 'home' | 'map' | 'goal' | 'topic';
 
 function initialMode(): Mode {
   const m = new URLSearchParams(window.location.search).get('mode');
   if (m === 'map' || m === 'explore') return 'map';
   if (m === 'goal') return 'goal';
+  if (m === 'topic') return 'topic';
   return 'home';
+}
+
+function initialTopicId(): string {
+  const id = new URLSearchParams(window.location.search).get('id');
+  return id && data.topics.some((t) => t.id === id) ? id : data.topics[0].id;
 }
 
 function isValidRef(ref: string): boolean {
@@ -39,6 +46,7 @@ function initialGoal(): string {
 export default function App() {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [goalRef, setGoalRef] = useState(initialGoal);
+  const [topicPageId, setTopicPageId] = useState(initialTopicId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
   const progress = useProgress();
@@ -49,14 +57,21 @@ export default function App() {
         ? window.location.pathname
         : mode === 'goal'
           ? `?mode=goal&goal=${encodeURIComponent(goalRef)}`
-          : `?mode=${mode}`;
+          : mode === 'topic'
+            ? `?mode=topic&id=${encodeURIComponent(topicPageId)}`
+            : `?mode=${mode}`;
     window.history.replaceState(null, '', url);
-  }, [mode, goalRef]);
+  }, [mode, goalRef, topicPageId]);
 
   const pickGoal = useCallback((ref: string) => {
     setGoalRef(ref);
     setSelectedId(null);
     setMode('goal');
+  }, []);
+
+  const openTopic = useCallback((id: string) => {
+    setTopicPageId(parseUnitId(id).topicId);
+    setMode('topic');
   }, []);
 
   // Subtopics have no map node — the graph centers on the parent topic
@@ -88,6 +103,10 @@ export default function App() {
         pickGoal(ref);
         return;
       }
+      if (mode === 'topic') {
+        openTopic(ref);
+        return;
+      }
       if (
         mode === 'goal' &&
         !expandedCurriculumFor(goalRef, data.topics).some((g) => g.topic.id === ref)
@@ -96,7 +115,7 @@ export default function App() {
       }
       focusOn(ref);
     },
-    [mode, goalRef, focusOn, pickGoal],
+    [mode, goalRef, focusOn, pickGoal, openTopic],
   );
 
   return (
@@ -142,6 +161,7 @@ export default function App() {
           selectedId={selectedId}
           onSelect={setSelectedId}
           onMakeGoal={pickGoal}
+          onOpenTopic={openTopic}
           focus={focus}
         />
       )}
@@ -155,9 +175,23 @@ export default function App() {
             setGoalRef(ref);
             setSelectedId(null);
           }}
+          onOpenTopic={openTopic}
           selectedId={selectedId}
           onSelect={setSelectedId}
           focus={focus}
+        />
+      )}
+      {mode === 'topic' && (
+        <TopicPage
+          topics={data.topics}
+          progress={progress}
+          topicId={topicPageId}
+          onOpenTopic={openTopic}
+          onMakeGoal={pickGoal}
+          onShowOnMap={(id) => {
+            setMode('map');
+            focusOn(id);
+          }}
         />
       )}
     </div>

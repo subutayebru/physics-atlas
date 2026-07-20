@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Skill, Topic } from '../data/types';
 import {
   expandedCurriculumFor,
@@ -6,13 +6,14 @@ import {
   buildTopicMap,
   ancestorsOf,
   unitDone,
-  type Unit,
+  type CurriculumUnit,
 } from '../graph/dag';
 import { LEVEL_COLORS } from '../graph/levelColors';
 import GraphView from './GraphView';
 import ContentList from './ContentList';
 import Legend from './Legend';
 import SkillsPanel from './SkillsPanel';
+import PrintSheet from './PrintSheet';
 import type { Progress } from '../lib/useProgress';
 
 interface GoalViewProps {
@@ -21,6 +22,7 @@ interface GoalViewProps {
   progress: Progress;
   goalRef: string;
   onPickGoal: (ref: string) => void;
+  onOpenTopic: (id: string) => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   focus?: { id: string | null; tick: number };
@@ -32,16 +34,29 @@ export default function GoalView({
   progress,
   goalRef,
   onPickGoal,
+  onOpenTopic,
   selectedId,
   onSelect,
   focus,
 }: GoalViewProps) {
   const featured = topics.filter((t) => t.featured);
   const annotated = topics.filter((t) => t.subtopics && t.subtopics.length > 0);
+  const [showOptional, setShowOptional] = useState(true);
 
   const groups = useMemo(() => expandedCurriculumFor(goalRef, topics), [goalRef, topics]);
   const graphTopics = useMemo(() => groups.map((g) => g.topic), [groups]);
-  const allUnits = useMemo(() => groups.flatMap((g) => g.units), [groups]);
+  const optionalCount = groups.reduce((n, g) => n + g.units.filter((e) => e.optional).length, 0);
+
+  const visibleGroups = useMemo(
+    () =>
+      showOptional
+        ? groups
+        : groups
+            .map((g) => ({ ...g, units: g.units.filter((e) => !e.optional) }))
+            .filter((g) => g.units.length > 0),
+    [groups, showOptional],
+  );
+  const visibleEntries = visibleGroups.flatMap((g) => g.units);
 
   const { topicId: goalTopicId, subId: goalSubId } = parseUnitId(goalRef);
   const goalTopic = topics.find((t) => t.id === goalTopicId);
@@ -57,10 +72,13 @@ export default function GoalView({
     return set;
   }, [selectedTopicId, topics]);
 
-  const doneCount = allUnits.filter((u) => unitDone(u, progress.done)).length;
-  const donePct = allUnits.length ? Math.round((doneCount / allUnits.length) * 100) : 0;
+  const doneCount = visibleEntries.filter((e) => unitDone(e.unit, progress.done)).length;
+  const donePct = visibleEntries.length
+    ? Math.round((doneCount / visibleEntries.length) * 100)
+    : 0;
 
-  const toggleUnit = (u: Unit) => {
+  const toggleUnit = (e: CurriculumUnit) => {
+    const u = e.unit;
     if (u.subtopic && progress.done.has(u.topic.id)) {
       // The whole topic was ticked: unticking one part converts the topic key
       // into explicit keys for the remaining siblings.
@@ -75,12 +93,14 @@ export default function GoalView({
   };
 
   let step = 0;
-  const renderUnit = (u: Unit) => {
+  const renderUnit = (e: CurriculumUnit, groupOptional: boolean) => {
+    const u = e.unit;
     step += 1;
     const index = step;
     const isSub = u.subtopic !== undefined;
     const title = isSub ? u.subtopic!.title : u.topic.title;
     const description = isSub ? u.subtopic!.description : u.topic.description;
+    const objectives = isSub ? u.subtopic!.objectives : u.topic.objectives;
     const ownContent = isSub ? (u.subtopic!.content ?? []) : u.topic.content;
     const done = unitDone(u, progress.done);
     const open = u.id === selectedId;
@@ -96,7 +116,7 @@ export default function GoalView({
             type="checkbox"
             className="curriculum-check"
             checked={done}
-            onChange={() => toggleUnit(u)}
+            onChange={() => toggleUnit(e)}
             aria-label={
               isSub
                 ? `Mark ${title} (${u.topic.title}) as learned`
@@ -113,11 +133,22 @@ export default function GoalView({
               />
             )}
             <span className="curriculum-name">{title}</span>
+            {e.optional && !groupOptional && <span className="optional-badge">optional</span>}
           </button>
         </div>
         {open && (
           <div className="curriculum-detail">
             {description && <p className="topic-description">{description}</p>}
+            {objectives && objectives.length > 0 && (
+              <div className="objectives">
+                <p className="objectives-label">After this step you can:</p>
+                <ul className="objectives-list">
+                  {objectives.map((o) => (
+                    <li key={o}>{o}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {isSub && ownContent.length === 0 ? (
               <>
                 <p className="curriculum-fallback-note">Resources from {u.topic.title}:</p>
@@ -126,6 +157,9 @@ export default function GoalView({
             ) : (
               <ContentList items={ownContent} />
             )}
+            <button className="open-topic-link" onClick={() => onOpenTopic(u.topic.id)}>
+              Open {u.topic.title} page →
+            </button>
           </div>
         )}
       </li>
@@ -188,7 +222,7 @@ export default function GoalView({
           <h2 className="sidebar-title">
             Curriculum — {goalTitle}
             <span className="sidebar-count">
-              {doneCount}/{allUnits.length} · {donePct}%
+              {doneCount}/{visibleEntries.length} · {donePct}%
             </span>
           </h2>
           <div
@@ -201,13 +235,34 @@ export default function GoalView({
           >
             <div className="progress-fill" style={{ width: `${donePct}%` }} />
           </div>
+          <div className="sidebar-actions">
+            <button
+              className="pdf-button"
+              onClick={() => window.print()}
+              title="Opens the print dialog — choose 'Save as PDF'"
+            >
+              Download PDF
+            </button>
+          </div>
           <p className="sidebar-hint">
             In order: every step below builds only on the ones above it. Click a step to see it in
             the graph and its resources; tick it off when learned.
           </p>
+          {optionalCount > 0 && (
+            <label className="optional-toggle">
+              <input
+                type="checkbox"
+                checked={showOptional}
+                onChange={(e) => setShowOptional(e.target.checked)}
+              />
+              show {optionalCount} optional step{optionalCount === 1 ? '' : 's'}
+            </label>
+          )}
           <ol className="curriculum">
-            {groups.map((g) => {
-              if (!g.topic.subtopics?.length) return renderUnit(g.units[0]);
+            {visibleGroups.map((g) => {
+              // Single-row groups have no group head — the row carries the badge
+              if (!g.topic.subtopics?.length) return renderUnit(g.units[0], false);
+              const partialVisible = g.units.length < g.topic.subtopics.length;
               return (
                 <li key={g.topic.id} className="curriculum-group">
                   <div className="curriculum-group-head">
@@ -217,13 +272,16 @@ export default function GoalView({
                       aria-hidden
                     />
                     <span className="curriculum-group-name">{g.topic.title}</span>
-                    {g.partial && (
+                    {g.optional && <span className="optional-badge">optional</span>}
+                    {partialVisible && (
                       <span className="curriculum-only">
-                        only: {g.units.map((u) => u.subtopic!.title).join(', ')}
+                        only: {g.units.map((e) => e.unit.subtopic!.title).join(', ')}
                       </span>
                     )}
                   </div>
-                  <ol className="curriculum-units">{g.units.map(renderUnit)}</ol>
+                  <ol className="curriculum-units">
+                    {g.units.map((e) => renderUnit(e, g.optional))}
+                  </ol>
                 </li>
               );
             })}
@@ -231,6 +289,14 @@ export default function GoalView({
           <SkillsPanel skills={skills} />
         </aside>
       </div>
+
+      <PrintSheet
+        goalTitle={goalTitle ?? goalRef}
+        groups={visibleGroups}
+        hiddenOptionalCount={showOptional ? 0 : optionalCount}
+        done={progress.done}
+        skills={skills}
+      />
     </div>
   );
 }

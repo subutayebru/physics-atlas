@@ -111,6 +111,32 @@ console.log(
   await page.$eval('.sidebar-title', (el) => el.textContent?.trim()),
 );
 
+// --- Optional steps: badges, toggle, and print sheet ---
+await page.goto(`${URL}/?mode=goal&goal=quantum-mechanics`, { waitUntil: 'networkidle0' });
+await page.waitForSelector('.curriculum-check');
+const badges = await page.$$eval('.optional-badge', (els) => els.length);
+const beforeCount = await page.$eval('.sidebar-count', (el) => el.textContent);
+const beforeItems = await page.$$eval('.curriculum-item', (els) => els.length);
+await page.click('.optional-toggle input');
+await new Promise((r) => setTimeout(r, 300));
+const afterCount = await page.$eval('.sidebar-count', (el) => el.textContent);
+const afterItems = await page.$$eval('.curriculum-item', (els) => els.length);
+console.log(
+  `optional: ${badges} badge(s); items ${beforeItems}→${afterItems}; count ${beforeCount} → ${afterCount}`,
+);
+if (badges === 0 || afterItems >= beforeItems) errors.push('optional toggle did not reduce the curriculum');
+await page.click('.optional-toggle input');
+
+// --- Print sheet: print media shows the sheet, hides the app, renders a PDF ---
+await page.emulateMediaType('print');
+const printDisplay = await page.$eval('.print-sheet', (el) => getComputedStyle(el).display);
+const workspaceDisplay = await page.$eval('.workspace', (el) => getComputedStyle(el).display);
+console.log(`print media: print-sheet=${printDisplay}, workspace=${workspaceDisplay}`);
+if (printDisplay !== 'block' || workspaceDisplay !== 'none') errors.push('print CSS not applied');
+await page.pdf({ path: `${OUT}/curriculum.pdf`, format: 'A4' });
+console.log(`wrote ${OUT}/curriculum.pdf`);
+await page.emulateMediaType('screen');
+
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();
 process.exit(errors.length ? 1 : 0);

@@ -129,13 +129,16 @@ export interface Unit {
   /** undefined = whole-topic unit */
   subtopic?: Subtopic;
   prerequisites: UnitId[];
+  /** Enrichment edges — traversed only when optional steps are included */
+  optionalPrerequisites: UnitId[];
 }
 
 /**
  * The fine-grained dependency graph: annotated topics contribute one unit per
- * subtopic (resolved refs are authoritative — topic-level edges are not
- * inherited); unannotated topics stay one unit, depending on all subtopics of
- * annotated prerequisites (without annotation we can't know which parts).
+ * subtopic (resolved refs are authoritative — topic-level edges, mandatory or
+ * optional, are not inherited); unannotated topics stay one unit, depending on
+ * all subtopics of annotated prerequisites (without annotation we can't know
+ * which parts). On overlap, mandatory wins over optional.
  */
 export function buildUnitGraph(topics: Topic[]): Map<UnitId, Unit> {
   const map = buildTopicMap(topics);
@@ -149,7 +152,13 @@ export function buildUnitGraph(topics: Topic[]): Map<UnitId, Unit> {
           const r = resolveSubtopicRef(raw, t, map);
           if (r && r !== id && !prerequisites.includes(r)) prerequisites.push(r);
         }
-        units.set(id, { id, topic: t, subtopic: s, prerequisites });
+        const optionalPrerequisites: UnitId[] = [];
+        for (const raw of s.optionalPrerequisites ?? []) {
+          const r = resolveSubtopicRef(raw, t, map);
+          if (r && r !== id && !prerequisites.includes(r) && !optionalPrerequisites.includes(r))
+            optionalPrerequisites.push(r);
+        }
+        units.set(id, { id, topic: t, subtopic: s, prerequisites, optionalPrerequisites });
       }
     } else {
       const prerequisites: UnitId[] = [];
@@ -158,7 +167,20 @@ export function buildUnitGraph(topics: Topic[]): Map<UnitId, Unit> {
         if (isAnnotated(pt)) for (const ps of pt!.subtopics!) prerequisites.push(`${p}/${ps.id}`);
         else if (pt) prerequisites.push(p);
       }
-      units.set(t.id, { id: t.id, topic: t, prerequisites });
+      const optionalPrerequisites: UnitId[] = [];
+      for (const p of t.optionalPrerequisites ?? []) {
+        const pt = map.get(p);
+        if (isAnnotated(pt)) {
+          for (const ps of pt!.subtopics!) {
+            const r = `${p}/${ps.id}`;
+            if (!prerequisites.includes(r) && !optionalPrerequisites.includes(r))
+              optionalPrerequisites.push(r);
+          }
+        } else if (pt && !prerequisites.includes(p) && !optionalPrerequisites.includes(p)) {
+          optionalPrerequisites.push(p);
+        }
+      }
+      units.set(t.id, { id: t.id, topic: t, prerequisites, optionalPrerequisites });
     }
   }
   return units;
@@ -175,7 +197,7 @@ export function subtopicsInOrder(topic: Topic): Subtopic[] {
   const localPrereqs = new Map<string, string[]>();
   for (const s of subs) {
     const ps: string[] = [];
-    for (const raw of s.prerequisites) {
+    for (const raw of [...s.prerequisites, ...(s.optionalPrerequisites ?? [])]) {
       const sid = raw.includes('/')
         ? raw.startsWith(`${topic.id}/`)
           ? raw.slice(topic.id.length + 1)
@@ -211,29 +233,69 @@ export function subtopicsInOrder(topic: Topic): Subtopic[] {
   return order;
 }
 
+export interface CurriculumUnit {
+  unit: Unit;
+  /** Reachable from the goal only through optional edges */
+  optional: boolean;
+}
+
 export interface CurriculumGroup {
   topic: Topic;
   /** Included units in local reading order */
-  units: Unit[];
+  units: CurriculumUnit[];
   /** Annotated topic with only some subtopics included */
   partial: boolean;
+  /** Every unit in the group is optional */
+  optional: boolean;
 }
 
-function groupsForWholeTopics(order: Topic[], unitMap: Map<UnitId, Unit>): CurriculumGroup[] {
-  return order.map((t) => ({
-    topic: t,
-    units: isAnnotated(t)
-      ? subtopicsInOrder(t).map((s) => unitMap.get(`${t.id}/${s.id}`)!)
-      : [unitMap.get(t.id)!],
-    partial: false,
-  }));
+function dfsClosure(start: string, next: (id: string) => string[]): Set<string> {
+  const seen = new Set<string>();
+  const stack = [start];
+  while (stack.length) {
+    const cur = stack.pop()!;
+    if (seen.has(cur)) continue;
+    seen.add(cur);
+    stack.push(...next(cur));
+  }
+  return seen;
+}
+
+/** Kahn over a prereq adjacency, ties broken by longest-path depth then id. */
+function kahnOrder(prereqsOf: Map<string, string[]>): string[] {
+  const memo = new Map<string, number>();
+  const depth = (id: string): number => {
+    if (memo.has(id)) return memo.get(id)!;
+    const ps = prereqsOf.get(id) ?? [];
+    const d = ps.length === 0 ? 0 : 1 + Math.max(...ps.map(depth));
+    memo.set(id, d);
+    return d;
+  };
+  const indegree = new Map([...prereqsOf].map(([id, ps]) => [id, ps.length]));
+  const dependents = new Map<string, string[]>([...prereqsOf].map(([id]) => [id, []]));
+  for (const [id, ps] of prereqsOf) for (const p of ps) dependents.get(p)?.push(id);
+  const ready = [...indegree].filter(([, d]) => d === 0).map(([id]) => id);
+  const order: string[] = [];
+  while (ready.length) {
+    ready.sort((a, b) => depth(a) - depth(b) || a.localeCompare(b));
+    const id = ready.shift()!;
+    order.push(id);
+    for (const dep of dependents.get(id)!) {
+      indegree.set(dep, indegree.get(dep)! - 1);
+      if (indegree.get(dep) === 0) ready.push(dep);
+    }
+  }
+  return order;
 }
 
 /**
- * Curriculum at unit granularity, grouped by parent topic. A topic-level goal
- * reuses curriculumFor (identical topic ordering); a subtopic goal includes
- * only the transitively required units, so prerequisite topics appear with
- * just the parts that are actually needed.
+ * Curriculum at unit granularity, grouped by parent topic. Two closures from
+ * the goal — mandatory-only M and mandatory∪optional F — mark each included
+ * unit: in F but not in M means "reachable only via optional edges". Ordering
+ * always runs on F with union edges, so hiding optional steps is a pure
+ * filter that never reorders the mandatory ones. An optional step's own
+ * mandatory prerequisites enter only through F and stay optional unless
+ * independently required.
  */
 export function expandedCurriculumFor(goalRef: UnitId, topics: Topic[]): CurriculumGroup[] {
   const map = buildTopicMap(topics);
@@ -241,68 +303,70 @@ export function expandedCurriculumFor(goalRef: UnitId, topics: Topic[]): Curricu
   const { topicId, subId } = parseUnitId(goalRef);
 
   if (!subId || !unitMap.has(goalRef)) {
-    return groupsForWholeTopics(curriculumFor(topicId, topics), unitMap);
+    const mand = (id: string) => map.get(id)?.prerequisites ?? [];
+    const union = (id: string) => {
+      const t = map.get(id);
+      return t ? [...new Set([...t.prerequisites, ...(t.optionalPrerequisites ?? [])])] : [];
+    };
+    const M = dfsClosure(topicId, mand);
+    const F = dfsClosure(topicId, union);
+    const order = kahnOrder(new Map([...F].map((id) => [id, union(id).filter((p) => F.has(p))])));
+    return order.map((tid) => {
+      const topic = map.get(tid)!;
+      const optional = !M.has(tid);
+      const units = (
+        isAnnotated(topic)
+          ? subtopicsInOrder(topic).map((s) => unitMap.get(`${tid}/${s.id}`)!)
+          : [unitMap.get(tid)!]
+      ).map((u) => ({ unit: u, optional }));
+      return { topic, units, partial: false, optional };
+    });
   }
 
-  const include = new Set<UnitId>();
-  const stack: UnitId[] = [goalRef];
-  while (stack.length) {
-    const cur = stack.pop()!;
-    if (include.has(cur)) continue;
-    include.add(cur);
-    stack.push(...(unitMap.get(cur)?.prerequisites ?? []));
-  }
+  const M = dfsClosure(goalRef, (id) => unitMap.get(id)?.prerequisites ?? []);
+  const F = dfsClosure(goalRef, (id) => {
+    const u = unitMap.get(id);
+    return u ? [...u.prerequisites, ...u.optionalPrerequisites] : [];
+  });
 
   const includedTopics = new Set<string>();
-  for (const u of include) includedTopics.add(parseUnitId(u).topicId);
+  for (const u of F) includedTopics.add(parseUnitId(u).topicId);
 
-  // Contracted subgraph: topic-level edges plus cross-topic unit edges,
-  // restricted to included topics — validated acyclic by the data gate.
+  // Contracted subgraph over union edges: topic-level mandatory+optional edges
+  // plus cross-topic unit edges, restricted to included topics — the validator
+  // keeps the union graphs acyclic.
   const prereqTopics = new Map<string, Set<string>>();
   for (const tid of includedTopics) {
+    const t = map.get(tid);
     const set = new Set<string>();
-    for (const p of map.get(tid)?.prerequisites ?? []) if (includedTopics.has(p)) set.add(p);
+    for (const p of [...(t?.prerequisites ?? []), ...(t?.optionalPrerequisites ?? [])])
+      if (includedTopics.has(p)) set.add(p);
     prereqTopics.set(tid, set);
   }
-  for (const u of include) {
+  for (const u of F) {
     const tid = parseUnitId(u).topicId;
-    for (const p of unitMap.get(u)?.prerequisites ?? []) {
+    const unit = unitMap.get(u);
+    for (const p of [...(unit?.prerequisites ?? []), ...(unit?.optionalPrerequisites ?? [])]) {
       const pt = parseUnitId(p).topicId;
-      if (pt !== tid) prereqTopics.get(tid)!.add(pt);
+      if (pt !== tid && includedTopics.has(pt)) prereqTopics.get(tid)!.add(pt);
     }
   }
-
-  const memo = new Map<string, number>();
-  const depth = (id: string): number => {
-    if (memo.has(id)) return memo.get(id)!;
-    const ps = prereqTopics.get(id) ?? new Set();
-    const d = ps.size === 0 ? 0 : 1 + Math.max(...[...ps].map(depth));
-    memo.set(id, d);
-    return d;
-  };
-  const indegree = new Map([...includedTopics].map((id) => [id, prereqTopics.get(id)!.size]));
-  const dependents = new Map<string, string[]>([...includedTopics].map((id) => [id, []]));
-  for (const [id, ps] of prereqTopics) for (const p of ps) dependents.get(p)!.push(id);
-  const ready = [...includedTopics].filter((id) => indegree.get(id) === 0);
-  const topicOrder: string[] = [];
-  while (ready.length) {
-    ready.sort((a, b) => depth(a) - depth(b) || a.localeCompare(b));
-    const id = ready.shift()!;
-    topicOrder.push(id);
-    for (const dep of dependents.get(id)!) {
-      indegree.set(dep, indegree.get(dep)! - 1);
-      if (indegree.get(dep) === 0) ready.push(dep);
-    }
-  }
+  const topicOrder = kahnOrder(new Map([...prereqTopics].map(([id, s]) => [id, [...s]])));
 
   return topicOrder.map((tid) => {
     const topic = map.get(tid)!;
     const units = isAnnotated(topic)
       ? subtopicsInOrder(topic)
           .map((s) => unitMap.get(`${tid}/${s.id}`)!)
-          .filter((u) => include.has(u.id))
+          .filter((u) => F.has(u.id))
       : [unitMap.get(tid)!];
-    return { topic, units, partial: isAnnotated(topic) && units.length < topic.subtopics!.length };
+    const entries = units.map((u) => ({ unit: u, optional: !M.has(u.id) }));
+    return {
+      topic,
+      units: entries,
+      partial: isAnnotated(topic) && units.length < topic.subtopics!.length,
+      optional: entries.every((e) => e.optional),
+    };
   });
 }
 
