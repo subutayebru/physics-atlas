@@ -53,8 +53,10 @@ sophie_scicom/
 - **`src/data/topics.json`** — einzige Datenquelle. Schema-Regeln in
   `docs/AUTHORING.md`. Nach jeder Daten-Änderung `npm run validate`.
 - **`src/graph/dag.ts`** — `ancestorsOf()` (transitive Prerequisites),
-  `curriculumFor()` (topologisch sortiertes Curriculum). Graph-Logik gehört
-  hierhin, nicht in Komponenten.
+  `curriculumFor()` (topologisch sortiertes Curriculum),
+  `expandedCurriculumFor()` (Unit-Granularität: Unit-Refs sind `topicId` oder
+  `topicId/subId`, Subtopic-Auflösungsregeln gespiegelt im Validator).
+  Graph-Logik gehört hierhin, nicht in Komponenten.
 - **`src/graph/levelColors.ts`** — validierte Level-Palette (foundation
   `#1baf7a`, core `#2a78d6`, advanced `#4a3aa7`, goal `#eb6834`). Keine
   Magic-Hex-Werte in Komponenten; App-Chrome-Tokens in `App.css :root`.

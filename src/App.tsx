@@ -6,7 +6,7 @@ import GoalView from './components/GoalView';
 import MapView from './components/MapView';
 import SearchBox from './components/SearchBox';
 import Starfield from './components/Starfield';
-import { curriculumFor } from './graph/dag';
+import { expandedCurriculumFor, parseUnitId } from './graph/dag';
 import { useProgress } from './lib/useProgress';
 import './App.css';
 
@@ -21,48 +21,82 @@ function initialMode(): Mode {
   return 'home';
 }
 
+function isValidRef(ref: string): boolean {
+  const { topicId, subId } = parseUnitId(ref);
+  const t = data.topics.find((t) => t.id === topicId);
+  if (!t) return false;
+  return !subId || (t.subtopics ?? []).some((s) => s.id === subId);
+}
+
+function initialGoal(): string {
+  const g = new URLSearchParams(window.location.search).get('goal');
+  if (!g) return 'cosmology';
+  if (isValidRef(g)) return g;
+  const { topicId } = parseUnitId(g);
+  return data.topics.some((t) => t.id === topicId) ? topicId : 'cosmology';
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>(initialMode);
-  const [goalId, setGoalId] = useState('cosmology');
+  const [goalRef, setGoalRef] = useState(initialGoal);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
   const progress = useProgress();
 
   useEffect(() => {
-    const url = mode === 'home' ? window.location.pathname : `?mode=${mode}`;
+    const url =
+      mode === 'home'
+        ? window.location.pathname
+        : mode === 'goal'
+          ? `?mode=goal&goal=${encodeURIComponent(goalRef)}`
+          : `?mode=${mode}`;
     window.history.replaceState(null, '', url);
-  }, [mode]);
+  }, [mode, goalRef]);
 
-  const pickGoal = useCallback((id: string) => {
-    setGoalId(id);
+  const pickGoal = useCallback((ref: string) => {
+    setGoalRef(ref);
     setSelectedId(null);
     setMode('goal');
   }, []);
 
-  const focusOn = useCallback((id: string) => {
-    setSelectedId(id);
-    setFocus((f) => ({ id, tick: f.tick + 1 }));
+  // Subtopics have no map node — the graph centers on the parent topic
+  const focusOn = useCallback((ref: string) => {
+    setSelectedId(ref);
+    setFocus((f) => ({ id: parseUnitId(ref).topicId, tick: f.tick + 1 }));
   }, []);
 
-  // Home search lands on the full map, centered on the hit
+  // Home search lands on the full map, centered on the hit;
+  // a subtopic hit becomes a learning goal directly.
   const homeSearchPick = useCallback(
-    (id: string) => {
+    (ref: string) => {
+      if (parseUnitId(ref).subId) {
+        pickGoal(ref);
+        return;
+      }
       setMode('map');
-      focusOn(id);
+      focusOn(ref);
     },
-    [focusOn],
+    [focusOn, pickGoal],
   );
 
-  // Header search: select + center. In goal mode a topic outside the current
-  // goal's subgraph becomes the new goal (a humbler ending).
+  // Header search: select + center. Subtopic hits become the goal; in goal
+  // mode a topic outside the current curriculum becomes the new goal
+  // (a humbler ending).
   const headerSearchPick = useCallback(
-    (id: string) => {
-      if (mode === 'goal' && !curriculumFor(goalId, data.topics).some((t) => t.id === id)) {
-        setGoalId(id);
+    (ref: string) => {
+      if (parseUnitId(ref).subId) {
+        pickGoal(ref);
+        return;
       }
-      focusOn(id);
+      if (
+        mode === 'goal' &&
+        !expandedCurriculumFor(goalRef, data.topics).some((g) => g.topic.id === ref)
+      ) {
+        setGoalRef(ref);
+      }
+      focusOn(ref);
     },
-    [mode, goalId, focusOn],
+    [mode, goalRef, focusOn, pickGoal],
   );
 
   return (
@@ -114,10 +148,11 @@ export default function App() {
       {mode === 'goal' && (
         <GoalView
           topics={data.topics}
+          skills={data.skills ?? []}
           progress={progress}
-          goalId={goalId}
-          onPickGoal={(id) => {
-            setGoalId(id);
+          goalRef={goalRef}
+          onPickGoal={(ref) => {
+            setGoalRef(ref);
             setSelectedId(null);
           }}
           selectedId={selectedId}

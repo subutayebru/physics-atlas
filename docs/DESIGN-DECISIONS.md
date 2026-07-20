@@ -48,6 +48,10 @@ relativity) — and gets a generated curriculum. **v1 is fully static: no backen
 | Markdown file per topic | ↩ pathway | Revisit when topics need long-form notes; compile step .md → JSON. |
 | In-browser editor | ↩ pathway | Revisit when Sophie authors regularly and git editing becomes friction; admin view exports JSON. |
 
+> **2026-07-17** — schema `version: 2`: topics gained optional `subtopics`
+> (see Decision 7) and the file gained a top-level `skills` array (Decision 8).
+> Still one JSON file + validator; both additions are backwards-compatible.
+
 ## Decision 5 — Visual identity (updated 2026-07-02)
 
 **Cosmic dark theme** (user request, ref: dreiraum.studio feel — flowing,
@@ -68,6 +72,37 @@ premium, constant subtle motion):
 GitHub Pages (or Netlify drop) — the build is static. Note: this folder
 currently lives inside the larger `dev-bru` git repo; before deploying, give
 `sophie_scicom` its own repository.
+
+## Decision 7 — Subtopic granularity (2026-07-17)
+
+Motivation: "to understand the hydrogen atom I need eigenvalues from linear
+algebra and integrals from calculus — not the whole courses." Curricula are
+now computed at **unit** granularity: a unit is a whole topic (`hs-math`) or a
+subtopic (`quantum-mechanics/hydrogen-atom`).
+
+| Option | Status | Notes |
+|---|---|---|
+| **Nested `subtopics` inside topics** | ✅ Chosen | Map stays at 34 topic nodes; subtopics live in `topics.json` with cross-topic refs (`linear-algebra/eigenvalues-and-eigenvectors`). Subtopics are pickable as goals (search, goal dropdown, map-card chips) and produce minimal curricula grouped by parent topic ("only: …"). Progressive: unannotated topics keep working as one block. Logic in `src/graph/dag.ts` (`buildUnitGraph`, `expandedCurriculumFor`). |
+| Subtopics as first-class map nodes | ↩ pathway | Most precise but ~150+ nodes on the map; revisit with clustering/zoom levels. |
+| Cytoscape compound nodes (subtopics drawn inside topics) | ↩ pathway | Same data model would feed it; revisit if the map should show fine structure. |
+| Separate file per topic's subtopics | ↩ pathway | Ties into the "Markdown file per topic" pathway of Decision 4. |
+
+Data notes: annotating waves-oscillations surfaced a missing topic edge —
+`linear-algebra → waves-oscillations` (normal modes are an eigenvalue
+problem) — now added. Known simplification: `systems-of-odes` does not ref
+linear algebra (LA is not a topic-ancestor of ODEs; keeps the validator
+warning-free). Pilot annotation covers the hydrogen-atom chain: calculus-1,
+linear-algebra, differential-equations, waves-oscillations, quantum-mechanics.
+Classical-mechanics is the natural next topic to annotate (would shrink the
+hydrogen path further) — pure data work, no code.
+
+## Decision 8 — Soft skills as sidebar, not DAG nodes (2026-07-17)
+
+| Option | Status | Notes |
+|---|---|---|
+| **Curated `skills` list, shown as a collapsible panel under every curriculum** | ✅ Chosen | Problem-solving, dimensional analysis, scientific computing, reading practice — habits, not prerequisites. Keeps the map clean. `SkillsPanel.tsx`. |
+| Skill nodes in the graph | ↩ pathway | Would let topics require skills; revisit if skills ever gate content. |
+| Per-topic skill tags | ↩ pathway | Finer targeting ("this topic is where you start computing"); revisit with more skills. |
 
 ## Multi-agent workflow (web-dev-agent-system)
 

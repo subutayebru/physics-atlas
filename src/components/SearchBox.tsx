@@ -1,12 +1,21 @@
-import { useRef, useState } from 'react';
-import type { Topic } from '../data/types';
+import { useMemo, useRef, useState } from 'react';
+import type { Topic, TopicLevel } from '../data/types';
 import { LEVEL_COLORS } from '../graph/levelColors';
 
 interface SearchBoxProps {
   topics: Topic[];
-  onPick: (id: string) => void;
+  /** Receives a topic id or a 'topic/subtopic' unit ref */
+  onPick: (ref: string) => void;
   hero?: boolean;
   placeholder?: string;
+}
+
+interface SearchEntry {
+  ref: string;
+  title: string;
+  /** Parent topic title, set for subtopic entries */
+  context?: string;
+  level: TopicLevel;
 }
 
 const MAX_RESULTS = 8;
@@ -16,16 +25,33 @@ export default function SearchBox({ topics, onPick, hero, placeholder }: SearchB
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Topics first so whole-topic hits always rank above subtopic hits
+  const entries = useMemo<SearchEntry[]>(
+    () => [
+      ...topics.map((t) => ({ ref: t.id, title: t.title, level: t.level })),
+      ...topics.flatMap(
+        (t) =>
+          t.subtopics?.map((s) => ({
+            ref: `${t.id}/${s.id}`,
+            title: s.title,
+            context: t.title,
+            level: t.level,
+          })) ?? [],
+      ),
+    ],
+    [topics],
+  );
+
   const q = query.trim().toLowerCase();
   const results = q
-    ? topics.filter((t) => t.title.toLowerCase().includes(q) || t.id.includes(q)).slice(0, MAX_RESULTS)
+    ? entries.filter((e) => e.title.toLowerCase().includes(q) || e.ref.includes(q)).slice(0, MAX_RESULTS)
     : [];
 
-  const pick = (id: string) => {
+  const pick = (ref: string) => {
     setQuery('');
     setActive(0);
     inputRef.current?.blur();
-    onPick(id);
+    onPick(ref);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -38,7 +64,7 @@ export default function SearchBox({ topics, onPick, hero, placeholder }: SearchB
       setActive((a) => (a - 1 + results.length) % results.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      pick(results[Math.min(active, results.length - 1)].id);
+      pick(results[Math.min(active, results.length - 1)].ref);
     } else if (e.key === 'Escape') {
       setQuery('');
       setActive(0);
@@ -67,19 +93,20 @@ export default function SearchBox({ topics, onPick, hero, placeholder }: SearchB
       />
       {results.length > 0 && (
         <ul className="search-results" role="listbox">
-          {results.map((t, i) => (
-            <li key={t.id} role="option" aria-selected={i === active}>
+          {results.map((r, i) => (
+            <li key={r.ref} role="option" aria-selected={i === active}>
               <button
                 className={`search-result ${i === active ? 'search-result-active' : ''}`}
                 onMouseEnter={() => setActive(i)}
                 // onMouseDown so the pick happens before the input's blur
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  pick(t.id);
+                  pick(r.ref);
                 }}
               >
-                <span className="level-dot" style={{ background: LEVEL_COLORS[t.level], color: LEVEL_COLORS[t.level] }} aria-hidden />
-                {t.title}
+                <span className="level-dot" style={{ background: LEVEL_COLORS[r.level], color: LEVEL_COLORS[r.level] }} aria-hidden />
+                {r.title}
+                {r.context && <span className="search-result-context"> — {r.context}</span>}
               </button>
             </li>
           ))}

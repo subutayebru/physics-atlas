@@ -12,10 +12,19 @@ function load(): Set<string> {
   }
 }
 
+function persist(next: Set<string>) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+  } catch {
+    // private mode / quota — progress just won't persist
+  }
+}
+
 export interface Progress {
   done: Set<string>;
   isDone: (id: string) => boolean;
   toggle: (id: string) => void;
+  setMany: (ids: string[], value: boolean) => void;
 }
 
 export function useProgress(): Progress {
@@ -26,16 +35,24 @@ export function useProgress(): Progress {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
-      } catch {
-        // private mode / quota — progress just won't persist
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  const setMany = useCallback((ids: string[], value: boolean) => {
+    setDone((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) {
+        if (value) next.add(id);
+        else next.delete(id);
       }
+      persist(next);
       return next;
     });
   }, []);
 
   const isDone = useCallback((id: string) => done.has(id), [done]);
 
-  return { done, isDone, toggle };
+  return { done, isDone, toggle, setMany };
 }

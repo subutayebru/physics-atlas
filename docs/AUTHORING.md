@@ -47,14 +47,70 @@ Field rules:
 - `url`: optional (books often have none), must start with `http(s)://`
 - `note`: one sentence of guidance — *why this resource / which chapters / what order*. This is the most valuable field; always write it.
 
+## Subtopics (optional, per topic)
+
+A topic can carry a `subtopics` array — its chapter-level parts, each with its
+own prerequisites. This is what makes minimal curricula possible: someone
+learning *The Hydrogen Atom* gets only *Eigenvalues & Eigenvectors* from
+Linear Algebra, not the whole course. Annotate incrementally — topics without
+`subtopics` keep working as one block.
+
+```json
+{
+  "id": "linear-algebra",
+  "...": "...",
+  "subtopics": [
+    { "id": "vectors-and-spaces", "title": "Vectors & Vector Spaces", "prerequisites": ["hs-math"] },
+    {
+      "id": "eigenvalues-and-eigenvectors",
+      "title": "Eigenvalues & Eigenvectors",
+      "description": "Directions a transformation only stretches.",
+      "prerequisites": ["matrices-and-linear-maps", "determinants"],
+      "content": []
+    }
+  ]
+}
+```
+
+| Field | Rule |
+|---|---|
+| `id` | kebab-case, unique **within its topic**. |
+| `title` | Shown as a curriculum step. |
+| `description` | Optional, shown when the step is expanded. |
+| `prerequisites` | Refs in three forms — see below. |
+| `content` | Optional own resources; when empty/absent the step shows the parent topic's resources. |
+
+Prerequisite refs, resolved in this order:
+
+1. `"linear-algebra/eigenvalues-and-eigenvectors"` — full `topic/subtopic` ref, works across topics.
+2. `"determinants"` — shorthand for a **sibling** subtopic of the same topic.
+3. `"hs-math"` — a whole topic, allowed **only** if that topic has no subtopics
+   of its own. Referencing an annotated topic bare is an error — pick the
+   specific subtopic you need.
+
+Consistency rule: a cross-topic ref should stay inside topics your topic
+already (transitively) builds on — the validator warns otherwise, because it
+usually means a topic-level edge is missing from the map.
+
+## Skills (optional, top-level)
+
+Next to `topics` the file can carry a `skills` array — study habits shown as a
+collapsible "Skills to practice along the way" panel under every curriculum
+(they are *not* graph nodes and have no prerequisites):
+
+```json
+{ "id": "dimensional-analysis", "title": "Dimensional analysis & estimation", "description": "…", "content": [] }
+```
+
 ## Before committing
 
 ```bash
 npm run validate
 ```
 
-Catches: duplicate/malformed ids, prerequisites pointing to topics that don't
-exist, cycles (A needs B needs A), bad URLs, missing fields. If it prints
+Catches: duplicate/malformed ids, prerequisites pointing to topics or
+subtopics that don't exist, cycles (A needs B needs A — also through subtopic
+chains), bare refs to annotated topics, bad URLs, missing fields. If it prints
 `✓ topics.json valid`, the site will render.
 
 ## Rules of thumb for good graph shape

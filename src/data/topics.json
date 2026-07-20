@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "domain": "physics",
   "topics": [
     {
@@ -43,6 +43,32 @@
           "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
           "note": "Full course with problem sets and exams."
         }
+      ],
+      "subtopics": [
+        {
+          "id": "limits-continuity",
+          "title": "Limits & Continuity",
+          "description": "What it means for a function to approach a value — the idea derivatives and integrals are built on.",
+          "prerequisites": ["hs-math"]
+        },
+        {
+          "id": "derivatives",
+          "title": "Derivatives",
+          "description": "Rates of change: rules, chain rule, implicit differentiation, optimization.",
+          "prerequisites": ["limits-continuity"]
+        },
+        {
+          "id": "integrals",
+          "title": "Integrals",
+          "description": "Antiderivatives, the fundamental theorem, substitution and integration by parts.",
+          "prerequisites": ["derivatives"]
+        },
+        {
+          "id": "taylor-series",
+          "title": "Taylor Series",
+          "description": "Approximating functions by polynomials — the physicist's favourite trick.",
+          "prerequisites": ["derivatives"]
+        }
       ]
     },
     {
@@ -64,6 +90,53 @@
           "title": "MIT OCW 18.06 Linear Algebra (Gilbert Strang)",
           "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/",
           "note": "Legendary lectures; do the problem sets."
+        }
+      ],
+      "subtopics": [
+        {
+          "id": "vectors-and-spaces",
+          "title": "Vectors & Vector Spaces",
+          "description": "Vectors, linear combinations, span, basis and dimension.",
+          "prerequisites": ["hs-math"]
+        },
+        {
+          "id": "matrices-and-linear-maps",
+          "title": "Matrices & Linear Maps",
+          "description": "Matrices as transformations, matrix multiplication, rank, inverse.",
+          "prerequisites": ["vectors-and-spaces"]
+        },
+        {
+          "id": "determinants",
+          "title": "Determinants",
+          "description": "How a transformation scales volume — and when it is invertible.",
+          "prerequisites": ["matrices-and-linear-maps"]
+        },
+        {
+          "id": "eigenvalues-and-eigenvectors",
+          "title": "Eigenvalues & Eigenvectors",
+          "description": "Directions a transformation only stretches — the key to normal modes and quantum states.",
+          "prerequisites": ["matrices-and-linear-maps", "determinants"],
+          "content": [
+            {
+              "type": "video",
+              "title": "Eigenvectors and eigenvalues — Essence of Linear Algebra ch. 14",
+              "author": "3Blue1Brown",
+              "url": "https://www.3blue1brown.com/lessons/eigenvalues",
+              "note": "The geometric picture before any computation."
+            }
+          ]
+        },
+        {
+          "id": "diagonalization",
+          "title": "Diagonalization",
+          "description": "Changing basis so a transformation becomes simple — matrix powers and decoupling systems.",
+          "prerequisites": ["eigenvalues-and-eigenvectors"]
+        },
+        {
+          "id": "inner-products-and-orthogonality",
+          "title": "Inner Products & Orthogonality",
+          "description": "Dot products, orthogonal bases, projections — the geometry behind quantum amplitudes.",
+          "prerequisites": ["vectors-and-spaces"]
         }
       ]
     },
@@ -108,6 +181,32 @@
           "url": "https://ocw.mit.edu/courses/18-03sc-differential-equations-fall-2011/",
           "note": "The standard toolkit course."
         }
+      ],
+      "subtopics": [
+        {
+          "id": "first-order-odes",
+          "title": "First-Order ODEs",
+          "description": "Separation of variables, integrating factors, direction fields.",
+          "prerequisites": ["calculus-1/integrals"]
+        },
+        {
+          "id": "second-order-linear-odes",
+          "title": "Second-Order Linear ODEs",
+          "description": "Constant coefficients, damping, resonance — the oscillator equation lives here.",
+          "prerequisites": ["first-order-odes"]
+        },
+        {
+          "id": "systems-of-odes",
+          "title": "Systems of ODEs",
+          "description": "Coupled equations, phase portraits, matrix methods.",
+          "prerequisites": ["second-order-linear-odes"]
+        },
+        {
+          "id": "series-solutions",
+          "title": "Series Solutions",
+          "description": "Power-series methods and special functions — how the hydrogen atom's radial equation is solved.",
+          "prerequisites": ["second-order-linear-odes", "calculus-1/taylor-series"]
+        }
       ]
     },
     {
@@ -143,13 +242,39 @@
       "title": "Waves & Oscillations",
       "level": "core",
       "description": "Harmonic oscillators, coupled oscillators, wave equation, interference. The mathematical warm-up for quantum mechanics and light.",
-      "prerequisites": ["classical-mechanics", "differential-equations"],
+      "prerequisites": ["classical-mechanics", "differential-equations", "linear-algebra"],
       "content": [
         {
           "type": "course",
           "title": "MIT OCW 8.03 Vibrations and Waves",
           "url": "https://ocw.mit.edu/courses/8-03sc-physics-iii-vibrations-and-waves-fall-2016/",
           "note": "Everything oscillates — this course makes that concrete."
+        }
+      ],
+      "subtopics": [
+        {
+          "id": "harmonic-oscillator",
+          "title": "Harmonic Oscillator",
+          "description": "The single most reused system in physics: mass on a spring, damping, driving.",
+          "prerequisites": ["classical-mechanics", "differential-equations/second-order-linear-odes"]
+        },
+        {
+          "id": "coupled-oscillators-normal-modes",
+          "title": "Coupled Oscillators & Normal Modes",
+          "description": "Many oscillators moving together — an eigenvalue problem in disguise.",
+          "prerequisites": ["harmonic-oscillator", "linear-algebra/eigenvalues-and-eigenvectors"]
+        },
+        {
+          "id": "wave-equation",
+          "title": "The Wave Equation",
+          "description": "From oscillators to waves: superposition, standing waves, dispersion.",
+          "prerequisites": ["harmonic-oscillator"]
+        },
+        {
+          "id": "fourier-analysis",
+          "title": "Fourier Analysis",
+          "description": "Decomposing any signal into waves — the bridge to quantum wavefunctions.",
+          "prerequisites": ["wave-equation", "calculus-1/integrals"]
         }
       ]
     },
@@ -282,6 +407,56 @@
           "title": "Introduction to Quantum Mechanics",
           "author": "David J. Griffiths",
           "note": "The standard first textbook."
+        }
+      ],
+      "subtopics": [
+        {
+          "id": "wavefunctions-and-probability",
+          "title": "Wavefunctions & Probability",
+          "description": "The state as a wave; Born rule, normalization, expectation values.",
+          "prerequisites": ["waves-oscillations/wave-equation", "calculus-1/integrals"]
+        },
+        {
+          "id": "schroedinger-equation",
+          "title": "The Schrödinger Equation",
+          "description": "The equation of motion for quantum states, time-dependent and stationary.",
+          "prerequisites": ["wavefunctions-and-probability", "differential-equations/second-order-linear-odes"]
+        },
+        {
+          "id": "operators-and-observables",
+          "title": "Operators & Observables",
+          "description": "Measurement as eigenvalue problem: Hermitian operators, commutators, uncertainty.",
+          "prerequisites": ["wavefunctions-and-probability", "linear-algebra/eigenvalues-and-eigenvectors", "linear-algebra/inner-products-and-orthogonality"]
+        },
+        {
+          "id": "one-dimensional-potentials",
+          "title": "One-Dimensional Potentials",
+          "description": "Infinite well, finite well, tunneling — solving the Schrödinger equation in simple landscapes.",
+          "prerequisites": ["schroedinger-equation"]
+        },
+        {
+          "id": "quantum-harmonic-oscillator",
+          "title": "Quantum Harmonic Oscillator",
+          "description": "Ladder operators and quantized energy levels of the oscillator.",
+          "prerequisites": ["one-dimensional-potentials", "operators-and-observables", "waves-oscillations/harmonic-oscillator"]
+        },
+        {
+          "id": "angular-momentum",
+          "title": "Angular Momentum",
+          "description": "Orbital angular momentum operators, spherical harmonics, quantization of rotation.",
+          "prerequisites": ["operators-and-observables", "linear-algebra/diagonalization"]
+        },
+        {
+          "id": "hydrogen-atom",
+          "title": "The Hydrogen Atom",
+          "description": "The crown jewel: separating the Coulomb problem, radial series solution, quantum numbers and orbitals.",
+          "prerequisites": ["angular-momentum", "one-dimensional-potentials", "differential-equations/series-solutions"]
+        },
+        {
+          "id": "spin",
+          "title": "Spin",
+          "description": "Intrinsic angular momentum, Pauli matrices, two-level systems.",
+          "prerequisites": ["angular-momentum"]
         }
       ]
     },
@@ -672,6 +847,55 @@
           "note": "Popular-level view from the loop-quantum-gravity side."
         }
       ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "problem-solving",
+      "title": "Problem-solving practice",
+      "description": "Physics is learned by doing problems, not reading about them — pair every topic above with worked exercises.",
+      "content": [
+        {
+          "type": "book",
+          "title": "Thinking Physics",
+          "author": "Lewis Carroll Epstein",
+          "note": "Conceptual puzzles that build instinct alongside any course."
+        }
+      ]
+    },
+    {
+      "id": "dimensional-analysis",
+      "title": "Dimensional analysis & estimation",
+      "description": "Check every result by its units and order of magnitude — the fastest error detector in physics.",
+      "content": [
+        {
+          "type": "course",
+          "title": "Street-Fighting Mathematics",
+          "author": "Sanjoy Mahajan (MIT OCW)",
+          "url": "https://ocw.mit.edu/courses/18-098-street-fighting-mathematics-january-iap-2008/",
+          "note": "The art of educated guessing and opportunistic problem-solving."
+        }
+      ]
+    },
+    {
+      "id": "scientific-computing",
+      "title": "Scientific computing",
+      "description": "A little Python goes a long way — plot solutions, simulate oscillators, check integrals numerically.",
+      "content": [
+        {
+          "type": "course",
+          "title": "Programming with Python",
+          "author": "Software Carpentry",
+          "url": "https://swcarpentry.github.io/python-novice-inflammation/",
+          "note": "Enough Python to start experimenting; grow from there."
+        }
+      ]
+    },
+    {
+      "id": "reading-physics",
+      "title": "Reading real physics writing",
+      "description": "Practice reading textbook derivations line by line, and eventually papers — slow reading is a skill of its own.",
+      "content": []
     }
   ]
 }

@@ -12,6 +12,27 @@ export interface ContentItem {
   note?: string;
 }
 
+export interface Subtopic {
+  /** kebab-case, unique within its parent topic */
+  id: string;
+  title: string;
+  description?: string;
+  /**
+   * Unit refs: sibling shorthand "eigenvalues", full "linear-algebra/eigenvalues",
+   * or a whole topic without subtopics "hs-math"
+   */
+  prerequisites: string[];
+  content?: ContentItem[];
+}
+
+export interface Skill {
+  /** kebab-case, unique */
+  id: string;
+  title: string;
+  description: string;
+  content?: ContentItem[];
+}
+
 export interface Topic {
   /** kebab-case, unique across the file */
   id: string;
@@ -24,10 +45,13 @@ export interface Topic {
   /** Show in the goal picker on the landing view */
   featured?: boolean;
   content: ContentItem[];
+  /** Optional fine structure; topics without it act as one unit */
+  subtopics?: Subtopic[];
 }
 
 export interface TopicGraph {
   version: number;
   domain: string;
   topics: Topic[];
+  skills?: Skill[];
 }

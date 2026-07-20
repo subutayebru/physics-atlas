@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Topic } from '../data/types';
-import { buildTopicMap, dependentsMap, descendantsOf } from '../graph/dag';
+import { buildTopicMap, dependentsMap, descendantsOf, subtopicsInOrder, topicDone } from '../graph/dag';
 import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import GraphView from './GraphView';
 import Legend from './Legend';
@@ -83,6 +83,23 @@ export default function MapView({
               </div>
             )}
 
+            {(selected.subtopics?.length ?? 0) > 0 && (
+              <div className="rel-block">
+                <h3 className="block-heading">Subtopics — pick one for its minimal path</h3>
+                <div className="prereq-chips">
+                  {subtopicsInOrder(selected).map((s) => (
+                    <button
+                      key={s.id}
+                      className="prereq-chip subtopic-chip"
+                      onClick={() => onMakeGoal(`${selected.id}/${s.id}`)}
+                    >
+                      {s.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {directUses.length > 0 && (
               <div className="rel-block">
                 <h3 className="block-heading">
@@ -105,8 +122,13 @@ export default function MapView({
               <label className="learned-toggle">
                 <input
                   type="checkbox"
-                  checked={progress.isDone(selected.id)}
-                  onChange={() => progress.toggle(selected.id)}
+                  checked={topicDone(selected, progress.done)}
+                  onChange={() => {
+                    const subKeys = (selected.subtopics ?? []).map((s) => `${selected.id}/${s.id}`);
+                    if (topicDone(selected, progress.done))
+                      progress.setMany([selected.id, ...subKeys], false);
+                    else progress.setMany([selected.id], true);
+                  }}
                 />
                 Learned this
               </label>
