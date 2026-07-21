@@ -24,6 +24,7 @@ interface TopicPageProps {
   onOpenTopic: (id: string) => void;
   onMakeGoal: (ref: string) => void;
   onShowOnMap: (id: string) => void;
+  theme?: 'dark' | 'light';
 }
 
 export default function TopicPage({
@@ -33,6 +34,7 @@ export default function TopicPage({
   onOpenTopic,
   onMakeGoal,
   onShowOnMap,
+  theme,
 }: TopicPageProps) {
   const map = useMemo(() => buildTopicMap(topics), [topics]);
   const dependents = useMemo(() => dependentsMap(topics), [topics]);
@@ -107,6 +109,7 @@ export default function TopicPage({
                 highlightIds={null}
                 doneIds={progress.done}
                 directionalSelect
+                theme={theme}
                 onSelect={(id) => {
                   if (id && id !== topic.id) onOpenTopic(id);
                 }}

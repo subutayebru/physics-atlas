@@ -28,10 +28,24 @@ interface GraphViewProps {
   expandedIds?: Set<string>;
   /** Double-tapping an annotated topic toggles its expansion. */
   onToggleExpand?: (id: string) => void;
+  /** Light theme swaps the ink/edge palette (canvas can't use CSS vars). */
+  theme?: 'dark' | 'light';
   onSelect: (id: string | null) => void;
 }
 
-const styleFor = (large: boolean) => [
+const styleFor = (large: boolean, light: boolean) => {
+  const ink = light ? '#1c2333' : '#eef2fb';
+  const edge = light ? 'rgba(70, 90, 135, 0.4)' : 'rgba(160, 180, 224, 0.28)';
+  const edgeArrow = light ? 'rgba(70, 90, 135, 0.5)' : 'rgba(160, 180, 224, 0.35)';
+  const onpath = light ? 'rgba(47, 111, 196, 0.85)' : 'rgba(143, 183, 255, 0.85)';
+  const onpathArrow = light ? 'rgba(47, 111, 196, 0.9)' : 'rgba(143, 183, 255, 0.9)';
+  const silver = light ? '#7d8db0' : '#cdd6e8';
+  const silverEdge = light ? 'rgba(100, 115, 145, 0.85)' : 'rgba(205, 214, 232, 0.85)';
+  const silverArrow = light ? 'rgba(100, 115, 145, 0.9)' : 'rgba(205, 214, 232, 0.9)';
+  const gold = light ? '#b0821e' : '#e6b566';
+  const goldEdge = light ? 'rgba(176, 130, 30, 0.85)' : 'rgba(230, 181, 102, 0.85)';
+  const goldArrow = light ? 'rgba(176, 130, 30, 0.9)' : 'rgba(230, 181, 102, 0.9)';
+  return [
   {
     selector: 'node',
     style: {
@@ -45,7 +59,7 @@ const styleFor = (large: boolean) => [
       'border-color': 'data(color)',
       'border-opacity': 0.85,
       label: 'data(label)',
-      color: '#eef2fb',
+      color: ink,
       'font-size': large ? 14 : 12,
       'font-family': 'system-ui, -apple-system, "Segoe UI", sans-serif',
       'text-valign': 'center',
@@ -97,9 +111,9 @@ const styleFor = (large: boolean) => [
     style: {
       'curve-style': 'bezier',
       width: 1.5,
-      'line-color': 'rgba(160, 180, 224, 0.28)',
+      'line-color': edge,
       'target-arrow-shape': 'triangle',
-      'target-arrow-color': 'rgba(160, 180, 224, 0.35)',
+      'target-arrow-color': edgeArrow,
       'arrow-scale': 0.8,
       'transition-property': 'opacity, width, line-color, target-arrow-color',
       'transition-duration': '0.3s',
@@ -114,8 +128,8 @@ const styleFor = (large: boolean) => [
     selector: 'edge.onpath',
     style: {
       width: 2.5,
-      'line-color': 'rgba(143, 183, 255, 0.85)',
-      'target-arrow-color': 'rgba(143, 183, 255, 0.9)',
+      'line-color': onpath,
+      'target-arrow-color': onpathArrow,
     },
   },
   { selector: 'edge.dimmed', style: { opacity: 0.08 } },
@@ -125,26 +139,26 @@ const styleFor = (large: boolean) => [
   { selector: 'edge.sel-soft', style: { opacity: 0.14 } },
   {
     selector: 'node.sel-pre',
-    style: { 'border-width': 2.5, 'border-color': '#cdd6e8', 'background-opacity': 0.3 },
+    style: { 'border-width': 2.5, 'border-color': silver, 'background-opacity': 0.3 },
   },
   {
     selector: 'edge.sel-pre',
     style: {
       width: 2.5,
-      'line-color': 'rgba(205, 214, 232, 0.85)',
-      'target-arrow-color': 'rgba(205, 214, 232, 0.9)',
+      'line-color': silverEdge,
+      'target-arrow-color': silverArrow,
     },
   },
   {
     selector: 'node.sel-post',
-    style: { 'border-width': 2.5, 'border-color': '#e6b566', 'background-opacity': 0.3 },
+    style: { 'border-width': 2.5, 'border-color': gold, 'background-opacity': 0.3 },
   },
   {
     selector: 'edge.sel-post',
     style: {
       width: 2.5,
-      'line-color': 'rgba(230, 181, 102, 0.85)',
-      'target-arrow-color': 'rgba(230, 181, 102, 0.9)',
+      'line-color': goldEdge,
+      'target-arrow-color': goldArrow,
     },
   },
   // Hover states — defined last so they win over dimmed/onpath/sel while active.
@@ -157,7 +171,7 @@ const styleFor = (large: boolean) => [
     style: {
       opacity: 1,
       'border-width': 2.5,
-      'border-color': '#cdd6e8',
+      'border-color': silver,
       'background-opacity': 0.3,
     },
   },
@@ -166,8 +180,8 @@ const styleFor = (large: boolean) => [
     style: {
       opacity: 1,
       width: 2.5,
-      'line-color': 'rgba(205, 214, 232, 0.85)',
-      'target-arrow-color': 'rgba(205, 214, 232, 0.9)',
+      'line-color': silverEdge,
+      'target-arrow-color': silverArrow,
     },
   },
   {
@@ -175,7 +189,7 @@ const styleFor = (large: boolean) => [
     style: {
       opacity: 1,
       'border-width': 2.5,
-      'border-color': '#e6b566',
+      'border-color': gold,
       'background-opacity': 0.3,
     },
   },
@@ -184,8 +198,8 @@ const styleFor = (large: boolean) => [
     style: {
       opacity: 1,
       width: 2.5,
-      'line-color': 'rgba(230, 181, 102, 0.85)',
-      'target-arrow-color': 'rgba(230, 181, 102, 0.9)',
+      'line-color': goldEdge,
+      'target-arrow-color': goldArrow,
     },
   },
   {
@@ -204,6 +218,7 @@ const styleFor = (large: boolean) => [
     },
   },
 ] as unknown as cytoscape.StylesheetJson;
+};
 
 const layoutFor = (large: boolean) =>
   ({
@@ -224,6 +239,7 @@ export default function GraphView({
   directionalSelect = false,
   expandedIds,
   onToggleExpand,
+  theme = 'dark',
   onSelect,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -285,7 +301,7 @@ export default function GraphView({
     const cy = cytoscape({
       container: containerRef.current,
       elements,
-      style: styleFor(large),
+      style: styleFor(large, theme === 'light'),
       wheelSensitivity: 0.3,
       autoungrabify: true,
     });
@@ -340,7 +356,7 @@ export default function GraphView({
       cy.destroy();
       cyRef.current = null;
     };
-  }, [topics, large, expandedIds]);
+  }, [topics, large, expandedIds, theme]);
 
   // Apply selection/path highlighting without re-layout
   useEffect(() => {

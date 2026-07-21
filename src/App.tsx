@@ -9,6 +9,7 @@ import SearchBox from './components/SearchBox';
 import Starfield from './components/Starfield';
 import { expandedCurriculumFor, parseUnitId } from './graph/dag';
 import { useProgress } from './lib/useProgress';
+import { useTheme } from './lib/useTheme';
 import './App.css';
 
 const data = rawData as TopicGraph;
@@ -50,6 +51,17 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
   const progress = useProgress();
+  const { theme, toggle: toggleTheme } = useTheme();
+  const themeButton = (extra = '') => (
+    <button
+      className={`theme-toggle ${extra}`}
+      onClick={toggleTheme}
+      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+    >
+      {theme === 'dark' ? '☀' : '🌙'}
+    </button>
+  );
 
   // URL sync with real history entries: each navigation pushes, so browser
   // back/forward walks through visited views. popstate restores state from
@@ -169,8 +181,10 @@ export default function App() {
               Learning goal
             </button>
           </nav>
+          {themeButton()}
         </header>
       )}
+      {mode === 'home' && themeButton('theme-toggle-floating')}
       {mode === 'home' && (
         <Home
           topics={data.topics}
@@ -188,6 +202,7 @@ export default function App() {
           onMakeGoal={pickGoal}
           onOpenTopic={openTopic}
           focus={focus}
+          theme={theme}
         />
       )}
       {mode === 'goal' && (
@@ -204,6 +219,7 @@ export default function App() {
           selectedId={selectedId}
           onSelect={setSelectedId}
           focus={focus}
+          theme={theme}
         />
       )}
       {mode === 'topic' && (
@@ -217,6 +233,7 @@ export default function App() {
             setMode('map');
             focusOn(id);
           }}
+          theme={theme}
         />
       )}
     </div>

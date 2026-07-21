@@ -21,6 +21,7 @@ interface MapViewProps {
   onMakeGoal: (id: string) => void;
   onOpenTopic: (id: string) => void;
   focus?: { id: string | null; tick: number };
+  theme?: 'dark' | 'light';
 }
 
 export default function MapView({
@@ -31,6 +32,7 @@ export default function MapView({
   onMakeGoal,
   onOpenTopic,
   focus,
+  theme,
 }: MapViewProps) {
   const map = useMemo(() => buildTopicMap(topics), [topics]);
   const dependents = useMemo(() => dependentsMap(topics), [topics]);
@@ -72,6 +74,7 @@ export default function MapView({
           directionalSelect
           expandedIds={expandedIds}
           onToggleExpand={toggleExpand}
+          theme={theme}
         />
         <Legend />
         {!selectedTopic && (

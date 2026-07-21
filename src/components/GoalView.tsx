@@ -26,6 +26,7 @@ interface GoalViewProps {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   focus?: { id: string | null; tick: number };
+  theme?: 'dark' | 'light';
 }
 
 export default function GoalView({
@@ -38,6 +39,7 @@ export default function GoalView({
   selectedId,
   onSelect,
   focus,
+  theme,
 }: GoalViewProps) {
   const featured = topics.filter((t) => t.featured);
   const annotated = topics.filter((t) => t.subtopics && t.subtopics.length > 0);
@@ -226,6 +228,7 @@ export default function GoalView({
             doneIds={progress.done}
             focus={focus}
             onSelect={onSelect}
+            theme={theme}
           />
           <Legend />
         </div>
