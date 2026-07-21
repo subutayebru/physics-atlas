@@ -1257,8 +1257,14 @@ body {
   body:has(.print-sheet) .nebula,
   body:has(.print-sheet) .app-header,
   body:has(.print-sheet) .goal-picker,
-  body:has(.print-sheet) .workspace {
+  body:has(.print-sheet) .workspace,
+  body:has(.print-sheet) .topic-page-inner {
     display: none !important;
+  }
+  .topic-page {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
   .print-sheet {
     display: block;

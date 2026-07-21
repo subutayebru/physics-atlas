@@ -10,7 +10,7 @@ interface PrintSheetProps {
   skills: Skill[];
 }
 
-function Resources({ items }: { items: ContentItem[] }) {
+export function PrintResources({ items }: { items: ContentItem[] }) {
   if (items.length === 0) return null;
   return (
     <ul className="print-resources">
@@ -73,10 +73,10 @@ export default function PrintSheet({
         {fallback ? (
           <>
             <p className="print-fallback-note">Resources from {u.topic.title}:</p>
-            <Resources items={u.topic.content} />
+            <PrintResources items={u.topic.content} />
           </>
         ) : (
-          <Resources items={ownContent} />
+          <PrintResources items={ownContent} />
         )}
       </li>
     );
@@ -117,7 +117,7 @@ export default function PrintSheet({
             <div key={s.id} className="print-skill">
               <p className="print-skill-title">{s.title}</p>
               <p className="print-skill-desc">{s.description}</p>
-              <Resources items={s.content ?? []} />
+              <PrintResources items={s.content ?? []} />
             </div>
           ))}
         </section>

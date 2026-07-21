@@ -137,6 +137,24 @@ await page.pdf({ path: `${OUT}/curriculum.pdf`, format: 'A4' });
 console.log(`wrote ${OUT}/curriculum.pdf`);
 await page.emulateMediaType('screen');
 
+// --- Topic page: content, relations map, and its own PDF sheet ---
+await page.goto(`${URL}/?mode=topic&id=quantum-mechanics`, { waitUntil: 'networkidle0' });
+await page.waitForSelector('.topic-page-title');
+const subBlocks = await page.$$eval('.subtopic-block', (els) => els.length);
+console.log(
+  'topic page:',
+  await page.$eval('.topic-page-title', (el) => el.textContent?.trim()),
+  `· ${subBlocks} subtopic blocks`,
+);
+await page.emulateMediaType('print');
+const tpSheet = await page.$eval('.print-sheet', (el) => getComputedStyle(el).display);
+const tpInner = await page.$eval('.topic-page-inner', (el) => getComputedStyle(el).display);
+console.log(`topic print media: print-sheet=${tpSheet}, topic-page-inner=${tpInner}`);
+if (tpSheet !== 'block' || tpInner !== 'none') errors.push('topic-page print CSS not applied');
+await page.pdf({ path: `${OUT}/topic-quantum-mechanics.pdf`, format: 'A4' });
+console.log(`wrote ${OUT}/topic-quantum-mechanics.pdf`);
+await page.emulateMediaType('screen');
+
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();
 process.exit(errors.length ? 1 : 0);

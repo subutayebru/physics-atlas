@@ -14,6 +14,7 @@ import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import ContentList from './ContentList';
 import GraphView from './GraphView';
 import Legend from './Legend';
+import TopicPrintSheet from './TopicPrintSheet';
 import type { Progress } from '../lib/useProgress';
 
 interface TopicPageProps {
@@ -80,6 +81,13 @@ export default function TopicPage({
             </button>
             <button className="pdf-button" onClick={() => onShowOnMap(topic.id)}>
               Show on map
+            </button>
+            <button
+              className="pdf-button"
+              onClick={() => window.print()}
+              title="Opens the print dialog — choose 'Save as PDF'"
+            >
+              Download PDF
             </button>
           </div>
         </header>
@@ -214,6 +222,7 @@ export default function TopicPage({
           </section>
         )}
       </article>
+      <TopicPrintSheet topic={topic} map={map} usedIn={usedIn} done={progress.done} />
     </div>
   );
 }
