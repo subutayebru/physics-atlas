@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TopicGraph } from './data/types';
 import rawData from './data/topics.json';
 import Home from './components/Home';
@@ -51,17 +51,42 @@ export default function App() {
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
   const progress = useProgress();
 
+  // URL sync with real history entries: each navigation pushes, so browser
+  // back/forward walks through visited views. popstate restores state from
+  // the URL; the effect then recomputes the same URL and skips the push —
+  // no guard flag needed, no loop.
+  const firstUrlSync = useRef(true);
   useEffect(() => {
-    const url =
+    const target =
       mode === 'home'
-        ? window.location.pathname
+        ? ''
         : mode === 'goal'
           ? `?mode=goal&goal=${encodeURIComponent(goalRef)}`
           : mode === 'topic'
             ? `?mode=topic&id=${encodeURIComponent(topicPageId)}`
             : `?mode=${mode}`;
-    window.history.replaceState(null, '', url);
+    if (window.location.search === target) {
+      firstUrlSync.current = false;
+      return;
+    }
+    const url = target || window.location.pathname;
+    // Initial normalization (e.g. legacy ?mode=explore) replaces instead of
+    // stacking an extra entry under the very first view.
+    if (firstUrlSync.current) window.history.replaceState(null, '', url);
+    else window.history.pushState(null, '', url);
+    firstUrlSync.current = false;
   }, [mode, goalRef, topicPageId]);
+
+  useEffect(() => {
+    const onPop = () => {
+      setMode(initialMode());
+      setGoalRef(initialGoal());
+      setTopicPageId(initialTopicId());
+      setSelectedId(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const pickGoal = useCallback((ref: string) => {
     setGoalRef(ref);
