@@ -13,8 +13,9 @@ export function useTheme(): { theme: Theme; toggle: () => void } {
     }
   });
 
+  // Persist only; applying the attribute is the caller's job, so it can force
+  // a per-view override (e.g. the home hero stays dark regardless of choice).
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {

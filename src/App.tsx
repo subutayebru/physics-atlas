@@ -52,6 +52,10 @@ export default function App() {
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
   const progress = useProgress();
   const { theme, toggle: toggleTheme } = useTheme();
+  // The home hero is intentionally dark-only; every other view honors the choice.
+  useEffect(() => {
+    document.documentElement.dataset.theme = mode === 'home' ? 'dark' : theme;
+  }, [mode, theme]);
   const themeButton = (extra = '') => (
     <button
       className={`theme-toggle ${extra}`}
@@ -184,7 +188,6 @@ export default function App() {
           {themeButton()}
         </header>
       )}
-      {mode === 'home' && themeButton('theme-toggle-floating')}
       {mode === 'home' && (
         <Home
           topics={data.topics}
