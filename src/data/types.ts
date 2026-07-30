@@ -12,6 +12,20 @@ export interface ContentItem {
   note?: string;
 }
 
+/**
+ * A single learning outcome ("can do X"). `needs` lists sibling outcome ids
+ * (same topic/subtopic) that come first, or cross refs "topicId#outcomeId" /
+ * "topicId/subId#outcomeId" — the fine, within-category prerequisite order.
+ * Authored via content/*.md and compiled into generated-outcomes.json;
+ * merged onto units at load. Coexists with the legacy string `objectives`.
+ */
+export interface Outcome {
+  /** kebab-case, unique within its parent topic/subtopic */
+  id: string;
+  text: string;
+  needs?: string[];
+}
+
 export interface Subtopic {
   /** kebab-case, unique within its parent topic */
   id: string;
@@ -24,8 +38,12 @@ export interface Subtopic {
   prerequisites: string[];
   /** Same ref forms; enrichment — not required to reach a goal */
   optionalPrerequisites?: string[];
-  /** "After this step you can …" outcomes */
+  /** Legacy "after this step you can …" bullets (plain strings) */
   objectives?: string[];
+  /** Structured learning outcomes (competency library / a goal's subgoals) */
+  outcomes?: Outcome[];
+  /** For a goal: outcome refs it depends on, e.g. "linear-algebra#einstein" */
+  requires?: string[];
   content?: ContentItem[];
 }
 
@@ -48,8 +66,12 @@ export interface Topic {
   prerequisites: string[];
   /** Topic ids; enrichment/context edges, drawn dashed on the map */
   optionalPrerequisites?: string[];
-  /** "After this step you can …" outcomes */
+  /** Legacy "after this step you can …" bullets (plain strings) */
   objectives?: string[];
+  /** Structured learning outcomes (competency library / a goal's subgoals) */
+  outcomes?: Outcome[];
+  /** For a goal: outcome refs it depends on, e.g. "linear-algebra#einstein" */
+  requires?: string[];
   /** Show in the goal picker on the landing view */
   featured?: boolean;
   content: ContentItem[];

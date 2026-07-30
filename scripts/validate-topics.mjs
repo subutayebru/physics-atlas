@@ -340,6 +340,77 @@ if (errors.length === 0) {
   }
 }
 
+// --- Compiled learning outcomes (content/*.md → generated-outcomes.json) ---
+let outcomeCount = 0;
+let goalCount = 0;
+const GEN_PATH = join(dirname(fileURLToPath(import.meta.url)), '../src/data/generated-outcomes.json');
+let gen = null;
+try {
+  gen = JSON.parse(readFileSync(GEN_PATH, 'utf8'));
+} catch {
+  // sidecar not built yet — skip outcome checks (run `npm run build:content`)
+}
+if (gen) {
+  const unitExists = (id) => {
+    const [topicId, subId] = id.split('/');
+    if (!ids.has(topicId)) return false;
+    return subId === undefined || subIdsOf(byId.get(topicId)).has(subId);
+  };
+  const outcomesByUnit = gen.outcomes ?? {};
+  const outcomeIds = new Map(); // unit -> Set(outcomeId)
+  for (const [unit, list] of Object.entries(outcomesByUnit)) {
+    if (!unitExists(unit)) errors.push(`outcomes: unknown unit "${unit}"`);
+    const seen = new Set();
+    for (const o of list) {
+      outcomeCount++;
+      if (!o.id || !KEBAB.test(o.id)) errors.push(`outcome in "${unit}": id "${o.id}" must be kebab-case`);
+      else if (seen.has(o.id)) errors.push(`outcome "${unit}#${o.id}": duplicate id`);
+      else seen.add(o.id);
+      if (!o.text || typeof o.text !== 'string') errors.push(`outcome "${unit}#${o.id}": missing text`);
+    }
+    outcomeIds.set(unit, seen);
+  }
+  // Resolve a needs/requires ref to a canonical "unit#outcome" node, or null
+  const resolveOutcomeRef = (raw, homeUnit, where) => {
+    const node = raw.includes('#') ? raw : `${homeUnit}#${raw}`;
+    const hash = node.lastIndexOf('#');
+    const unit = node.slice(0, hash);
+    const oid = node.slice(hash + 1);
+    if (!outcomeIds.has(unit) || !outcomeIds.get(unit).has(oid)) {
+      errors.push(`${where}: unresolved outcome ref "${raw}"`);
+      return null;
+    }
+    return node;
+  };
+  // Build the outcome graph and check acyclicity
+  const outcomeGraph = new Map();
+  for (const [unit, list] of Object.entries(outcomesByUnit)) {
+    for (const o of list) {
+      const node = `${unit}#${o.id}`;
+      const prereqs = [];
+      for (const n of o.needs ?? []) {
+        const r = resolveOutcomeRef(n, unit, `outcome "${node}" needs`);
+        if (r && r !== node) prereqs.push(r);
+      }
+      outcomeGraph.set(node, prereqs);
+    }
+  }
+  const stuckOutcomes = findCycle(outcomeGraph);
+  if (stuckOutcomes.length) errors.push(`outcome cycle among: ${stuckOutcomes.join(', ')}`);
+
+  for (const [goalRef, g] of Object.entries(gen.goals ?? {})) {
+    goalCount++;
+    if (!unitExists(goalRef)) errors.push(`goal "${goalRef}": unknown unit`);
+    const seen = new Set();
+    for (const s of g.subgoals ?? []) {
+      if (!s.id || !KEBAB.test(s.id)) errors.push(`goal "${goalRef}" subgoal: id "${s.id}" must be kebab-case`);
+      else if (seen.has(s.id)) errors.push(`goal "${goalRef}" subgoal "${s.id}": duplicate id`);
+      else seen.add(s.id);
+    }
+    for (const r of g.requires ?? []) resolveOutcomeRef(r, goalRef, `goal "${goalRef}" requires`);
+  }
+}
+
 for (const w of warn) console.log(`⚠ ${w}`);
 if (errors.length) {
   for (const e of errors) console.error(`✗ ${e}`);
@@ -347,5 +418,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${skills.length} skills, ${optionalEdgeCount} optional edges, DAG is acyclic (incl. optional edges)`,
+  `✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${skills.length} skills, ${optionalEdgeCount} optional edges, ${outcomeCount} outcomes, ${goalCount} goal map(s), DAG is acyclic (incl. optional edges)`,
 );

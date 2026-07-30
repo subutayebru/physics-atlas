@@ -1,0 +1,200 @@
+{
+  "outcomes": {
+    "linear-algebra": [
+      {
+        "id": "matrix-eqs",
+        "text": "Comfortably manipulate matrix equations."
+      },
+      {
+        "id": "einstein",
+        "text": "Use and explain Einstein index notation."
+      },
+      {
+        "id": "vector-ops",
+        "text": "Compute vector operations."
+      },
+      {
+        "id": "duals",
+        "text": "Distinguish abstract vector spaces, coordinate vectors, rank-1 tensors, and 1-forms.",
+        "needs": [
+          "matrix-eqs",
+          "einstein",
+          "vector-ops"
+        ]
+      },
+      {
+        "id": "dual-transforms",
+        "text": "Compute coordinate transformations in the dual space.",
+        "needs": [
+          "duals"
+        ]
+      },
+      {
+        "id": "explain-vectors-and-dual-vectors-as-differential-operators",
+        "text": "Explain vectors and dual vectors as differential operators.",
+        "needs": [
+          "duals"
+        ]
+      }
+    ],
+    "calculus-1": [
+      {
+        "id": "derivatives",
+        "text": "Compute derivatives."
+      },
+      {
+        "id": "chain-rule",
+        "text": "Use the chain rule.",
+        "needs": [
+          "derivatives"
+        ]
+      },
+      {
+        "id": "jacobians",
+        "text": "Compute Jacobians.",
+        "needs": [
+          "derivatives"
+        ]
+      },
+      {
+        "id": "parameterize-curves",
+        "text": "Parameterize curves."
+      }
+    ],
+    "differential-geometry/tangent-space": [
+      {
+        "id": "different-tangent-spaces",
+        "text": "Explain why vectors at different points belong to different tangent spaces."
+      },
+      {
+        "id": "tangent-from-curves",
+        "text": "Construct tangent vectors as derivatives of curves."
+      },
+      {
+        "id": "explain-why-vectors-at-different-points-cannot-be-added-dire",
+        "text": "Explain why vectors at different points cannot be added directly.",
+        "needs": [
+          "different-tangent-spaces"
+        ]
+      }
+    ],
+    "differential-geometry/tensors": [
+      {
+        "id": "partial-deriv-fail",
+        "text": "Explain why partial derivatives fail to transform tensorially."
+      },
+      {
+        "id": "covariant-derivative",
+        "text": "Derive the covariant derivative by demanding tensor transformation.",
+        "needs": [
+          "partial-deriv-fail"
+        ]
+      },
+      {
+        "id": "compute-covariant-derivatives-of-scalars-vectors-covectors-a",
+        "text": "Compute covariant derivatives of scalars, vectors, covectors, and higher-rank tensors.",
+        "needs": [
+          "covariant-derivative"
+        ]
+      }
+    ],
+    "differential-geometry/connection": [
+      {
+        "id": "what-connection-provides",
+        "text": "Explain what a connection provides geometrically."
+      },
+      {
+        "id": "levi-civita",
+        "text": "Distinguish the Levi-Civita connection from general affine connections.",
+        "needs": [
+          "what-connection-provides"
+        ]
+      },
+      {
+        "id": "christoffel",
+        "text": "Derive Christoffel symbols from the metric and compute them in different coordinates.",
+        "needs": [
+          "levi-civita"
+        ]
+      }
+    ],
+    "differential-geometry/metric": [
+      {
+        "id": "metric-viewpoints",
+        "text": "Explain the metric from several equivalent viewpoints."
+      },
+      {
+        "id": "lengths-angles-volumes",
+        "text": "Compute lengths, angles, and volumes.",
+        "needs": [
+          "metric-viewpoints"
+        ]
+      },
+      {
+        "id": "raise-lower",
+        "text": "Raise and lower indices.",
+        "needs": [
+          "metric-viewpoints"
+        ]
+      },
+      {
+        "id": "derive-the-metric-under-coordinate-transformations-using-the",
+        "text": "Derive the metric under coordinate transformations using the Jacobian.",
+        "needs": [
+          "raise-lower"
+        ]
+      }
+    ]
+  },
+  "goals": {
+    "differential-geometry/parallel-transport": {
+      "subgoals": [
+        {
+          "id": "explain-all-the-elements-of-the-parallel-transport-equation",
+          "text": "Explain all the elements of the parallel transport equation."
+        },
+        {
+          "id": "distinguish-between-the-geodesic-equation-and-parallel-trans",
+          "text": "Distinguish between the geodesic equation and parallel transport."
+        },
+        {
+          "id": "interpret-geometrically-the-action-of-parallel-transport-on",
+          "text": "Interpret geometrically the action of parallel transport on a vector."
+        },
+        {
+          "id": "compute-component-transformations-of-a-transported-vector",
+          "text": "Compute component transformations of a transported vector."
+        },
+        {
+          "id": "illustrate-the-relevance-of-parallel-transport-to-different",
+          "text": "Illustrate the relevance of parallel transport to different curvature types."
+        }
+      ],
+      "requires": [
+        "linear-algebra#matrix-eqs",
+        "linear-algebra#einstein",
+        "linear-algebra#vector-ops",
+        "linear-algebra#duals",
+        "linear-algebra#dual-transforms",
+        "linear-algebra#explain-vectors-and-dual-vectors-as-differential-operators",
+        "calculus-1#derivatives",
+        "calculus-1#chain-rule",
+        "calculus-1#jacobians",
+        "calculus-1#parameterize-curves",
+        "differential-geometry/tangent-space#different-tangent-spaces",
+        "differential-geometry/tangent-space#tangent-from-curves",
+        "differential-geometry/tangent-space#explain-why-vectors-at-different-points-cannot-be-added-dire",
+        "differential-geometry/tensors#partial-deriv-fail",
+        "differential-geometry/tensors#covariant-derivative",
+        "differential-geometry/tensors#compute-covariant-derivatives-of-scalars-vectors-covectors-a",
+        "differential-geometry/connection#what-connection-provides",
+        "differential-geometry/connection#levi-civita",
+        "differential-geometry/connection#christoffel",
+        "differential-geometry/metric#metric-viewpoints",
+        "differential-geometry/metric#lengths-angles-volumes",
+        "differential-geometry/metric#raise-lower",
+        "differential-geometry/metric#derive-the-metric-under-coordinate-transformations-using-the"
+      ]
+    }
+  }
+}

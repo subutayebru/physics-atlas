@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { TopicGraph } from './data/types';
-import rawData from './data/topics.json';
+import { graph as data } from './data/loadGraph';
 import Home from './components/Home';
 import GoalView from './components/GoalView';
 import MapView from './components/MapView';
@@ -11,8 +10,6 @@ import { expandedCurriculumFor, parseUnitId } from './graph/dag';
 import { useProgress } from './lib/useProgress';
 import { useTheme } from './lib/useTheme';
 import './App.css';
-
-const data = rawData as TopicGraph;
 
 type Mode = 'home' | 'map' | 'goal' | 'topic';
 

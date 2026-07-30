@@ -527,6 +527,38 @@
           "author": "Daniel Fleisch",
           "note": "Gentle on-ramp to tensor notation before the heavy machinery."
         }
+      ],
+      "subtopics": [
+        {
+          "id": "tangent-space",
+          "title": "Tangent Spaces",
+          "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
+          "prerequisites": ["multivariable-calculus"]
+        },
+        {
+          "id": "tensors",
+          "title": "Tensors & Index Notation",
+          "description": "Multilinear maps, index gymnastics, why partial derivatives fail to transform tensorially.",
+          "prerequisites": ["tangent-space", "linear-algebra/vectors-and-spaces"]
+        },
+        {
+          "id": "metric",
+          "title": "The Metric",
+          "description": "Inner products on tangent spaces, the line element, raising and lowering indices.",
+          "prerequisites": ["tangent-space", "linear-algebra/inner-products-and-orthogonality"]
+        },
+        {
+          "id": "connection",
+          "title": "Connections & Christoffel Symbols",
+          "description": "What a connection provides, the Levi-Civita connection, Christoffel symbols from the metric.",
+          "prerequisites": ["metric", "tensors"]
+        },
+        {
+          "id": "parallel-transport",
+          "title": "Parallel Transport",
+          "description": "Moving a vector along a curve while keeping it 'as parallel as possible' — the geometric heart of curvature.",
+          "prerequisites": ["connection", "tensors"]
+        }
       ]
     },
     {
