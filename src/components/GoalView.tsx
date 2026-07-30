@@ -45,6 +45,7 @@ export default function GoalView({
   const featured = topics.filter((t) => t.featured);
   const annotated = topics.filter((t) => t.subtopics && t.subtopics.length > 0);
   const [showOptional, setShowOptional] = useState(true);
+  const [showGoalsOnMap, setShowGoalsOnMap] = useState(false);
 
   const groups = useMemo(() => expandedCurriculumFor(goalRef, topics), [goalRef, topics]);
   const graphTopics = useMemo(() => groups.map((g) => g.topic), [groups]);
@@ -60,6 +61,17 @@ export default function GoalView({
     [groups, showOptional],
   );
   const visibleEntries = visibleGroups.flatMap((g) => g.units);
+
+  // Areas whose learning goals can be drawn inside them on the map. Memoized:
+  // GraphView rebuilds the graph whenever this identity changes.
+  const annotatedIds = useMemo(
+    () => graphTopics.filter((t) => t.subtopics?.length).map((t) => t.id),
+    [graphTopics],
+  );
+  const expandedIds = useMemo(
+    () => (showGoalsOnMap ? new Set(annotatedIds) : new Set<string>()),
+    [showGoalsOnMap, annotatedIds],
+  );
 
   const { topicId: goalTopicId, subId: goalSubId } = parseUnitId(goalRef);
   const goalTopic = topics.find((t) => t.id === goalTopicId);
@@ -241,6 +253,7 @@ export default function GoalView({
             doneIds={progress.done}
             focus={focus}
             onSelect={onSelect}
+            expandedIds={expandedIds}
             theme={theme}
           />
           <Legend />
@@ -287,6 +300,16 @@ export default function GoalView({
                 onChange={(e) => setShowOptional(e.target.checked)}
               />
               show {optionalCount} optional step{optionalCount === 1 ? '' : 's'}
+            </label>
+          )}
+          {annotatedIds.length > 0 && (
+            <label className="optional-toggle">
+              <input
+                type="checkbox"
+                checked={showGoalsOnMap}
+                onChange={(e) => setShowGoalsOnMap(e.target.checked)}
+              />
+              show learning goals on the map
             </label>
           )}
           <ol className="curriculum">

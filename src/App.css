@@ -1483,6 +1483,12 @@ body {
     list-style: disc !important;
     font-size: 10pt;
   }
+  .print-subgoals {
+    margin: 0 0 3pt;
+    padding-left: 2pt !important;
+    list-style: none !important;
+    font-size: 10pt;
+  }
   .print-resources {
     font-size: 10pt;
     margin: 0;

@@ -1,5 +1,5 @@
-import type { ContentItem, Skill } from '../data/types';
-import { unitDone, type CurriculumGroup, type CurriculumUnit } from '../graph/dag';
+import type { ContentItem, Outcome, Skill } from '../data/types';
+import { outcomesInOrder, unitDone, type CurriculumGroup, type CurriculumUnit } from '../graph/dag';
 
 interface PrintSheetProps {
   goalTitle: string;
@@ -8,6 +8,33 @@ interface PrintSheetProps {
   hiddenOptionalCount: number;
   done: Set<string>;
   skills: Skill[];
+}
+
+/** A learning goal's subgoals as printed checkboxes, ticked from the same
+ *  `${unitId}#${outcomeId}` progress keys the screen uses. */
+export function PrintSubgoals({
+  subgoals,
+  unitId,
+  done,
+}: {
+  subgoals: Outcome[] | undefined;
+  unitId: string;
+  done: Set<string>;
+}) {
+  if (!subgoals?.length) return null;
+  return (
+    <>
+      <p className="print-objectives-label">Subgoals:</p>
+      <ul className="print-subgoals">
+        {outcomesInOrder(subgoals).map((o) => (
+          <li key={o.id}>
+            <span className="print-check">{done.has(`${unitId}#${o.id}`) ? '☑' : '☐'}</span>{' '}
+            {o.text}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
 }
 
 export function PrintResources({ items }: { items: ContentItem[] }) {
@@ -49,6 +76,7 @@ export default function PrintSheet({
     const title = isSub ? u.subtopic!.title : u.topic.title;
     const description = isSub ? u.subtopic!.description : u.topic.description;
     const objectives = isSub ? u.subtopic!.objectives : u.topic.objectives;
+    const outcomes = isSub ? u.subtopic!.outcomes : u.topic.outcomes;
     const ownContent = isSub ? (u.subtopic!.content ?? []) : u.topic.content;
     const fallback = isSub && ownContent.length === 0;
     return (
@@ -70,6 +98,7 @@ export default function PrintSheet({
             </ul>
           </>
         )}
+        <PrintSubgoals subgoals={outcomes} unitId={u.id} done={done} />
         {fallback ? (
           <>
             <p className="print-fallback-note">Resources from {u.topic.title}:</p>

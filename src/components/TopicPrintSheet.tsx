@@ -1,7 +1,7 @@
 import type { Topic } from '../data/types';
 import { subtopicsInOrder, topicDone, type TopicMap } from '../graph/dag';
 import { LEVEL_LABELS } from '../graph/levelColors';
-import { PrintResources } from './PrintSheet';
+import { PrintResources, PrintSubgoals } from './PrintSheet';
 
 interface TopicPrintSheetProps {
   topic: Topic;
@@ -31,7 +31,7 @@ export default function TopicPrintSheet({ topic, map, usedIn, done }: TopicPrint
       {(topic.objectives?.length ?? 0) > 0 && (
         <>
           <p className="print-objectives-label">After this topic you can:</p>
-          <ul className="print-objectives">
+          <ul className="print-objectives print-topic-objectives">
             {topic.objectives!.map((o) => (
               <li key={o}>{o}</li>
             ))}
@@ -78,6 +78,11 @@ export default function TopicPrintSheet({ topic, map, usedIn, done }: TopicPrint
                     </ul>
                   </>
                 )}
+                <PrintSubgoals
+                  subgoals={s.outcomes}
+                  unitId={`${topic.id}/${s.id}`}
+                  done={done}
+                />
                 {own.length === 0 ? (
                   <p className="print-fallback-note">Resources: see the topic resources above.</p>
                 ) : (

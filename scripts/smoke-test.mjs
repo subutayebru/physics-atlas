@@ -183,6 +183,17 @@ const persisted = await page.$eval('.subgoal-checklist .subgoal-row input', (el)
 console.log('subgoal tick persisted across reload:', persisted);
 if (!persisted) errors.push('subgoal tick did not persist across reload');
 
+// Subgoals reach the printed sheet as checkboxes
+await page.emulateMediaType('print');
+const printSubgoals = await page.$$eval('.print-subgoals li', (els) =>
+  els.map((e) => e.textContent?.trim()),
+);
+console.log(`print sheet subgoals: ${printSubgoals.length} (e.g. "${printSubgoals[0] ?? ''}")`);
+if (printSubgoals.length < 5) errors.push('print sheet is missing the subgoal checkboxes');
+if (printSubgoals[0] && !/^[☑☐]/.test(printSubgoals[0]))
+  errors.push('print subgoals are not rendered as checkboxes');
+await page.emulateMediaType('screen');
+
 // Promote a prerequisite learning goal into the main goal
 await page.click('.curriculum-head'); // open the first step's detail
 await page.waitForSelector('.promote-goal');
