@@ -155,6 +155,30 @@ await page.pdf({ path: `${OUT}/topic-quantum-mechanics.pdf`, format: 'A4' });
 console.log(`wrote ${OUT}/topic-quantum-mechanics.pdf`);
 await page.emulateMediaType('screen');
 
+// --- Outcome map: subgoals + per-category competency ladder on a goal ---
+await page.goto(`${URL}/?mode=goal&goal=differential-geometry/parallel-transport`, {
+  waitUntil: 'networkidle0',
+});
+await page.waitForSelector('.outcome-map');
+const subgoalCount = await page.$$eval(
+  '.outcome-block:first-child .objectives-list li',
+  (els) => els.length,
+);
+const areas = await page.$$eval('.outcome-group-title', (els) => els.map((e) => e.textContent));
+const laItems = await page.$$eval('.outcome-group', (groups) => {
+  const la = groups.find((g) => g.querySelector('.outcome-group-title')?.textContent?.includes('Linear'));
+  return la ? [...la.querySelectorAll('li')].map((li) => li.textContent?.trim()) : [];
+});
+console.log(`outcome map: ${subgoalCount} subgoals, ${areas.length} areas (${areas.join(', ')})`);
+console.log(`  Linear Algebra ladder: ${laItems.join(' → ')}`);
+if (subgoalCount < 5) errors.push('outcome map: expected 5 subgoals');
+if (areas.length < 6) errors.push('outcome map: expected 6 competency areas');
+// within-category order: "matrix equations" before "abstract vector spaces"
+const iMatrix = laItems.findIndex((t) => /matrix equations/i.test(t));
+const iDuals = laItems.findIndex((t) => /abstract vector spaces/i.test(t));
+if (iMatrix === -1 || iDuals === -1 || iMatrix > iDuals)
+  errors.push('outcome map: Linear Algebra needs-order wrong');
+
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();
 process.exit(errors.length ? 1 : 0);

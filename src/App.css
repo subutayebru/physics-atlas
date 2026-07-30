@@ -1075,6 +1075,51 @@ body {
   margin-bottom: 3px;
 }
 
+/* ---------- outcome map (subgoals + competency ladder) ---------- */
+.outcome-map {
+  margin: 4px 0 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(var(--glass-rgb), 0.4);
+}
+
+.outcome-block + .outcome-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hairline);
+}
+
+.outcome-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.outcome-group {
+  margin: 8px 0;
+}
+
+.outcome-group-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+
+.outcome-list {
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--hairline);
+  margin-left: 4px;
+}
+
+.outcome-list li {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin: 2px 0;
+}
+
 .prereq-chip-optional {
   border-style: dashed;
   opacity: 0.85;

@@ -13,6 +13,7 @@ import GraphView from './GraphView';
 import ContentList from './ContentList';
 import Legend from './Legend';
 import SkillsPanel from './SkillsPanel';
+import OutcomeMap from './OutcomeMap';
 import PrintSheet from './PrintSheet';
 import type { Progress } from '../lib/useProgress';
 
@@ -62,9 +63,10 @@ export default function GoalView({
 
   const { topicId: goalTopicId, subId: goalSubId } = parseUnitId(goalRef);
   const goalTopic = topics.find((t) => t.id === goalTopicId);
-  const goalTitle = goalSubId
-    ? (goalTopic?.subtopics?.find((s) => s.id === goalSubId)?.title ?? goalTopic?.title)
-    : goalTopic?.title;
+  const goalUnit = goalSubId
+    ? goalTopic?.subtopics?.find((s) => s.id === goalSubId)
+    : goalTopic;
+  const goalTitle = goalSubId ? (goalUnit?.title ?? goalTopic?.title) : goalTopic?.title;
 
   const selectedTopicId = selectedId ? parseUnitId(selectedId).topicId : null;
   const highlight = useMemo(() => {
@@ -259,6 +261,13 @@ export default function GoalView({
               Download PDF
             </button>
           </div>
+          {(goalUnit?.outcomes?.length || goalUnit?.requires?.length) && (
+            <OutcomeMap
+              subgoals={goalUnit.outcomes}
+              requires={goalUnit.requires}
+              topics={topics}
+            />
+          )}
           <p className="sidebar-hint">
             In order: every step below builds only on the ones above it. Click a step to see it in
             the graph and its resources; tick it off when learned.

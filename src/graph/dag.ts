@@ -1,4 +1,4 @@
-import type { Subtopic, Topic } from '../data/types';
+import type { Outcome, Subtopic, Topic } from '../data/types';
 
 export type TopicMap = Map<string, Topic>;
 
@@ -378,4 +378,78 @@ export function topicDone(topic: Topic, done: Set<string>): boolean {
   if (done.has(topic.id)) return true;
   const subs = topic.subtopics ?? [];
   return subs.length > 0 && subs.every((s) => done.has(`${topic.id}/${s.id}`));
+}
+
+/** Topologically order outcomes by their within-unit `needs` (bare sibling
+ *  refs; cross-unit "u#id" refs are satisfied by other groups and ignored). */
+export function outcomesInOrder(outcomes: Outcome[]): Outcome[] {
+  const byId = new Map(outcomes.map((o) => [o.id, o]));
+  const localNeeds = (o: Outcome) =>
+    (o.needs ?? []).filter((n) => !n.includes('#') && n !== o.id && byId.has(n));
+  const memo = new Map<string, number>();
+  const depth = (id: string): number => {
+    if (memo.has(id)) return memo.get(id)!;
+    const ns = localNeeds(byId.get(id)!);
+    const d = ns.length === 0 ? 0 : 1 + Math.max(...ns.map(depth));
+    memo.set(id, d);
+    return d;
+  };
+  const indegree = new Map(outcomes.map((o) => [o.id, localNeeds(o).length]));
+  const dependents = new Map<string, string[]>(outcomes.map((o) => [o.id, []]));
+  for (const o of outcomes) for (const n of localNeeds(o)) dependents.get(n)!.push(o.id);
+  const ready = outcomes.filter((o) => indegree.get(o.id) === 0).map((o) => o.id);
+  const order: Outcome[] = [];
+  while (ready.length) {
+    ready.sort((a, b) => depth(a) - depth(b) || a.localeCompare(b));
+    const id = ready.shift()!;
+    order.push(byId.get(id)!);
+    for (const dep of dependents.get(id)!) {
+      indegree.set(dep, indegree.get(dep)! - 1);
+      if (indegree.get(dep) === 0) ready.push(dep);
+    }
+  }
+  if (order.length < outcomes.length) for (const o of outcomes) if (!order.includes(o)) order.push(o);
+  return order;
+}
+
+export interface RequirementGroup {
+  unitId: UnitId;
+  title: string;
+  outcomes: Outcome[];
+}
+
+/** A goal's `requires` refs ("unit#outcomeId") grouped by home unit, in
+ *  first-seen unit order, competencies within each unit in `needs` order. */
+export function groupRequirements(requires: string[], topics: Topic[]): RequirementGroup[] {
+  const map = buildTopicMap(topics);
+  const outcomesOf = (unitId: UnitId): Outcome[] => {
+    const { topicId, subId } = parseUnitId(unitId);
+    const t = map.get(topicId);
+    if (!t) return [];
+    return (subId ? t.subtopics?.find((s) => s.id === subId)?.outcomes : t.outcomes) ?? [];
+  };
+  const titleOf = (unitId: UnitId): string => {
+    const { topicId, subId } = parseUnitId(unitId);
+    const t = map.get(topicId);
+    if (!t) return unitId;
+    return subId ? (t.subtopics?.find((s) => s.id === subId)?.title ?? subId) : t.title;
+  };
+  const wanted = new Map<UnitId, Set<string>>();
+  const order: UnitId[] = [];
+  for (const ref of requires) {
+    const hash = ref.lastIndexOf('#');
+    if (hash === -1) continue;
+    const unitId = ref.slice(0, hash);
+    const oid = ref.slice(hash + 1);
+    if (!wanted.has(unitId)) {
+      wanted.set(unitId, new Set());
+      order.push(unitId);
+    }
+    wanted.get(unitId)!.add(oid);
+  }
+  return order.map((unitId) => {
+    const need = wanted.get(unitId)!;
+    const outcomes = outcomesInOrder(outcomesOf(unitId)).filter((o) => need.has(o.id));
+    return { unitId, title: titleOf(unitId), outcomes };
+  });
 }
