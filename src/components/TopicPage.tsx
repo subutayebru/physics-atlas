@@ -5,7 +5,6 @@ import {
   buildTopicMap,
   dependentsMap,
   descendantsOf,
-  outcomesInOrder,
   subtopicsInOrder,
   topicDone,
   unitDone,
@@ -13,7 +12,7 @@ import {
 } from '../graph/dag';
 import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import ContentList from './ContentList';
-import OutcomeMap from './OutcomeMap';
+import SubgoalChecklist from './SubgoalChecklist';
 import GraphView from './GraphView';
 import Legend from './Legend';
 import TopicPrintSheet from './TopicPrintSheet';
@@ -196,19 +195,13 @@ export default function TopicPage({
                         </ul>
                       </div>
                     )}
-                    {s.requires?.length ? (
-                      <OutcomeMap subgoals={s.outcomes} requires={s.requires} topics={topics} />
-                    ) : (
-                      (s.outcomes?.length ?? 0) > 0 && (
-                        <div className="objectives">
-                          <p className="objectives-label">Learning outcomes:</p>
-                          <ul className="objectives-list">
-                            {outcomesInOrder(s.outcomes!).map((o) => (
-                              <li key={o.id}>{o.text}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
+                    {(s.outcomes?.length ?? 0) > 0 && (
+                      <SubgoalChecklist
+                        subgoals={s.outcomes!}
+                        unitId={`${topic.id}/${s.id}`}
+                        progress={progress}
+                        label="Subgoals"
+                      />
                     )}
                     {ownContent.length === 0 ? (
                       <>

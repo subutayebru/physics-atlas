@@ -155,29 +155,43 @@ await page.pdf({ path: `${OUT}/topic-quantum-mechanics.pdf`, format: 'A4' });
 console.log(`wrote ${OUT}/topic-quantum-mechanics.pdf`);
 await page.emulateMediaType('screen');
 
-// --- Outcome map: subgoals + per-category competency ladder on a goal ---
-await page.goto(`${URL}/?mode=goal&goal=differential-geometry/parallel-transport`, {
+// --- Learning-goal detail: subgoals as checkboxes, prerequisite areas, and
+//     one-click promotion of a prerequisite into the main goal ---
+await page.goto(`${URL}/?mode=goal&goal=general-relativity/parallel-transport`, {
   waitUntil: 'networkidle0',
 });
-await page.waitForSelector('.outcome-map');
+await page.waitForSelector('.subgoal-checklist');
 const subgoalCount = await page.$$eval(
-  '.outcome-block:first-child .objectives-list li',
-  (els) => els.length,
+  '.subgoal-checklist',
+  (lists) => lists[0]?.querySelectorAll('.subgoal-row').length ?? 0,
 );
-const areas = await page.$$eval('.outcome-group-title', (els) => els.map((e) => e.textContent));
-const laItems = await page.$$eval('.outcome-group', (groups) => {
-  const la = groups.find((g) => g.querySelector('.outcome-group-title')?.textContent?.includes('Linear'));
-  return la ? [...la.querySelectorAll('li')].map((li) => li.textContent?.trim()) : [];
-});
-console.log(`outcome map: ${subgoalCount} subgoals, ${areas.length} areas (${areas.join(', ')})`);
-console.log(`  Linear Algebra ladder: ${laItems.join(' → ')}`);
-if (subgoalCount < 5) errors.push('outcome map: expected 5 subgoals');
-if (areas.length < 6) errors.push('outcome map: expected 6 competency areas');
-// within-category order: "matrix equations" before "abstract vector spaces"
-const iMatrix = laItems.findIndex((t) => /matrix equations/i.test(t));
-const iDuals = laItems.findIndex((t) => /abstract vector spaces/i.test(t));
-if (iMatrix === -1 || iDuals === -1 || iMatrix > iDuals)
-  errors.push('outcome map: Linear Algebra needs-order wrong');
+const areaGroups = await page.$$eval('.curriculum-group-name', (els) =>
+  els.map((e) => e.textContent?.trim()),
+);
+console.log(
+  `parallel transport: ${subgoalCount} subgoals, ${areaGroups.length} prerequisite areas (${areaGroups.join(', ')})`,
+);
+if (subgoalCount !== 5) errors.push(`expected 5 subgoals, got ${subgoalCount}`);
+if (areaGroups.length < 6) errors.push(`expected >=6 prerequisite areas, got ${areaGroups.length}`);
+
+// Tick the goal's first subgoal, reload, expect it to persist
+await page.click('.subgoal-checklist .subgoal-row input');
+await new Promise((r) => setTimeout(r, 300));
+await page.reload({ waitUntil: 'networkidle0' });
+await page.waitForSelector('.subgoal-checklist');
+const persisted = await page.$eval('.subgoal-checklist .subgoal-row input', (el) => el.checked);
+console.log('subgoal tick persisted across reload:', persisted);
+if (!persisted) errors.push('subgoal tick did not persist across reload');
+
+// Promote a prerequisite learning goal into the main goal
+await page.click('.curriculum-head'); // open the first step's detail
+await page.waitForSelector('.promote-goal');
+const beforeTitle = await page.$eval('.sidebar-title', (el) => el.textContent?.trim());
+await page.click('.promote-goal');
+await new Promise((r) => setTimeout(r, 400));
+const afterTitle = await page.$eval('.sidebar-title', (el) => el.textContent?.trim());
+console.log(`promotion: "${beforeTitle}" → "${afterTitle}"`);
+if (beforeTitle === afterTitle) errors.push('promoting a prerequisite did not change the goal');
 
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();

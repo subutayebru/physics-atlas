@@ -40,10 +40,8 @@ export interface Subtopic {
   optionalPrerequisites?: string[];
   /** Legacy "after this step you can …" bullets (plain strings) */
   objectives?: string[];
-  /** Structured learning outcomes (competency library / a goal's subgoals) */
+  /** A learning goal's subgoals — its "can do X" checkbox breakdown */
   outcomes?: Outcome[];
-  /** For a goal: outcome refs it depends on, e.g. "linear-algebra#einstein" */
-  requires?: string[];
   content?: ContentItem[];
 }
 
@@ -68,10 +66,8 @@ export interface Topic {
   optionalPrerequisites?: string[];
   /** Legacy "after this step you can …" bullets (plain strings) */
   objectives?: string[];
-  /** Structured learning outcomes (competency library / a goal's subgoals) */
+  /** A learning goal's subgoals — its "can do X" checkbox breakdown */
   outcomes?: Outcome[];
-  /** For a goal: outcome refs it depends on, e.g. "linear-algebra#einstein" */
-  requires?: string[];
   /** Show in the goal picker on the landing view */
   featured?: boolean;
   content: ContentItem[];

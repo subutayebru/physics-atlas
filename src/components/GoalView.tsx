@@ -13,7 +13,7 @@ import GraphView from './GraphView';
 import ContentList from './ContentList';
 import Legend from './Legend';
 import SkillsPanel from './SkillsPanel';
-import OutcomeMap from './OutcomeMap';
+import SubgoalChecklist from './SubgoalChecklist';
 import PrintSheet from './PrintSheet';
 import type { Progress } from '../lib/useProgress';
 
@@ -105,6 +105,7 @@ export default function GoalView({
     const title = isSub ? u.subtopic!.title : u.topic.title;
     const description = isSub ? u.subtopic!.description : u.topic.description;
     const objectives = isSub ? u.subtopic!.objectives : u.topic.objectives;
+    const outcomes = isSub ? u.subtopic!.outcomes : u.topic.outcomes;
     const ownContent = isSub ? (u.subtopic!.content ?? []) : u.topic.content;
     const done = unitDone(u, progress.done);
     const open = u.id === selectedId;
@@ -163,6 +164,9 @@ export default function GoalView({
                 </ul>
               </div>
             )}
+            {outcomes && outcomes.length > 0 && (
+              <SubgoalChecklist subgoals={outcomes} unitId={u.id} progress={progress} />
+            )}
             {isSub && ownContent.length === 0 ? (
               <>
                 <p className="curriculum-fallback-note">Resources from {u.topic.title}:</p>
@@ -171,11 +175,18 @@ export default function GoalView({
             ) : (
               <ContentList items={ownContent} />
             )}
-            {isSub && (
-              <button className="open-topic-link" onClick={() => onOpenTopic(u.topic.id)}>
-                Open {u.topic.title} page →
-              </button>
-            )}
+            <div className="curriculum-detail-actions">
+              {u.id !== goalRef && (
+                <button className="promote-goal" onClick={() => onPickGoal(u.id)}>
+                  Make this the learning goal →
+                </button>
+              )}
+              {isSub && (
+                <button className="open-topic-link" onClick={() => onOpenTopic(u.topic.id)}>
+                  Open {u.topic.title} page →
+                </button>
+              )}
+            </div>
           </div>
         )}
       </li>
@@ -261,12 +272,8 @@ export default function GoalView({
               Download PDF
             </button>
           </div>
-          {(goalUnit?.outcomes?.length || goalUnit?.requires?.length) && (
-            <OutcomeMap
-              subgoals={goalUnit.outcomes}
-              requires={goalUnit.requires}
-              topics={topics}
-            />
+          {goalUnit?.outcomes && goalUnit.outcomes.length > 0 && (
+            <SubgoalChecklist subgoals={goalUnit.outcomes} unitId={goalRef} progress={progress} />
           )}
           <p className="sidebar-hint">
             In order: every step below builds only on the ones above it. Click a step to see it in
