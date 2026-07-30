@@ -11,6 +11,7 @@ import {
 import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
 import GraphView from './GraphView';
 import Legend from './Legend';
+import SubgoalChecklist from './SubgoalChecklist';
 import type { Progress } from '../lib/useProgress';
 
 interface MapViewProps {
@@ -97,15 +98,12 @@ export default function MapView({
             </h2>
             <p className="map-card-level">Subtopic of {selectedTopic.title}</p>
             {selectedSub.description && <p className="topic-description">{selectedSub.description}</p>}
-            {(selectedSub.objectives?.length ?? 0) > 0 && (
-              <div className="objectives">
-                <p className="objectives-label">After this step you can:</p>
-                <ul className="objectives-list">
-                  {selectedSub.objectives!.map((o) => (
-                    <li key={o}>{o}</li>
-                  ))}
-                </ul>
-              </div>
+            {(selectedSub.outcomes?.length ?? 0) > 0 && (
+              <SubgoalChecklist
+                subgoals={selectedSub.outcomes!}
+                unitId={selectedId!}
+                progress={progress}
+              />
             )}
             <div className="map-card-actions">
               <button className="map-card-goal" onClick={() => onMakeGoal(selectedId!)}>
@@ -133,15 +131,12 @@ export default function MapView({
             </h2>
             <p className="map-card-level">{LEVEL_LABELS[selectedTopic.level]}</p>
             <p className="topic-description">{selectedTopic.description}</p>
-            {(selectedTopic.objectives?.length ?? 0) > 0 && (
-              <div className="objectives">
-                <p className="objectives-label">After this topic you can:</p>
-                <ul className="objectives-list">
-                  {selectedTopic.objectives!.map((o) => (
-                    <li key={o}>{o}</li>
-                  ))}
-                </ul>
-              </div>
+            {(selectedTopic.outcomes?.length ?? 0) > 0 && (
+              <SubgoalChecklist
+                subgoals={selectedTopic.outcomes!}
+                unitId={selectedTopic.id}
+                progress={progress}
+              />
             )}
 
             {(selectedTopic.prerequisites.length > 0 ||

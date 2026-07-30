@@ -17,7 +17,7 @@ export interface ContentItem {
  * (same topic/subtopic) that come first, or cross refs "topicId#outcomeId" /
  * "topicId/subId#outcomeId" — the fine, within-category prerequisite order.
  * Authored via content/*.md and compiled into generated-outcomes.json;
- * merged onto units at load. Coexists with the legacy string `objectives`.
+ * merged onto units at load.
  */
 export interface Outcome {
   /** kebab-case, unique within its parent topic/subtopic */
@@ -38,8 +38,6 @@ export interface Subtopic {
   prerequisites: string[];
   /** Same ref forms; enrichment — not required to reach a goal */
   optionalPrerequisites?: string[];
-  /** Legacy "after this step you can …" bullets (plain strings) */
-  objectives?: string[];
   /** A learning goal's subgoals — its "can do X" checkbox breakdown */
   outcomes?: Outcome[];
   content?: ContentItem[];
@@ -64,8 +62,6 @@ export interface Topic {
   prerequisites: string[];
   /** Topic ids; enrichment/context edges, drawn dashed on the map */
   optionalPrerequisites?: string[];
-  /** Legacy "after this step you can …" bullets (plain strings) */
-  objectives?: string[];
   /** A learning goal's subgoals — its "can do X" checkbox breakdown */
   outcomes?: Outcome[];
   /** Show in the goal picker on the landing view */

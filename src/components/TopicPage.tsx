@@ -68,15 +68,13 @@ export default function TopicPage({
           </h2>
           <p className="topic-page-level">{LEVEL_LABELS[topic.level]}</p>
           <p className="topic-description">{topic.description}</p>
-          {(topic.objectives?.length ?? 0) > 0 && (
-            <div className="objectives">
-              <p className="objectives-label">After this topic you can:</p>
-              <ul className="objectives-list">
-                {topic.objectives!.map((o) => (
-                  <li key={o}>{o}</li>
-                ))}
-              </ul>
-            </div>
+          {(topic.outcomes?.length ?? 0) > 0 && (
+            <SubgoalChecklist
+              subgoals={topic.outcomes!}
+              unitId={topic.id}
+              progress={progress}
+              label="Subgoals — what you can do"
+            />
           )}
           <div className="topic-page-actions">
             <button className="pdf-button" onClick={() => onMakeGoal(topic.id)}>
@@ -185,16 +183,6 @@ export default function TopicPage({
                   </summary>
                   <div className="subtopic-body">
                     {s.description && <p className="topic-description">{s.description}</p>}
-                    {(s.objectives?.length ?? 0) > 0 && (
-                      <div className="objectives">
-                        <p className="objectives-label">After this step you can:</p>
-                        <ul className="objectives-list">
-                          {s.objectives!.map((o) => (
-                            <li key={o}>{o}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
                     {(s.outcomes?.length ?? 0) > 0 && (
                       <SubgoalChecklist
                         subgoals={s.outcomes!}

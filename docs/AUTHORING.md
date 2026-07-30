@@ -143,10 +143,10 @@ Linear Algebra, not the whole course. Annotate incrementally — topics without
 | `description` | Optional, shown when the step is expanded. |
 | `prerequisites` | Refs in three forms — see below. |
 | `optionalPrerequisites` | Same ref forms; *enrichment*, not required. Curriculum shows these steps with an "optional" badge and a hide toggle; the map draws optional topic edges dashed. On overlap with `prerequisites`, mandatory wins. |
-| `objectives` | Optional list of plain "after this step you can …" strings; shown in the step detail, the map card, and the PDF export. For a *checkbox* breakdown, author the step as a learning goal in Markdown instead — its `## Subgoals` become tickable. |
+| `outcomes` | Optional subgoals — the tickable "what you can do" breakdown, shown in the step detail, the map card, the topic page and the PDF. Each is `{ "id": "kebab-id", "text": "Can do …" }`; add `"needs": ["other-id"]` to order them. Usually easier to author in Markdown (above); this is the inline form. |
 | `content` | Optional own resources; when empty/absent the step shows the parent topic's resources. |
 
-Topics support `optionalPrerequisites` (topic ids) and `objectives` too.
+Topics support `optionalPrerequisites` (topic ids) and `outcomes` too.
 Keep the union of mandatory + optional edges acyclic — the validator checks it,
 because the curriculum ordering runs on both together.
 

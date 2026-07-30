@@ -55,12 +55,39 @@ function checkContentItems(where, content) {
   }
 }
 
-function checkObjectives(where, objectives) {
-  if (objectives === undefined) return;
-  if (!Array.isArray(objectives)) errors.push(`${where}: "objectives" must be an array`);
-  else
-    for (const o of objectives)
-      if (typeof o !== 'string' || !o.trim()) errors.push(`${where}: objectives must be non-empty strings`);
+let outcomeCount = 0;
+
+/** Subgoals authored inline in topics.json: {id, text, needs?} with kebab,
+ *  unique ids and `needs` pointing at siblings in the same unit. */
+function checkOutcomes(where, outcomes) {
+  if (outcomes === undefined) return;
+  if (!Array.isArray(outcomes)) {
+    errors.push(`${where}: "outcomes" must be an array`);
+    return;
+  }
+  const seen = new Set();
+  for (const o of outcomes) {
+    if (!o || typeof o !== 'object' || Array.isArray(o)) {
+      errors.push(`${where}: each outcome must be an object {id, text}`);
+      continue;
+    }
+    if (!o.id || typeof o.id !== 'string' || !KEBAB.test(o.id))
+      errors.push(`${where}: outcome id "${o.id}" must be kebab-case`);
+    else if (seen.has(o.id)) errors.push(`${where}: duplicate outcome id "${o.id}"`);
+    else seen.add(o.id);
+    if (typeof o.text !== 'string' || !o.text.trim())
+      errors.push(`${where}: outcome "${o.id}" missing "text"`);
+    if (o.needs !== undefined && !Array.isArray(o.needs))
+      errors.push(`${where}: outcome "${o.id}" — "needs" must be an array`);
+  }
+  for (const o of outcomes) {
+    for (const n of Array.isArray(o?.needs) ? o.needs : []) {
+      if (n === o.id) errors.push(`${where}: outcome "${o.id}" needs itself`);
+      else if (!seen.has(n))
+        errors.push(`${where}: outcome "${o.id}" needs unknown sibling "${n}"`);
+    }
+  }
+  outcomeCount += outcomes.length;
 }
 
 const ids = new Set();
@@ -79,7 +106,7 @@ for (const t of data.topics) {
   if (!Array.isArray(t.prerequisites)) errors.push(`${where}: "prerequisites" must be an array (use [] for none)`);
   if (t.optionalPrerequisites !== undefined && !Array.isArray(t.optionalPrerequisites))
     errors.push(`${where}: "optionalPrerequisites" must be an array`);
-  checkObjectives(where, t.objectives);
+  checkOutcomes(where, t.outcomes);
   if (!Array.isArray(t.content)) errors.push(`${where}: "content" must be an array (use [] for none)`);
   else {
     checkContentItems(where, t.content);
@@ -101,7 +128,7 @@ for (const t of data.topics) {
         if (!Array.isArray(s.prerequisites)) errors.push(`${sw}: "prerequisites" must be an array (use [] for none)`);
         if (s.optionalPrerequisites !== undefined && !Array.isArray(s.optionalPrerequisites))
           errors.push(`${sw}: "optionalPrerequisites" must be an array`);
-        checkObjectives(sw, s.objectives);
+        checkOutcomes(sw, s.outcomes);
         if (s.content !== undefined) {
           if (!Array.isArray(s.content)) errors.push(`${sw}: "content" must be an array`);
           else checkContentItems(sw, s.content);
@@ -363,5 +390,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${skills.length} skills, ${optionalEdgeCount} optional edges, DAG is acyclic (incl. optional edges)`,
+  `✓ topics.json valid — ${data.topics.length} topics, ${subtopicCount} subtopics, ${outcomeCount} subgoals, ${skills.length} skills, ${optionalEdgeCount} optional edges, DAG is acyclic (incl. optional edges)`,
 );

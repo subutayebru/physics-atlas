@@ -1053,29 +1053,7 @@ body {
   cursor: pointer;
 }
 
-.objectives {
-  margin: 0 0 10px;
-}
-
-.objectives-label {
-  margin: 0 0 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-
-.objectives-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 12.5px;
-  color: var(--ink-2);
-}
-
-.objectives-list li {
-  margin-bottom: 3px;
-}
-
-/* ---------- outcome map (subgoals + competency ladder) ---------- */
+/* ---------- subgoals (a learning goal's checkbox breakdown) ---------- */
 .subgoal-checklist {
   margin: 4px 0 14px;
   padding: 10px 12px;
@@ -1476,12 +1454,6 @@ body {
     margin: 0;
     font-size: 10pt;
     font-weight: 600;
-  }
-  .print-objectives {
-    margin: 0 0 3pt;
-    padding-left: 16pt !important;
-    list-style: disc !important;
-    font-size: 10pt;
   }
   .print-subgoals {
     margin: 0 0 3pt;

@@ -146,6 +146,20 @@ console.log(
   await page.$eval('.topic-page-title', (el) => el.textContent?.trim()),
   `· ${subBlocks} subtopic blocks`,
 );
+// Migrated QM objectives are now tickable subgoals, not plain bullets
+const qmSubgoals = await page.$$eval('.subgoal-row', (els) => els.length);
+const qmBoxes = await page.$$eval('.subgoal-row input[type=checkbox]', (els) => els.length);
+console.log(`quantum-mechanics subgoals: ${qmSubgoals} rows, ${qmBoxes} checkboxes`);
+if (qmSubgoals !== 27) errors.push(`expected 27 QM subgoals, got ${qmSubgoals}`);
+if (qmBoxes !== qmSubgoals) errors.push('some QM subgoals are not tickable');
+await page.click('.subgoal-row input[type=checkbox]');
+await new Promise((r) => setTimeout(r, 250));
+await page.reload({ waitUntil: 'networkidle0' });
+await page.waitForSelector('.subgoal-row');
+const qmPersisted = await page.$eval('.subgoal-row input[type=checkbox]', (el) => el.checked);
+console.log('QM subgoal tick persisted:', qmPersisted);
+if (!qmPersisted) errors.push('QM subgoal tick did not persist');
+
 await page.emulateMediaType('print');
 const tpSheet = await page.$eval('.print-sheet', (el) => getComputedStyle(el).display);
 const tpInner = await page.$eval('.topic-page-inner', (el) => getComputedStyle(el).display);

@@ -60,7 +60,8 @@ function listMarkdown(dir) {
   for (const e of entries) {
     const p = join(dir, e);
     if (statSync(p).isDirectory()) out.push(...listMarkdown(p));
-    else if (e.endsWith('.md')) out.push(p);
+    // `_`-prefixed files are templates/drafts — not compiled into the map
+    else if (e.endsWith('.md') && !e.startsWith('_')) out.push(p);
   }
   return out;
 }

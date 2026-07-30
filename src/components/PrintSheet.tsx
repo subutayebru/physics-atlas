@@ -75,7 +75,6 @@ export default function PrintSheet({
     const isSub = u.subtopic !== undefined;
     const title = isSub ? u.subtopic!.title : u.topic.title;
     const description = isSub ? u.subtopic!.description : u.topic.description;
-    const objectives = isSub ? u.subtopic!.objectives : u.topic.objectives;
     const outcomes = isSub ? u.subtopic!.outcomes : u.topic.outcomes;
     const ownContent = isSub ? (u.subtopic!.content ?? []) : u.topic.content;
     const fallback = isSub && ownContent.length === 0;
@@ -88,16 +87,6 @@ export default function PrintSheet({
           {e.optional && !groupOptional && <span className="print-optional"> (optional)</span>}
         </p>
         {description && <p className="print-desc">{description}</p>}
-        {objectives && objectives.length > 0 && (
-          <>
-            <p className="print-objectives-label">After this step you can:</p>
-            <ul className="print-objectives">
-              {objectives.map((o) => (
-                <li key={o}>{o}</li>
-              ))}
-            </ul>
-          </>
-        )}
         <PrintSubgoals subgoals={outcomes} unitId={u.id} done={done} />
         {fallback ? (
           <>

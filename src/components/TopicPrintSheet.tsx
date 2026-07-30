@@ -28,16 +28,7 @@ export default function TopicPrintSheet({ topic, map, usedIn, done }: TopicPrint
         {topicDone(topic, done) && <> · learned ☑</>}
       </p>
       <p className="print-desc">{topic.description}</p>
-      {(topic.objectives?.length ?? 0) > 0 && (
-        <>
-          <p className="print-objectives-label">After this topic you can:</p>
-          <ul className="print-objectives print-topic-objectives">
-            {topic.objectives!.map((o) => (
-              <li key={o}>{o}</li>
-            ))}
-          </ul>
-        </>
-      )}
+      <PrintSubgoals subgoals={topic.outcomes} unitId={topic.id} done={done} />
       {(topic.prerequisites.length > 0 || optionalPrereqs.length > 0) && (
         <p className="print-desc">
           <strong>Builds on:</strong> {topic.prerequisites.map(name).join(', ')}
@@ -68,16 +59,6 @@ export default function TopicPrintSheet({ topic, map, usedIn, done }: TopicPrint
                   <span className="print-step-title">{s.title}</span>
                 </p>
                 {s.description && <p className="print-desc">{s.description}</p>}
-                {(s.objectives?.length ?? 0) > 0 && (
-                  <>
-                    <p className="print-objectives-label">After this step you can:</p>
-                    <ul className="print-objectives">
-                      {s.objectives!.map((o) => (
-                        <li key={o}>{o}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
                 <PrintSubgoals
                   subgoals={s.outcomes}
                   unitId={`${topic.id}/${s.id}`}

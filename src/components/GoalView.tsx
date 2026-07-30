@@ -116,7 +116,6 @@ export default function GoalView({
     const isSub = u.subtopic !== undefined;
     const title = isSub ? u.subtopic!.title : u.topic.title;
     const description = isSub ? u.subtopic!.description : u.topic.description;
-    const objectives = isSub ? u.subtopic!.objectives : u.topic.objectives;
     const outcomes = isSub ? u.subtopic!.outcomes : u.topic.outcomes;
     const ownContent = isSub ? (u.subtopic!.content ?? []) : u.topic.content;
     const done = unitDone(u, progress.done);
@@ -166,16 +165,6 @@ export default function GoalView({
         {open && (
           <div className="curriculum-detail">
             {description && <p className="topic-description">{description}</p>}
-            {objectives && objectives.length > 0 && (
-              <div className="objectives">
-                <p className="objectives-label">After this step you can:</p>
-                <ul className="objectives-list">
-                  {objectives.map((o) => (
-                    <li key={o}>{o}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
             {outcomes && outcomes.length > 0 && (
               <SubgoalChecklist subgoals={outcomes} unitId={u.id} progress={progress} />
             )}
