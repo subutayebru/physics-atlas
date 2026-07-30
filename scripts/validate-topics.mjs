@@ -158,6 +158,22 @@ else {
   }
 }
 
+// "partOf" (sub-area → parent area) must resolve, not self-reference, and not
+// chain — the topic page renders exactly one level of grouping.
+for (const t of data.topics) {
+  if (t.partOf === undefined) continue;
+  if (typeof t.partOf !== 'string' || !ids.has(t.partOf))
+    errors.push(`topic "${t.id}": unknown partOf "${t.partOf}"`);
+  else if (t.partOf === t.id) errors.push(`topic "${t.id}": partOf points at itself`);
+  else {
+    const parent = data.topics.find((p) => p.id === t.partOf);
+    if (parent?.partOf)
+      errors.push(
+        `topic "${t.id}": partOf "${t.partOf}" is itself a sub-area — only one level is rendered`,
+      );
+  }
+}
+
 // Topic-level prerequisite references (mandatory and optional) must resolve
 for (const t of data.topics) {
   for (const p of t.prerequisites ?? []) {

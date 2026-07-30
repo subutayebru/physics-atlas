@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Topic } from '../data/types';
+import type { Outcome, Topic } from '../data/types';
 import {
   ancestorsOf,
   buildTopicMap,
   dependentsMap,
   descendantsOf,
+  parseUnitId,
   subtopicsInOrder,
   topicDone,
   unitDone,
@@ -41,23 +42,33 @@ export default function TopicPage({
   const dependents = useMemo(() => dependentsMap(topics), [topics]);
   const unitMap = useMemo(() => buildUnitGraph(topics), [topics]);
   const topic = map.get(topicId);
-  // Which learning goal the side panel is showing (a subtopic id of this topic)
-  const [openSubId, setOpenSubId] = useState<string | null>(null);
+  // Which learning goal the side panel shows, as a full unit id "topic/goal" —
+  // it can belong to this topic or to one of its sub-areas.
+  const [openUnitId, setOpenUnitId] = useState<string | null>(null);
 
-  // The relations map draws this topic opened up, so its learning goals are
-  // clickable nodes. Memoized — GraphView rebuilds when this identity changes.
-  const expandedIds = useMemo(
-    () => (topic?.subtopics?.length ? new Set([topic.id]) : new Set<string>()),
-    [topic],
+  // Sub-areas of this topic (e.g. tangent-space is part of differential-geometry).
+  // Their learning goals are listed on this page, grouped under the area.
+  const subAreas = useMemo(
+    () => topics.filter((t) => t.partOf === topicId && t.subtopics?.length),
+    [topics, topicId],
   );
 
-  useEffect(() => setOpenSubId(null), [topicId]);
+  // The relations map draws this topic and its sub-areas opened up, so every
+  // learning goal is a clickable node. Memoized — GraphView rebuilds on change.
+  const expandedIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (topic?.subtopics?.length) ids.add(topic.id);
+    for (const a of subAreas) ids.add(a.id);
+    return ids;
+  }, [topic, subAreas]);
+
+  useEffect(() => setOpenUnitId(null), [topicId]);
   useEffect(() => {
-    if (!openSubId) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenSubId(null);
+    if (!openUnitId) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenUnitId(null);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [openSubId]);
+  }, [openUnitId]);
 
   // The topic's whole relation tree: everything it builds on plus everything
   // it unlocks, as an induced subgraph for the mini relations map.
@@ -72,9 +83,43 @@ export default function TopicPage({
   if (!topic) return <div className="view topic-page">Topic not found.</div>;
 
   const subtopics = subtopicsInOrder(topic);
-  const openSub = openSubId ? subtopics.find((s) => s.id === openSubId) : undefined;
   const usedIn = dependents.get(topic.id) ?? [];
   const color = LEVEL_COLORS[topic.level];
+
+  // Resolve the open unit against this topic or any of its sub-areas
+  const openParsed = openUnitId ? parseUnitId(openUnitId) : null;
+  const openOwner = openParsed ? map.get(openParsed.topicId) : undefined;
+  const openSub = openParsed?.subId
+    ? openOwner?.subtopics?.find((s) => s.id === openParsed.subId)
+    : undefined;
+
+  /** One learning goal as a clickable row that opens the side panel. */
+  const goalRow = (unitId: string, s: { id: string; title: string; outcomes?: Outcome[] }) => {
+    const unit = unitMap.get(unitId);
+    const total = s.outcomes?.length ?? 0;
+    const ticked = (s.outcomes ?? []).filter((o) => progress.isDone(`${unitId}#${o.id}`)).length;
+    return (
+      <li key={unitId} className="learning-goal-item">
+        <button
+          className={`learning-goal-button ${
+            openUnitId === unitId ? 'learning-goal-active' : ''
+          }`}
+          aria-expanded={openUnitId === unitId}
+          onClick={() => setOpenUnitId(openUnitId === unitId ? null : unitId)}
+        >
+          <span className="learning-goal-title">{s.title}</span>
+          {total > 0 && (
+            <span className="learning-goal-count">
+              {ticked}/{total}
+            </span>
+          )}
+          {unit && unitDone(unit, progress.done) && (
+            <span className="subtopic-done-tag">learned</span>
+          )}
+        </button>
+      </li>
+    );
+  };
 
   return (
     <div className={`view topic-page ${openSub ? 'topic-page-with-panel' : ''}`}>
@@ -122,7 +167,7 @@ export default function TopicPage({
             <div className="topic-page-graph">
               <GraphView
                 topics={relatedTopics}
-                selectedId={openSubId ? `${topic.id}/${openSubId}` : topic.id}
+                selectedId={openUnitId ?? topic.id}
                 highlightIds={null}
                 doneIds={progress.done}
                 directionalSelect
@@ -130,9 +175,9 @@ export default function TopicPage({
                 theme={theme}
                 onSelect={(id) => {
                   if (!id || id === topic.id) return;
-                  // A learning goal of this topic opens the side panel; any
-                  // other node is a different topic — navigate to its page.
-                  if (id.startsWith(`${topic.id}/`)) setOpenSubId(id.slice(topic.id.length + 1));
+                  // A learning goal (of this topic or a sub-area) opens the side
+                  // panel; a plain topic node navigates to its page.
+                  if (id.includes('/')) setOpenUnitId(id);
                   else onOpenTopic(id);
                 }}
               />
@@ -185,7 +230,7 @@ export default function TopicPage({
           <ContentList items={topic.content} />
         </section>
 
-        {subtopics.length > 0 && (
+        {(subtopics.length > 0 || subAreas.length > 0) && (
           <section className="topic-page-subtopics">
             <h3 className="block-heading">Learning goals</h3>
             <p className="topic-page-hint">
@@ -193,42 +238,36 @@ export default function TopicPage({
                 ? 'You have marked this whole topic as learned.'
                 : 'Pick a learning goal to see its subgoals and resources, or focus one to build the minimal path to it.'}
             </p>
-            <ul className="learning-goal-list">
-              {subtopics.map((s) => {
-                const unitId = `${topic.id}/${s.id}`;
-                const unit = unitMap.get(unitId)!;
-                const total = s.outcomes?.length ?? 0;
-                const ticked = (s.outcomes ?? []).filter((o) =>
-                  progress.isDone(`${unitId}#${o.id}`),
-                ).length;
-                return (
-                  <li key={s.id} className="learning-goal-item">
-                    <button
-                      className={`learning-goal-button ${
-                        openSubId === s.id ? 'learning-goal-active' : ''
-                      }`}
-                      aria-expanded={openSubId === s.id}
-                      onClick={() => setOpenSubId(openSubId === s.id ? null : s.id)}
-                    >
-                      <span className="learning-goal-title">{s.title}</span>
-                      {total > 0 && (
-                        <span className="learning-goal-count">
-                          {ticked}/{total}
-                        </span>
-                      )}
-                      {unitDone(unit, progress.done) && (
-                        <span className="subtopic-done-tag">learned</span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            {subtopics.length > 0 && (
+              <ul className="learning-goal-list">
+                {subtopics.map((s) => goalRow(`${topic.id}/${s.id}`, s))}
+              </ul>
+            )}
+            {subAreas.map((area) => (
+              <div key={area.id} className="learning-goal-area">
+                <button
+                  className="learning-goal-area-head"
+                  onClick={() => onOpenTopic(area.id)}
+                  title={`Open the ${area.title} page`}
+                >
+                  <span
+                    className="level-dot"
+                    style={{ background: LEVEL_COLORS[area.level], color: LEVEL_COLORS[area.level] }}
+                    aria-hidden
+                  />
+                  {area.title}
+                  <span className="learning-goal-area-open">open →</span>
+                </button>
+                <ul className="learning-goal-list">
+                  {subtopicsInOrder(area).map((s) => goalRow(`${area.id}/${s.id}`, s))}
+                </ul>
+              </div>
+            ))}
           </section>
         )}
       </article>
 
-      {openSub && (
+      {openSub && openOwner && openUnitId && (
         <aside
           className="subtopic-panel"
           role="dialog"
@@ -238,27 +277,27 @@ export default function TopicPage({
             <h3 className="subtopic-panel-title">{openSub.title}</h3>
             <button
               className="subtopic-panel-close"
-              onClick={() => setOpenSubId(null)}
+              onClick={() => setOpenUnitId(null)}
               aria-label="Close"
             >
               ×
             </button>
           </div>
-          <p className="subtopic-panel-parent">Learning goal of {topic.title}</p>
+          <p className="subtopic-panel-parent">Learning goal of {openOwner.title}</p>
           <div className="subtopic-panel-body">
             {openSub.description && <p className="topic-description">{openSub.description}</p>}
             {(openSub.outcomes?.length ?? 0) > 0 && (
               <SubgoalChecklist
                 subgoals={openSub.outcomes!}
-                unitId={`${topic.id}/${openSub.id}`}
+                unitId={openUnitId}
                 progress={progress}
                 label="Subgoals"
               />
             )}
             {(openSub.content?.length ?? 0) === 0 ? (
               <>
-                <p className="curriculum-fallback-note">Resources from {topic.title}:</p>
-                <ContentList items={topic.content} />
+                <p className="curriculum-fallback-note">Resources from {openOwner.title}:</p>
+                <ContentList items={openOwner.content} />
               </>
             ) : (
               <ContentList items={openSub.content!} />
@@ -267,15 +306,12 @@ export default function TopicPage({
               <label className="learned-toggle">
                 <input
                   type="checkbox"
-                  checked={unitDone(unitMap.get(`${topic.id}/${openSub.id}`)!, progress.done)}
-                  onChange={() => progress.toggle(`${topic.id}/${openSub.id}`)}
+                  checked={unitDone(unitMap.get(openUnitId)!, progress.done)}
+                  onChange={() => progress.toggle(openUnitId)}
                 />
                 Learned this
               </label>
-              <button
-                className="pdf-button"
-                onClick={() => onMakeGoal(`${topic.id}/${openSub.id}`)}
-              >
+              <button className="pdf-button" onClick={() => onMakeGoal(openUnitId)}>
                 Focus this path →
               </button>
             </div>

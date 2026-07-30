@@ -105,12 +105,12 @@ export default function MapView({
                 progress={progress}
               />
             )}
-            <div className="map-card-actions">
+            <div className="map-card-cta">
+              <button className="map-card-open" onClick={() => onOpenTopic(selectedTopic.id)}>
+                Open topic page →
+              </button>
               <button className="map-card-goal" onClick={() => onMakeGoal(selectedId!)}>
                 Focus this path →
-              </button>
-              <button className="pdf-button" onClick={() => onOpenTopic(selectedTopic.id)}>
-                Open topic page →
               </button>
             </div>
             <button className="map-card-close" onClick={() => onSelect(null)} aria-label="Close">
@@ -202,7 +202,7 @@ export default function MapView({
               </div>
             )}
 
-            <div className="map-card-actions">
+            <div className="map-card-cta">
               <label className="learned-toggle">
                 <input
                   type="checkbox"
@@ -216,13 +216,13 @@ export default function MapView({
                 />
                 Learned this
               </label>
+              <button className="map-card-open" onClick={() => onOpenTopic(selectedTopic.id)}>
+                Open topic page →
+              </button>
               <button className="map-card-goal" onClick={() => onMakeGoal(selectedTopic.id)}>
                 Full curriculum →
               </button>
             </div>
-            <button className="map-card-open" onClick={() => onOpenTopic(selectedTopic.id)}>
-              Open topic page →
-            </button>
             <button className="map-card-close" onClick={() => onSelect(null)} aria-label="Close">
               ×
             </button>

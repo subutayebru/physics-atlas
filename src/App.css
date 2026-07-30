@@ -1289,6 +1289,40 @@ body {
   flex: 1;
 }
 
+/* A sub-area's learning goals, grouped under the area on its parent's page */
+.learning-goal-area {
+  margin-top: 16px;
+}
+
+.learning-goal-area-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0 2px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.learning-goal-area-head:hover {
+  color: var(--ink);
+}
+
+.learning-goal-area-open {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--accent);
+}
+
 .learning-goal-count {
   font-size: 11.5px;
   font-weight: 500;
@@ -1416,11 +1450,32 @@ body {
   margin-top: 10px;
 }
 
+/* The card's decision block: learned checkbox on top, then the two routes
+   stacked full-width so neither competes for the same line. */
+.map-card-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+
+.map-card-cta .learned-toggle {
+  align-self: flex-start;
+}
+
+.map-card-cta .map-card-goal,
+.map-card-cta .map-card-open {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+
 /* Second primary route — reads as an equal partner to "Full curriculum". */
 .map-card-open {
   display: block;
   width: 100%;
-  margin-top: 10px;
   text-align: center;
   font-size: 14px;
   font-weight: 700;

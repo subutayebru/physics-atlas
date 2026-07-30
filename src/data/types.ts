@@ -64,6 +64,12 @@ export interface Topic {
   optionalPrerequisites?: string[];
   /** A learning goal's subgoals — its "can do X" checkbox breakdown */
   outcomes?: Outcome[];
+  /**
+   * This topic is a sub-area of another (e.g. tangent-space is part of
+   * differential-geometry). The parent's page lists this area's learning goals
+   * grouped under it — the three-level shape: topic → area → learning goals.
+   */
+  partOf?: string;
   /** Show in the goal picker on the landing view */
   featured?: boolean;
   content: ContentItem[];

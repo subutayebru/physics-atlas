@@ -509,6 +509,7 @@
     },
     {
       "id": "la-tensors",
+      "partOf": "linear-algebra",
       "title": "Linear Algebra for Tensors",
       "level": "advanced",
       "description": "The linear algebra a physicist needs before tensors: matrix manipulation, Einstein index notation, dual spaces and 1-forms. Learning goals live here as promotable subtopics.",
@@ -517,6 +518,7 @@
     },
     {
       "id": "calculus-geometry",
+      "partOf": "calculus-1",
       "title": "Calculus for Geometry",
       "level": "advanced",
       "description": "The calculus a physicist needs for differential geometry: derivatives, the chain rule, Jacobians, and parameterized curves.",
@@ -525,6 +527,7 @@
     },
     {
       "id": "tangent-space",
+      "partOf": "differential-geometry",
       "title": "Tangent Spaces",
       "level": "advanced",
       "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
@@ -533,6 +536,7 @@
     },
     {
       "id": "tensors",
+      "partOf": "differential-geometry",
       "title": "Tensors & Index Notation",
       "level": "advanced",
       "description": "Multilinear maps, index gymnastics, why partial derivatives fail to transform tensorially.",
@@ -541,6 +545,7 @@
     },
     {
       "id": "metric",
+      "partOf": "differential-geometry",
       "title": "The Metric",
       "level": "advanced",
       "description": "Inner products on tangent spaces, the line element, raising and lowering indices.",
@@ -549,6 +554,7 @@
     },
     {
       "id": "connection",
+      "partOf": "differential-geometry",
       "title": "Connections & Christoffel Symbols",
       "level": "advanced",
       "description": "What a connection provides, the Levi-Civita connection, Christoffel symbols from the metric.",

@@ -207,6 +207,23 @@ await page.pdf({ path: `${OUT}/topic-quantum-mechanics.pdf`, format: 'A4' });
 console.log(`wrote ${OUT}/topic-quantum-mechanics.pdf`);
 await page.emulateMediaType('screen');
 
+// --- A topic whose learning goals live in its sub-areas still shows them ---
+await page.goto(`${URL}/?mode=topic&id=differential-geometry`, { waitUntil: 'networkidle0' });
+await page.waitForSelector('.learning-goal-item');
+const dgAreas = await page.$$eval('.learning-goal-area-head', (els) =>
+  els.map((e) => e.textContent?.replace('open →', '').trim()),
+);
+const dgGoals = await page.$$eval('.learning-goal-item', (els) => els.length);
+console.log(`differential-geometry: ${dgGoals} learning goals in ${dgAreas.length} sub-areas`);
+if (dgAreas.length !== 4) errors.push(`expected 4 diff-geo sub-areas, got ${dgAreas.length}`);
+if (dgGoals !== 13) errors.push(`expected 13 diff-geo learning goals, got ${dgGoals}`);
+await page.click('.learning-goal-area .learning-goal-button');
+await page.waitForSelector('.subtopic-panel');
+const dgOwner = await page.$eval('.subtopic-panel-parent', (el) => el.textContent?.trim());
+console.log(`  panel from a sub-area goal: ${dgOwner}`);
+if (!/Tangent Spaces/i.test(dgOwner ?? ''))
+  errors.push('sub-area learning goal did not open with its own owner');
+
 // --- Learning-goal detail: subgoals as checkboxes, prerequisite areas, and
 //     one-click promotion of a prerequisite into the main goal ---
 await page.goto(`${URL}/?mode=goal&goal=general-relativity/parallel-transport`, {
