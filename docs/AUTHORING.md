@@ -1,8 +1,72 @@
 # Authoring Guide — adding topics & content
 
-All content lives in **one file**: [`src/data/topics.json`](../src/data/topics.json).
-Edit it, run `npm run validate`, done. The site rebuilds the graph from it
+Content lives in **two places**:
+
+| You want to add… | Edit | Format |
+|---|---|---|
+| A **learning goal** ("be able to derive X") with its subgoals + prerequisites | `content/goals/<name>.md` | Markdown outline — [see below](#learning-goals-markdown) |
+| A **topic / area** on the map, or resources (books, videos) | [`src/data/topics.json`](../src/data/topics.json) | JSON |
+
+Either way: edit, run `npm run validate`, done. The site rebuilds the graph
 automatically.
+
+## Learning goals (Markdown)
+
+This is the everyday format — write the outline, the build turns it into the
+map. **Every learning goal is a real node**: it has its own subgoals, its own
+prerequisites, and *any* of them can be clicked to become the main goal.
+
+Create `content/goals/parallel-transport.md`:
+
+```markdown
+# Parallel transport   {id: general-relativity/parallel-transport}
+
+Be able to derive and use the parallel transport equation.
+
+## Subgoals
+
+- Explain all the elements of the parallel transport equation.
+- Distinguish between the geodesic equation and parallel transport.
+
+## Prerequisites
+
+### Linear Algebra   {ref: la-tensors}
+
+- Comfortably manipulate matrix equations.        {id: matrix-eqs}
+- Use and explain Einstein index notation.        {id: einstein}
+- Distinguish abstract vector spaces and 1-forms. {id: duals, needs: matrix-eqs, einstein}
+
+### Calculus   {ref: calculus-geometry}
+
+- Compute derivatives.   {id: compute-derivatives}
+- Compute Jacobians.     {needs: compute-derivatives}
+```
+
+What each part does:
+
+| Line | Meaning |
+|---|---|
+| `# Title {id: topicId/goalId}` | The learning goal itself. `topicId` must be a topic in topics.json (its home — e.g. `general-relativity`); `goalId` is a new kebab-case id you choose. |
+| Text under the title | The goal's one-line description. |
+| `## Subgoals` | Its checkbox breakdown — "what you can do". Each bullet becomes one checkbox. |
+| `## Prerequisites` | The areas this goal builds on. |
+| `### Area {ref: topicId}` | An **area** — must be an existing topic id. Its bullets become learning goals *of that area*. |
+| `- text {id: …, needs: …}` | One learning goal. `id` optional (auto-slugged from the text, but write it if others reference it). `needs` lists learning goals that come **first**. |
+
+`needs` rules:
+
+- Bare id (`matrix-eqs`) = a sibling in the **same** area.
+- Cross-area = `areaTopicId/goalId` (e.g. `la-tensors/duals`).
+- These become real prerequisite edges — they order the curriculum and draw
+  the arrows on the map. Keep them acyclic; the validator checks.
+
+Reuse is by id: writing the same `{id:}` under the same `{ref:}` area in
+another file refers to the *same* learning goal (first definition wins, and
+the validator warns if a later one disagrees). So a second goal that also
+needs `la-tensors/duals` just lists it — the learner ticks it once.
+
+If an area doesn't exist yet, add it to topics.json as a normal topic first
+(see below), then point `{ref:}` at it.
 
 ## Adding a topic
 
@@ -79,7 +143,7 @@ Linear Algebra, not the whole course. Annotate incrementally — topics without
 | `description` | Optional, shown when the step is expanded. |
 | `prerequisites` | Refs in three forms — see below. |
 | `optionalPrerequisites` | Same ref forms; *enrichment*, not required. Curriculum shows these steps with an "optional" badge and a hide toggle; the map draws optional topic edges dashed. On overlap with `prerequisites`, mandatory wins. |
-| `objectives` | Optional list of "after this step you can …" outcomes; shown in the step detail, the map card, and the PDF export. |
+| `objectives` | Optional list of plain "after this step you can …" strings; shown in the step detail, the map card, and the PDF export. For a *checkbox* breakdown, author the step as a learning goal in Markdown instead — its `## Subgoals` become tickable. |
 | `content` | Optional own resources; when empty/absent the step shows the parent topic's resources. |
 
 Topics support `optionalPrerequisites` (topic ids) and `objectives` too.
@@ -114,10 +178,15 @@ collapsible "Skills to practice along the way" panel under every curriculum
 npm run validate
 ```
 
-Catches: duplicate/malformed ids, prerequisites pointing to topics or
-subtopics that don't exist, cycles (A needs B needs A — also through subtopic
-chains), bare refs to annotated topics, bad URLs, missing fields. If it prints
-`✓ topics.json valid`, the site will render.
+This first compiles `content/**/*.md` into the map, then validates everything
+together. Catches: duplicate/malformed ids, prerequisites (and `needs`)
+pointing to things that don't exist, cycles (A needs B needs A — also through
+subtopic chains), bare refs to annotated topics, bad URLs, missing fields. If
+it prints `✓ topics.json valid`, the site will render.
+
+Lines starting with `⚠` are advisories, not failures — the most common is
+"topic-level prerequisite … is not referenced by any subtopic", which just
+means an area's learning goals don't yet cover everything it builds on.
 
 ## Rules of thumb for good graph shape
 
