@@ -1,32 +1,27 @@
 import rawData from './topics.json';
-import generated from './generated-outcomes.json';
-import type { Outcome, Subtopic, Topic, TopicGraph } from './types';
+import generated from './generated-units.json';
+import type { Subtopic, TopicGraph } from './types';
 
 interface Generated {
-  outcomes: Record<string, Outcome[]>;
-  goals: Record<string, { subgoals: Outcome[]; requires: string[] }>;
+  /** areaTopicId -> its compiled learning-goal subtopics */
+  subtopics: Record<string, Subtopic[]>;
 }
 
 /**
  * topics.json stays the hand-authored source of truth; the compiled
- * outcome/goal sidecar (from content/*.md) is merged onto units additively.
- * Runs once at module load — missing/empty sidecar just leaves units as-is.
+ * learning-goal subtopics (from content/*.md → generated-units.json) are
+ * appended onto their area topics additively. Runs once at module load — a
+ * missing/empty sidecar just leaves topics as authored.
  */
 function merge(): TopicGraph {
   const data = rawData as TopicGraph;
   const gen = generated as Generated;
+  const byId = new Map(data.topics.map((t) => [t.id, t]));
 
-  const apply = (id: string, target: Topic | Subtopic) => {
-    const lib = gen.outcomes[id];
-    const goal = gen.goals[id];
-    const merged = [...(lib ?? []), ...(goal?.subgoals ?? [])];
-    if (merged.length) target.outcomes = merged;
-    if (goal?.requires.length) target.requires = goal.requires;
-  };
-
-  for (const t of data.topics) {
-    apply(t.id, t);
-    for (const s of t.subtopics ?? []) apply(`${t.id}/${s.id}`, s);
+  for (const [topicId, subs] of Object.entries(gen.subtopics ?? {})) {
+    const t = byId.get(topicId);
+    if (!t) continue;
+    t.subtopics = [...(t.subtopics ?? []), ...subs];
   }
   return data;
 }

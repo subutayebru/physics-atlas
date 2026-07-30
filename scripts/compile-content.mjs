@@ -1,22 +1,27 @@
 #!/usr/bin/env node
 // Compiles Sophie's Markdown detail maps (content/**/*.md) into
-// src/data/generated-outcomes.json — a sidecar the app merges onto topics.
-// Authoring format (forgiving): a trailing {key: value, ...} tag on a line.
-//   # Goal title            {id: <topic-or-subtopic-ref>}
+// src/data/generated-units.json — a sidecar the loader + validator merge onto
+// topics.json as learning-goal SUBTOPICS. Every learning goal is a first-class,
+// promotable subtopic; its `needs` become prerequisite edges; a goal's Subgoals
+// become its `outcomes` (the checkbox breakdown). Authoring format (forgiving) —
+// a trailing {key: value, ...} tag on a line:
+//   # Goal title            {id: <topicId>/<subId>}    ← the goal IS a subtopic
 //   ## Subgoals
-//   - <text>                {id: <slug>}          (id optional)
+//   - <text>                {id: <slug>}               (the goal's checkbox subgoals)
 //   ## Prerequisites
-//   ### Category            {ref: <topic-or-subtopic-id>}
-//   - <competency>          {id: <slug>, needs: <id>, <id>}   (needs last)
-// Competencies become that unit's `outcomes`; the goal collects them as
-// `requires` ("<ref>#<id>"). Run via `npm run build:content`.
+//   ### Area title          {ref: <topicId>}           ← an area = a topic
+//   - <learning goal>       {id: <slug>, needs: <id>, <id>}   (needs = within-area order)
+// A prerequisite bullet becomes a learning-goal subtopic of <Area>; the goal
+// lists each as a prerequisite ("<areaTopicId>/<id>"). A bare `needs` id is a
+// sibling in the same area; cross-area needs use "areaTopicId/goalId".
+// Run via `npm run build:content`.
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT_DIR = join(root, 'content');
-const OUT = join(root, 'src/data/generated-outcomes.json');
+const OUT = join(root, 'src/data/generated-units.json');
 
 const warnings = [];
 
@@ -36,7 +41,7 @@ function parseTag(line) {
     const body = m[1];
     const id = body.match(/\bid:\s*([a-z0-9/-]+)/i);
     const ref = body.match(/\bref:\s*([a-z0-9/-]+)/i);
-    const needs = body.match(/\bneeds:\s*([a-z0-9,\s/#-]+)/i);
+    const needs = body.match(/\bneeds:\s*([a-z0-9,\s/-]+)/i);
     if (id) tag.id = id[1].trim();
     if (ref) tag.ref = ref[1].trim();
     if (needs) tag.needs = needs[1].split(',').map((x) => x.trim()).filter(Boolean);
@@ -60,54 +65,61 @@ function listMarkdown(dir) {
   return out;
 }
 
-// unitId -> Map(outcomeId -> {id, text, needs}) ; first definition canonical
-const outcomesByUnit = new Map();
-const goals = {};
+// topicId -> Map(subId -> Subtopic) ; first definition canonical
+const subtopicsByTopic = new Map();
 
-function addOutcome(unitId, o, sourceFile) {
-  if (!outcomesByUnit.has(unitId)) outcomesByUnit.set(unitId, new Map());
-  const bucket = outcomesByUnit.get(unitId);
-  const existing = bucket.get(o.id);
+function addSubtopic(topicId, sub, sourceFile) {
+  if (!subtopicsByTopic.has(topicId)) subtopicsByTopic.set(topicId, new Map());
+  const bucket = subtopicsByTopic.get(topicId);
+  const existing = bucket.get(sub.id);
   if (existing) {
     const drift =
-      existing.text !== o.text || JSON.stringify(existing.needs ?? []) !== JSON.stringify(o.needs ?? []);
+      existing.title !== sub.title ||
+      JSON.stringify(existing.prerequisites) !== JSON.stringify(sub.prerequisites);
     if (drift)
       warnings.push(
-        `competency "${unitId}#${o.id}" redefined differently in ${sourceFile} — first definition kept`,
+        `learning goal "${topicId}/${sub.id}" redefined differently in ${sourceFile} — first definition kept`,
       );
     return;
   }
-  bucket.set(o.id, o);
+  bucket.set(sub.id, sub);
 }
 
 for (const file of listMarkdown(CONTENT_DIR)) {
   const rel = file.slice(root.length + 1);
   const lines = readFileSync(file, 'utf8').split('\n');
-  let goalRef = null;
+  let goalTopic = null;
+  let goalSub = null;
+  let goalText = null;
   let section = null; // 'subgoals' | 'prereqs'
-  let currentRef = null;
+  let areaId = null;
   const subgoals = [];
-  const requires = [];
+  const goalPrereqs = [];
 
   for (const raw of lines) {
     const line = raw.trimEnd();
     if (!line.trim()) continue;
     if (/^#\s/.test(line)) {
-      const { tag } = parseTag(line);
-      goalRef = tag.id ?? null;
+      const { text, tag } = parseTag(line);
+      goalText = text;
+      if (tag.id && tag.id.includes('/')) {
+        [goalTopic, goalSub] = tag.id.split('/');
+      } else {
+        warnings.push(`${rel}: "# ${text}" needs {id: topicId/subId} — file skipped`);
+      }
       section = null;
       continue;
     }
     if (/^##\s/.test(line)) {
       const h = line.replace(/^##\s+/, '').toLowerCase();
       section = h.startsWith('subgoal') ? 'subgoals' : h.startsWith('prereq') ? 'prereqs' : null;
-      currentRef = null;
+      areaId = null;
       continue;
     }
     if (/^###\s/.test(line)) {
       const { tag } = parseTag(line);
-      currentRef = tag.ref ?? null;
-      if (!currentRef) warnings.push(`${rel}: category heading without {ref: …} — bullets ignored`);
+      areaId = tag.ref ?? null;
+      if (!areaId) warnings.push(`${rel}: area heading without {ref: topicId} — bullets ignored`);
       continue;
     }
     if (/^\s*-\s/.test(line)) {
@@ -116,30 +128,29 @@ for (const file of listMarkdown(CONTENT_DIR)) {
       const id = tag.id ?? slug(text);
       if (section === 'subgoals') {
         subgoals.push({ id, text });
-      } else if (section === 'prereqs' && currentRef) {
-        const o = { id, text };
-        if (tag.needs?.length) o.needs = tag.needs;
-        addOutcome(currentRef, o, rel);
-        requires.push(`${currentRef}#${id}`);
+      } else if (section === 'prereqs' && areaId) {
+        const prerequisites = (tag.needs ?? []).map((n) => (n.includes('/') ? n : `${areaId}/${n}`));
+        addSubtopic(areaId, { id, title: text, prerequisites }, rel);
+        goalPrereqs.push(`${areaId}/${id}`);
       }
     }
   }
 
-  if (goalRef) {
-    goals[goalRef] = { subgoals, requires };
-  } else {
-    warnings.push(`${rel}: no "# Title {id: …}" — file skipped as a goal`);
+  if (goalTopic && goalSub) {
+    const goalSubtopic = { id: goalSub, title: goalText, prerequisites: goalPrereqs };
+    if (subgoals.length) goalSubtopic.outcomes = subgoals;
+    addSubtopic(goalTopic, goalSubtopic, rel);
   }
 }
 
-const outcomes = {};
-for (const [unit, bucket] of outcomesByUnit) outcomes[unit] = [...bucket.values()];
+const subtopics = {};
+for (const [topicId, bucket] of subtopicsByTopic) subtopics[topicId] = [...bucket.values()];
 
-writeFileSync(OUT, JSON.stringify({ outcomes, goals }, null, 2) + '\n');
+writeFileSync(OUT, JSON.stringify({ subtopics }, null, 2) + '\n');
 
 for (const w of warnings) console.log(`⚠ ${w}`);
-const unitCount = Object.keys(outcomes).length;
-const outcomeCount = Object.values(outcomes).reduce((n, a) => n + a.length, 0);
+const topicCount = Object.keys(subtopics).length;
+const goalCount = Object.values(subtopics).reduce((n, a) => n + a.length, 0);
 console.log(
-  `✓ compiled ${Object.keys(goals).length} goal(s), ${outcomeCount} outcomes across ${unitCount} unit(s) → ${OUT.slice(root.length + 1)}`,
+  `✓ compiled ${goalCount} learning goal(s) across ${topicCount} area(s) → ${OUT.slice(root.length + 1)}`,
 );

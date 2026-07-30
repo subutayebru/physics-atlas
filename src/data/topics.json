@@ -508,6 +508,54 @@
       ]
     },
     {
+      "id": "la-tensors",
+      "title": "Linear Algebra for Tensors",
+      "level": "advanced",
+      "description": "The linear algebra a physicist needs before tensors: matrix manipulation, Einstein index notation, dual spaces and 1-forms. Learning goals live here as promotable subtopics.",
+      "prerequisites": ["linear-algebra"],
+      "content": []
+    },
+    {
+      "id": "calculus-geometry",
+      "title": "Calculus for Geometry",
+      "level": "advanced",
+      "description": "The calculus a physicist needs for differential geometry: derivatives, the chain rule, Jacobians, and parameterized curves.",
+      "prerequisites": ["calculus-1"],
+      "content": []
+    },
+    {
+      "id": "tangent-space",
+      "title": "Tangent Spaces",
+      "level": "advanced",
+      "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
+      "prerequisites": ["multivariable-calculus"],
+      "content": []
+    },
+    {
+      "id": "tensors",
+      "title": "Tensors & Index Notation",
+      "level": "advanced",
+      "description": "Multilinear maps, index gymnastics, why partial derivatives fail to transform tensorially.",
+      "prerequisites": ["tangent-space", "la-tensors"],
+      "content": []
+    },
+    {
+      "id": "metric",
+      "title": "The Metric",
+      "level": "advanced",
+      "description": "Inner products on tangent spaces, the line element, raising and lowering indices.",
+      "prerequisites": ["tangent-space", "la-tensors"],
+      "content": []
+    },
+    {
+      "id": "connection",
+      "title": "Connections & Christoffel Symbols",
+      "level": "advanced",
+      "description": "What a connection provides, the Levi-Civita connection, Christoffel symbols from the metric.",
+      "prerequisites": ["metric", "tensors"],
+      "content": []
+    },
+    {
       "id": "differential-geometry",
       "title": "Differential Geometry & Tensors",
       "level": "advanced",
@@ -526,38 +574,6 @@
           "title": "A Student's Guide to Vectors and Tensors",
           "author": "Daniel Fleisch",
           "note": "Gentle on-ramp to tensor notation before the heavy machinery."
-        }
-      ],
-      "subtopics": [
-        {
-          "id": "tangent-space",
-          "title": "Tangent Spaces",
-          "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
-          "prerequisites": ["multivariable-calculus"]
-        },
-        {
-          "id": "tensors",
-          "title": "Tensors & Index Notation",
-          "description": "Multilinear maps, index gymnastics, why partial derivatives fail to transform tensorially.",
-          "prerequisites": ["tangent-space", "linear-algebra/vectors-and-spaces"]
-        },
-        {
-          "id": "metric",
-          "title": "The Metric",
-          "description": "Inner products on tangent spaces, the line element, raising and lowering indices.",
-          "prerequisites": ["tangent-space", "linear-algebra/inner-products-and-orthogonality"]
-        },
-        {
-          "id": "connection",
-          "title": "Connections & Christoffel Symbols",
-          "description": "What a connection provides, the Levi-Civita connection, Christoffel symbols from the metric.",
-          "prerequisites": ["metric", "tensors"]
-        },
-        {
-          "id": "parallel-transport",
-          "title": "Parallel Transport",
-          "description": "Moving a vector along a curve while keeping it 'as parallel as possible' — the geometric heart of curvature.",
-          "prerequisites": ["connection", "tensors"]
         }
       ]
     },
