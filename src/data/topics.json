@@ -528,7 +528,7 @@
       "title": "Tangent Spaces",
       "level": "advanced",
       "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
-      "prerequisites": ["multivariable-calculus"],
+      "prerequisites": ["multivariable-calculus", "calculus-geometry"],
       "content": []
     },
     {
@@ -559,8 +559,8 @@
       "id": "differential-geometry",
       "title": "Differential Geometry & Tensors",
       "level": "advanced",
-      "description": "Manifolds, tensors, metrics, covariant derivatives, curvature. The mathematics of curved spacetime — the steepest single step on the road to general relativity.",
-      "prerequisites": ["multivariable-calculus", "linear-algebra"],
+      "description": "Manifolds, tensors, metrics, covariant derivatives, curvature. The mathematics of curved spacetime — the steepest single step on the road to general relativity. Its learning goals live in the areas it builds on: tangent spaces, tensors, the metric, and connections.",
+      "prerequisites": ["connection"],
       "content": [
         {
           "type": "video",
