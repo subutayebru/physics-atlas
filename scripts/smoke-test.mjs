@@ -140,25 +140,63 @@ await page.emulateMediaType('screen');
 // --- Topic page: content, relations map, and its own PDF sheet ---
 await page.goto(`${URL}/?mode=topic&id=quantum-mechanics`, { waitUntil: 'networkidle0' });
 await page.waitForSelector('.topic-page-title');
-const subBlocks = await page.$$eval('.subtopic-block', (els) => els.length);
+const goalItems = await page.$$eval('.learning-goal-item', (els) => els.length);
 console.log(
   'topic page:',
   await page.$eval('.topic-page-title', (el) => el.textContent?.trim()),
-  `· ${subBlocks} subtopic blocks`,
+  `· ${goalItems} learning goals`,
 );
-// Migrated QM objectives are now tickable subgoals, not plain bullets
-const qmSubgoals = await page.$$eval('.subgoal-row', (els) => els.length);
-const qmBoxes = await page.$$eval('.subgoal-row input[type=checkbox]', (els) => els.length);
-console.log(`quantum-mechanics subgoals: ${qmSubgoals} rows, ${qmBoxes} checkboxes`);
-if (qmSubgoals !== 27) errors.push(`expected 27 QM subgoals, got ${qmSubgoals}`);
-if (qmBoxes !== qmSubgoals) errors.push('some QM subgoals are not tickable');
-await page.click('.subgoal-row input[type=checkbox]');
+if (goalItems !== 8) errors.push(`expected 8 QM learning goals, got ${goalItems}`);
+
+// The topic's own subgoals (migrated from objectives) are tickable inline
+const topicSubgoals = await page.$$eval('.subgoal-row input[type=checkbox]', (els) => els.length);
+console.log(`topic-level subgoals: ${topicSubgoals}`);
+if (topicSubgoals !== 3) errors.push(`expected 3 topic-level subgoals, got ${topicSubgoals}`);
+
+// Opening a learning goal pops the side panel with its own subgoals
+await page.click('.learning-goal-button');
+await page.waitForSelector('.subtopic-panel');
+const panelTitle = await page.$eval('.subtopic-panel-title', (el) => el.textContent?.trim());
+const panelSubgoals = await page.$$eval(
+  '.subtopic-panel .subgoal-row input[type=checkbox]',
+  (els) => els.length,
+);
+console.log(`side panel: "${panelTitle}" with ${panelSubgoals} subgoals`);
+if (panelSubgoals < 1) errors.push('side panel has no subgoals');
+await page.click('.subtopic-panel .subgoal-row input[type=checkbox]');
 await new Promise((r) => setTimeout(r, 250));
 await page.reload({ waitUntil: 'networkidle0' });
-await page.waitForSelector('.subgoal-row');
-const qmPersisted = await page.$eval('.subgoal-row input[type=checkbox]', (el) => el.checked);
-console.log('QM subgoal tick persisted:', qmPersisted);
-if (!qmPersisted) errors.push('QM subgoal tick did not persist');
+await page.waitForSelector('.learning-goal-button');
+await page.click('.learning-goal-button');
+await page.waitForSelector('.subtopic-panel');
+const panelPersisted = await page.$eval(
+  '.subtopic-panel .subgoal-row input[type=checkbox]',
+  (el) => el.checked,
+);
+console.log('panel subgoal tick persisted:', panelPersisted);
+if (!panelPersisted) errors.push('panel subgoal tick did not persist');
+
+// Escape closes the panel
+await page.keyboard.press('Escape');
+await new Promise((r) => setTimeout(r, 250));
+const panelClosed = (await page.$('.subtopic-panel')) === null;
+console.log('Escape closes panel:', panelClosed);
+if (!panelClosed) errors.push('Escape did not close the side panel');
+
+// Clicking a learning goal in the relations map also opens the panel
+// (cytoscape draws to canvas, so drive it through the dev-only handle)
+const treeSubNodes = await page.evaluate(
+  () => window.__cy?.nodes().map((n) => n.id()).filter((id) => id.startsWith('quantum-mechanics/')).length ?? 0,
+);
+await page.evaluate(() => window.__cy.$id('quantum-mechanics/spin').emit('tap'));
+await new Promise((r) => setTimeout(r, 350));
+const fromTree = await page
+  .$eval('.subtopic-panel-title', (el) => el.textContent?.trim())
+  .catch(() => null);
+console.log(`tree: ${treeSubNodes} learning-goal nodes; tapping "spin" opened panel "${fromTree}"`);
+if (treeSubNodes !== 8) errors.push(`expected 8 learning-goal nodes in the tree, got ${treeSubNodes}`);
+if (fromTree !== 'Spin') errors.push('clicking a learning goal in the tree did not open its panel');
+await page.keyboard.press('Escape');
 
 await page.emulateMediaType('print');
 const tpSheet = await page.$eval('.print-sheet', (el) => getComputedStyle(el).display);
