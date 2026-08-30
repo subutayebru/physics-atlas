@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
 
 const DATA_PATH = join(dirname(fileURLToPath(import.meta.url)), '../src/data/topics.json');
 
-const LEVELS = ['foundation', 'core', 'advanced', 'goal'];
+const CATEGORIES = ['field', 'method', 'math-concept'];
 const CONTENT_TYPES = ['book', 'video', 'course', 'notes', 'article'];
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -101,7 +101,11 @@ for (const t of data.topics) {
   else ids.add(t.id);
 
   if (!t.title) errors.push(`${where}: missing "title"`);
-  if (!LEVELS.includes(t.level)) errors.push(`${where}: level must be one of ${LEVELS.join(', ')}`);
+  // "category" is optional — Sophie leaves it off for topics she hasn't
+  // classified yet, and that is a content decision, not a gap to flag.
+  // Only check the value when the field is present; do not require it.
+  if (t.category !== undefined && !CATEGORIES.includes(t.category))
+    errors.push(`${where}: category must be one of ${CATEGORIES.join(', ')}`);
   if (!t.description) warn.push(`${where}: empty description`);
   if (!Array.isArray(t.prerequisites)) errors.push(`${where}: "prerequisites" must be an array (use [] for none)`);
   if (t.optionalPrerequisites !== undefined && !Array.isArray(t.optionalPrerequisites))

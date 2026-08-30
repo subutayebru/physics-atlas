@@ -1,4 +1,4 @@
-export type TopicLevel = 'foundation' | 'core' | 'advanced' | 'goal';
+export type TopicCategory = 'field' | 'method' | 'math-concept';
 
 export type ContentType = 'book' | 'video' | 'course' | 'notes' | 'article';
 
@@ -55,8 +55,11 @@ export interface Topic {
   /** kebab-case, unique across the file */
   id: string;
   title: string;
-  /** Rough altitude in the graph; drives node color */
-  level: TopicLevel;
+  /**
+   * What kind of node this is — drives node color and the legend. Optional:
+   * topics Sophie has not classified yet render in a neutral grey.
+   */
+  category?: TopicCategory;
   description: string;
   /** ids of topics that should be learned first (direct edges only) */
   prerequisites: string[];

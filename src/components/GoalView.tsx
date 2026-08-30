@@ -8,7 +8,7 @@ import {
   unitDone,
   type CurriculumUnit,
 } from '../graph/dag';
-import { LEVEL_COLORS } from '../graph/levelColors';
+import { CATEGORY_COLORS, categoryOf } from '../graph/categoryColors';
 import GraphView from './GraphView';
 import ContentList from './ContentList';
 import Legend from './Legend';
@@ -143,8 +143,8 @@ export default function GoalView({
             <span className="curriculum-index">{index}</span>
             {!isSub && (
               <span
-                className="level-dot"
-                style={{ background: LEVEL_COLORS[u.topic.level], color: LEVEL_COLORS[u.topic.level] }}
+                className="cat-dot"
+                style={{ background: CATEGORY_COLORS[categoryOf(u.topic)], color: CATEGORY_COLORS[categoryOf(u.topic)] }}
                 aria-hidden
               />
             )}
@@ -202,7 +202,7 @@ export default function GoalView({
           <button
             key={t.id}
             className={`goal-chip ${t.id === goalRef ? 'goal-chip-active' : ''}`}
-            style={{ '--chip-color': LEVEL_COLORS[t.level] } as React.CSSProperties}
+            style={{ '--chip-color': CATEGORY_COLORS[categoryOf(t)] } as React.CSSProperties}
             onClick={() => onPickGoal(t.id)}
           >
             {t.title}
@@ -310,8 +310,8 @@ export default function GoalView({
                 <li key={g.topic.id} className="curriculum-group">
                   <div className="curriculum-group-head">
                     <span
-                      className="level-dot"
-                      style={{ background: LEVEL_COLORS[g.topic.level], color: LEVEL_COLORS[g.topic.level] }}
+                      className="cat-dot"
+                      style={{ background: CATEGORY_COLORS[categoryOf(g.topic)], color: CATEGORY_COLORS[categoryOf(g.topic)] }}
                       aria-hidden
                     />
                     <span className="curriculum-group-name">{g.topic.title}</span>

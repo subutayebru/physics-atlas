@@ -76,7 +76,7 @@ Append an object to the `topics` array:
 {
   "id": "quantum-field-theory",
   "title": "Quantum Field Theory",
-  "level": "advanced",
+  "category": "method",
   "description": "One or two sentences: what is this and why would someone learn it?",
   "prerequisites": ["quantum-mechanics", "special-relativity", "lagrangian-mechanics"],
   "featured": false,
@@ -90,7 +90,7 @@ Field rules:
 |---|---|
 | `id` | kebab-case (`lower-case-with-dashes`), unique. Never change an id later without updating everyone who lists it as a prerequisite. |
 | `title` | Human-readable name shown on the node. |
-| `level` | `foundation` (math basics) · `core` (first physics courses) · `advanced` (upper-level) · `goal` (summit topics). Drives node color only. |
+| `category` | **Optional** — lass das Feld weg, solange du dir nicht sicher bist; solche Topics erscheinen neutral grau mit dem Legenden-Eintrag *Not yet categorized*, und der Validator meckert nicht. Nachtragen ist ein Ein-Wort-Diff. Falls gesetzt: `field` — a domain of physical phenomena you study (electromagnetism, cosmology, condensed matter). `method` — a formalism/tool applied across fields (Lagrangian mechanics, QFT, fluid dynamics, numerics). `math-concept` — mathematics (calculus, linear algebra, tensors, the metric). Drives node color and the legend. |
 | `prerequisites` | ids of topics to learn **directly before** this one. Only direct edges — don't list calculus on cosmology; the graph walks the chain for you. `[]` for entry-point topics. |
 | `featured` | `true` shows the topic in the goal picker on the landing view. Optional. |
 | `content` | list of learning resources, see below. `[]` is allowed (validator warns but passes). |
@@ -161,6 +161,10 @@ Prerequisite refs, resolved in this order:
 Consistency rule: a cross-topic ref should stay inside topics your topic
 already (transitively) builds on — the validator warns otherwise, because it
 usually means a topic-level edge is missing from the map.
+
+A topic's hand-authored `subtopics` (here in topics.json) and its
+Markdown-compiled ones (`content/*.md`, above) share one id space — pick ids
+that don't collide, or the validator reports a duplicate subtopic id.
 
 ## Skills (optional, top-level)
 

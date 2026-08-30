@@ -121,6 +121,42 @@ Remaining client asks (simulations, exercises w/ hidden solutions, equation
 popups, approach labels, ratings) recorded as feature-8…12 in BACKLOG.md with
 the client's reference links.
 
+## Decision 10 — Node color encodes category, not altitude (2026-08-30)
+
+`Topic.level` (foundation/core/advanced/goal) drove node color but carried no
+information the dagre `BT` layout wasn't already showing via height. What
+learners actually want to read off the graph is the *kind* of node: a physics
+field, a method/formalism, or a math concept.
+
+| Option | Status | Notes |
+|---|---|---|
+| **`Topic.category?: 'field' \| 'method' \| 'math-concept'`, optional** | ✅ Chosen | Replaces `level` outright (`src/graph/categoryColors.ts`). Palette re-measured for both surfaces (`--page` dark `#070b14`, light `#f3f5fa`): field `#199e70` (5.78/3.12), method `#e2574c` (5.34/3.38), math-concept `#3987e5` (5.41/3.34), uncategorized `#7a86a0` — the light theme's existing `--muted` (5.38/3.35). Worst adjacent CVD pair (Machado matrices, ΔE76 Lab): Protanopie field/method 14.4; the neutral stays 18.9+ from every category so "not yet categorized" never reads as a fourth content group. Sophie's mapping (34/40 topics) is authoritative — six topics (`lagrangian-mechanics`, `optics`, `standard-model`, `quantum-gravity-frontiers`, `stellar-astrophysics`, `galaxies-large-scale-structure`) intentionally carry no `category` yet: an unclassified topic is a valid, permanent content state (render neutral grey, legend entry "Not yet categorized"), not a migration remnant the validator should flag. |
+| Mandatory `category` | ↩ rejected | Would force Sophie to invent classifications for topics she doesn't yet have an opinion on — exactly the noise that makes color-coding untrustworthy. |
+| Keep `level` alongside `category` | ↩ pathway | If the altitude information turns out to be useful after all (e.g. a "how advanced is this" filter), re-add it as a second optional field rather than reviving it as the color driver. |
+
+Also decided:
+
+- **Ziel-Highlighting (Explorer):** picking a learning goal on the map now
+  marks it gold (`GraphView.tsx` `.goal-node`, reusing the existing
+  gold/silver vocabulary from click-selection) and highlights the exact
+  Unit-Closure via `goalPathFor()` (`src/graph/dag.ts`, a thin adapter over
+  `expandedCurriculumFor` — no second traversal). Cross-topic **unit** edges
+  are drawn on demand so the highlighted units don't render as disconnected
+  islands when their parent topic isn't expanded.
+- Form-coding per category (e.g. cytoscape `cut-rectangle` for `method`) —
+  ↩ pathway, deliberately **not** built now. `width/height: 'label'` shapes
+  change text metrics and would touch layout; the weak field/method
+  red-green pair is instead covered by the mandatory text-label redundancy
+  already required project-wide (node label, legend text, category text in
+  map card / topic page / PDF header).
+- Fine-grained (unit-level) goal highlighting in `GoalView` — ↩ pathway;
+  `GoalView` still dims via the coarse `ancestorsOf`. Bringing the same
+  `goalPathFor` treatment there is a follow-up, kept out of this feature to
+  stay reviewable.
+- A fourth content category (e.g. `application`) — ↩ pathway, revisit if the
+  "uncategorized" group turns out to be a real cluster rather than a
+  temporary gap.
+
 ## Multi-agent workflow (web-dev-agent-system)
 
 **Installed 2026-07-02** (Setup B from `../web-dev-agent-system-main`):

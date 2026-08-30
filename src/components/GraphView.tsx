@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import type { Topic } from '../data/types';
-import { buildTopicMap, parseUnitId, resolveSubtopicRef } from '../graph/dag';
-import { LEVEL_COLORS } from '../graph/levelColors';
+import { buildTopicMap, buildUnitGraph, parseUnitId, resolveSubtopicRef } from '../graph/dag';
+import { CATEGORY_COLORS, categoryOf } from '../graph/categoryColors';
 
 cytoscape.use(dagre);
 
@@ -30,6 +30,10 @@ interface GraphViewProps {
   onToggleExpand?: (id: string) => void;
   /** Light theme swaps the ink/edge palette (canvas can't use CSS vars). */
   theme?: 'dark' | 'light';
+  /** The golden-marked goal node (unit or topic id). */
+  goalId?: string | null;
+  /** Units to connect with cross-topic unit edges (the goal-path closure). */
+  unitPathIds?: Set<string> | null;
   onSelect: (id: string | null) => void;
 }
 
@@ -81,6 +85,19 @@ const styleFor = (large: boolean, light: boolean) => {
       'underlay-color': 'data(color)',
       'underlay-opacity': 0.18,
       'underlay-padding': 8,
+    },
+  },
+  {
+    selector: 'node.goal-node',
+    style: {
+      'border-width': 3.5,
+      'border-color': gold,
+      'background-opacity': 0.4,
+      'underlay-color': gold,
+      'underlay-opacity': 0.25,
+      'underlay-padding': 10,
+      'font-weight': 'bold',
+      'z-index': 5,
     },
   },
   { selector: 'node.dimmed', style: { opacity: 0.16 } },
@@ -240,6 +257,8 @@ export default function GraphView({
   expandedIds,
   onToggleExpand,
   theme = 'dark',
+  goalId = null,
+  unitPathIds = null,
   onSelect,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -255,7 +274,7 @@ export default function GraphView({
     const present = new Set(topics.map((t) => t.id));
     const elements: cytoscape.ElementDefinition[] = [
       ...topics.map((t) => ({
-        data: { id: t.id, label: t.title, color: LEVEL_COLORS[t.level] },
+        data: { id: t.id, label: t.title, color: CATEGORY_COLORS[categoryOf(t)] },
       })),
       ...topics.flatMap((t) =>
         t.prerequisites
@@ -280,7 +299,7 @@ export default function GraphView({
       if (!expandedIds?.has(t.id) || !t.subtopics?.length) continue;
       for (const s of t.subtopics)
         elements.push({
-          data: { id: `${t.id}/${s.id}`, parent: t.id, label: s.title, color: LEVEL_COLORS[t.level] },
+          data: { id: `${t.id}/${s.id}`, parent: t.id, label: s.title, color: CATEGORY_COLORS[categoryOf(t)] },
           classes: 'subtopic-node',
         });
       for (const s of t.subtopics) {
@@ -295,6 +314,33 @@ export default function GraphView({
         };
         for (const raw of s.prerequisites) addInternal(raw, false);
         for (const raw of s.optionalPrerequisites ?? []) addInternal(raw, true);
+      }
+    }
+
+    // Cross-topic unit edges for an active goal path: GraphView otherwise
+    // only draws topic-level edges, so units in different (unexpanded)
+    // topics would render as disconnected islands even though the goal
+    // path connects them at unit granularity.
+    if (unitPathIds) {
+      const unitMap = buildUnitGraph(topics);
+      const nodeIdFor = (u: string) => {
+        const { topicId, subId } = parseUnitId(u);
+        return subId && expandedIds?.has(topicId) ? u : topicId;
+      };
+      const seenEdges = new Set<string>();
+      for (const u of unitPathIds) {
+        const unit = unitMap.get(u);
+        if (!unit) continue;
+        const targetId = nodeIdFor(u);
+        for (const p of unit.prerequisites) {
+          if (!unitPathIds.has(p)) continue;
+          const sourceId = nodeIdFor(p);
+          if (sourceId === targetId) continue;
+          const edgeId = `${sourceId}~u->${targetId}`;
+          if (seenEdges.has(edgeId)) continue;
+          seenEdges.add(edgeId);
+          elements.push({ data: { id: edgeId, source: sourceId, target: targetId } });
+        }
       }
     }
 
@@ -356,19 +402,25 @@ export default function GraphView({
       cy.destroy();
       cyRef.current = null;
     };
-  }, [topics, large, expandedIds, theme]);
+  }, [topics, large, expandedIds, theme, unitPathIds]);
 
   // Apply selection/path highlighting without re-layout
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
+    const tmap = buildTopicMap(topics);
     cy.batch(() => {
-      cy.elements().removeClass('chosen dimmed onpath done sel-soft sel-pre sel-post');
+      cy.elements().removeClass('chosen dimmed onpath done sel-soft sel-pre sel-post goal-node');
       cy.nodes().forEach((n) => {
-        const topic = topics.find((t) => t.id === n.id());
+        const { topicId, subId } = parseUnitId(n.id());
+        const topic = tmap.get(topicId);
         if (!topic) return;
+        const sub = subId ? topic.subtopics?.find((s) => s.id === subId) : undefined;
+        if (subId && !sub) return;
+        const title = sub ? sub.title : topic.title;
         const isDone = doneIds?.has(n.id()) ?? false;
-        n.data('label', isDone ? `✓ ${topic.title}` : topic.title);
+        const isGoal = goalId != null && n.id() === goalId;
+        n.data('label', `${isGoal ? '★ ' : ''}${isDone ? '✓ ' : ''}${title}`);
         if (isDone) n.addClass('done');
       });
       if (directionalSelect) {
@@ -393,9 +445,10 @@ export default function GraphView({
             else e.addClass('dimmed');
           });
         }
+        if (goalId) cy.$id(goalId).addClass('goal-node');
       }
     });
-  }, [selectedId, highlightIds, doneIds, topics, directionalSelect]);
+  }, [selectedId, highlightIds, doneIds, topics, directionalSelect, goalId]);
 
   // Glide to the focused concept (search / home jumps) — a smooth pan+zoom
   // that frames the concept with its immediate connections, rather than a

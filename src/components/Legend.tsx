@@ -1,12 +1,16 @@
-import { LEVEL_COLORS, LEVEL_LABELS, LEVEL_ORDER } from '../graph/levelColors';
+import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER } from '../graph/categoryColors';
 
 export default function Legend() {
   return (
     <div className="legend">
-      {LEVEL_ORDER.map((level) => (
-        <span key={level} className="legend-entry">
-          <span className="level-dot" style={{ background: LEVEL_COLORS[level], color: LEVEL_COLORS[level] }} aria-hidden />
-          {LEVEL_LABELS[level]}
+      {CATEGORY_ORDER.map((category) => (
+        <span key={category} className="legend-entry">
+          <span
+            className="cat-dot"
+            style={{ background: CATEGORY_COLORS[category], color: CATEGORY_COLORS[category] }}
+            aria-hidden
+          />
+          {CATEGORY_LABELS[category]}
         </span>
       ))}
       <span className="legend-entry">

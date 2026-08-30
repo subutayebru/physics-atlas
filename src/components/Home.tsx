@@ -1,5 +1,5 @@
 import type { Topic } from '../data/types';
-import { LEVEL_COLORS } from '../graph/levelColors';
+import { CATEGORY_COLORS, categoryOf } from '../graph/categoryColors';
 import Galaxy from './Galaxy';
 import SearchBox from './SearchBox';
 
@@ -36,7 +36,7 @@ export default function Home({ topics, onSearchPick, onExplore, onPickGoal }: Ho
             <button
               key={t.id}
               className="goal-chip"
-              style={{ '--chip-color': LEVEL_COLORS[t.level] } as React.CSSProperties}
+              style={{ '--chip-color': CATEGORY_COLORS[categoryOf(t)] } as React.CSSProperties}
               onClick={() => onPickGoal(t.id)}
             >
               {t.title}

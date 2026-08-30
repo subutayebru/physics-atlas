@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import type { Topic, TopicLevel } from '../data/types';
-import { LEVEL_COLORS } from '../graph/levelColors';
+import type { Topic, TopicCategory } from '../data/types';
+import { CATEGORY_COLORS, categoryOf } from '../graph/categoryColors';
 
 interface SearchBoxProps {
   topics: Topic[];
@@ -15,7 +15,7 @@ interface SearchEntry {
   title: string;
   /** Parent topic title, set for subtopic entries */
   context?: string;
-  level: TopicLevel;
+  category?: TopicCategory;
 }
 
 const MAX_RESULTS = 8;
@@ -28,14 +28,14 @@ export default function SearchBox({ topics, onPick, hero, placeholder }: SearchB
   // Topics first so whole-topic hits always rank above subtopic hits
   const entries = useMemo<SearchEntry[]>(
     () => [
-      ...topics.map((t) => ({ ref: t.id, title: t.title, level: t.level })),
+      ...topics.map((t) => ({ ref: t.id, title: t.title, category: t.category })),
       ...topics.flatMap(
         (t) =>
           t.subtopics?.map((s) => ({
             ref: `${t.id}/${s.id}`,
             title: s.title,
             context: t.title,
-            level: t.level,
+            category: t.category,
           })) ?? [],
       ),
     ],
@@ -104,7 +104,11 @@ export default function SearchBox({ topics, onPick, hero, placeholder }: SearchB
                   pick(r.ref);
                 }}
               >
-                <span className="level-dot" style={{ background: LEVEL_COLORS[r.level], color: LEVEL_COLORS[r.level] }} aria-hidden />
+                <span
+                  className="cat-dot"
+                  style={{ background: CATEGORY_COLORS[categoryOf(r)], color: CATEGORY_COLORS[categoryOf(r)] }}
+                  aria-hidden
+                />
                 {r.title}
                 {r.context && <span className="search-result-context"> — {r.context}</span>}
               </button>

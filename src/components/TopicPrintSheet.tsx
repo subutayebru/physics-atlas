@@ -1,6 +1,6 @@
 import type { Topic } from '../data/types';
 import { subtopicsInOrder, topicDone, type TopicMap } from '../graph/dag';
-import { LEVEL_LABELS } from '../graph/levelColors';
+import { CATEGORY_LABELS, categoryOf } from '../graph/categoryColors';
 import { PrintResources, PrintSubgoals } from './PrintSheet';
 
 interface TopicPrintSheetProps {
@@ -24,7 +24,7 @@ export default function TopicPrintSheet({ topic, map, usedIn, done }: TopicPrint
     <div className="print-sheet">
       <h1 className="print-title">Physics Atlas — {topic.title}</h1>
       <p className="print-meta">
-        {date} · {LEVEL_LABELS[topic.level]}
+        {date} · {CATEGORY_LABELS[categoryOf(topic)]}
         {topicDone(topic, done) && <> · learned ☑</>}
       </p>
       <p className="print-desc">{topic.description}</p>

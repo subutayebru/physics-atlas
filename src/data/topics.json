@@ -5,7 +5,7 @@
     {
       "id": "hs-math",
       "title": "High-School Algebra & Trigonometry",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Comfort with algebraic manipulation, functions, trigonometry and basic vectors. The entry point of the whole graph.",
       "prerequisites": [],
       "content": [
@@ -20,7 +20,7 @@
     {
       "id": "calculus-1",
       "title": "Calculus I — Differentiation & Integration",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Limits, derivatives, integrals, Taylor series. The language every physics topic above this node is written in.",
       "prerequisites": ["hs-math"],
       "content": [
@@ -74,7 +74,7 @@
     {
       "id": "linear-algebra",
       "title": "Linear Algebra",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Vectors, matrices, eigenvalues, vector spaces. Essential for quantum mechanics and for the tensor language of relativity.",
       "prerequisites": ["hs-math"],
       "content": [
@@ -143,7 +143,7 @@
     {
       "id": "multivariable-calculus",
       "title": "Multivariable & Vector Calculus",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Partial derivatives, multiple integrals, gradient/divergence/curl, line and surface integrals. Needed for electromagnetism and field theories.",
       "prerequisites": ["calculus-1", "linear-algebra"],
       "content": [
@@ -164,7 +164,7 @@
     {
       "id": "differential-equations",
       "title": "Ordinary Differential Equations",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Solving and interpreting ODEs: physics is written as differential equations, from oscillators to the Friedmann equation.",
       "prerequisites": ["calculus-1"],
       "content": [
@@ -212,7 +212,7 @@
     {
       "id": "classical-mechanics",
       "title": "Classical Mechanics (Newtonian)",
-      "level": "core",
+      "category": "method",
       "description": "Newton's laws, energy, momentum, rotation, gravitation, orbits. The first real physics course and the root of physical intuition.",
       "prerequisites": ["calculus-1"],
       "content": [
@@ -240,7 +240,7 @@
     {
       "id": "waves-oscillations",
       "title": "Waves & Oscillations",
-      "level": "core",
+      "category": "method",
       "description": "Harmonic oscillators, coupled oscillators, wave equation, interference. The mathematical warm-up for quantum mechanics and light.",
       "prerequisites": ["classical-mechanics", "differential-equations", "linear-algebra"],
       "content": [
@@ -281,7 +281,7 @@
     {
       "id": "electromagnetism",
       "title": "Electromagnetism",
-      "level": "core",
+      "category": "method",
       "description": "Electric and magnetic fields, Maxwell's equations, electromagnetic waves. Understanding light is a prerequisite for relativity and astrophysics.",
       "prerequisites": ["classical-mechanics", "multivariable-calculus"],
       "content": [
@@ -302,7 +302,7 @@
     {
       "id": "thermodynamics",
       "title": "Thermodynamics",
-      "level": "core",
+      "category": "method",
       "description": "Temperature, heat, entropy, the laws of thermodynamics. The macroscopic half of understanding hot early-universe physics.",
       "prerequisites": ["calculus-1"],
       "content": [
@@ -317,7 +317,7 @@
     {
       "id": "statistical-mechanics",
       "title": "Statistical Mechanics",
-      "level": "advanced",
+      "category": "method",
       "description": "Entropy from counting, partition functions, Boltzmann and quantum statistics, blackbody radiation. Directly used for the cosmic microwave background and the thermal history of the universe.",
       "prerequisites": ["thermodynamics", "classical-mechanics", "quantum-mechanics"],
       "content": [
@@ -339,7 +339,6 @@
     {
       "id": "lagrangian-mechanics",
       "title": "Advanced Mechanics (Lagrangian & Hamiltonian)",
-      "level": "advanced",
       "description": "Action principles, Lagrangians, Hamiltonians, symmetries and conservation laws. The formulation of mechanics that general relativity and field theory are built on.",
       "prerequisites": ["classical-mechanics", "multivariable-calculus"],
       "content": [
@@ -361,7 +360,7 @@
     {
       "id": "special-relativity",
       "title": "Special Relativity",
-      "level": "advanced",
+      "category": "method",
       "description": "Spacetime, Lorentz transformations, time dilation, E=mc², four-vectors. A complete, satisfying goal in itself — and the gateway to general relativity.",
       "prerequisites": ["classical-mechanics", "electromagnetism", "linear-algebra"],
       "featured": true,
@@ -391,7 +390,7 @@
     {
       "id": "quantum-mechanics",
       "title": "Quantum Mechanics",
-      "level": "advanced",
+      "category": "method",
       "description": "Wavefunctions, Schrödinger equation, operators, spin, hydrogen atom. Needed for atomic physics, particle physics and the statistical mechanics of the early universe.",
       "prerequisites": ["linear-algebra", "differential-equations", "waves-oscillations"],
       "optionalPrerequisites": ["lagrangian-mechanics"],
@@ -511,7 +510,7 @@
       "id": "la-tensors",
       "partOf": "linear-algebra",
       "title": "Linear Algebra for Tensors",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "The linear algebra a physicist needs before tensors: matrix manipulation, Einstein index notation, dual spaces and 1-forms. Learning goals live here as promotable subtopics.",
       "prerequisites": ["linear-algebra"],
       "content": []
@@ -520,7 +519,7 @@
       "id": "calculus-geometry",
       "partOf": "calculus-1",
       "title": "Calculus for Geometry",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "The calculus a physicist needs for differential geometry: derivatives, the chain rule, Jacobians, and parameterized curves.",
       "prerequisites": ["calculus-1"],
       "content": []
@@ -529,7 +528,7 @@
       "id": "tangent-space",
       "partOf": "differential-geometry",
       "title": "Tangent Spaces",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "Vectors at a point as derivatives of curves; why vectors at different points live in different spaces.",
       "prerequisites": ["multivariable-calculus", "calculus-geometry"],
       "content": []
@@ -538,7 +537,7 @@
       "id": "tensors",
       "partOf": "differential-geometry",
       "title": "Tensors & Index Notation",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "Multilinear maps, index gymnastics, why partial derivatives fail to transform tensorially.",
       "prerequisites": ["tangent-space", "la-tensors"],
       "content": []
@@ -547,16 +546,23 @@
       "id": "metric",
       "partOf": "differential-geometry",
       "title": "The Metric",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "Inner products on tangent spaces, the line element, raising and lowering indices.",
       "prerequisites": ["tangent-space", "la-tensors"],
-      "content": []
+      "content": [],
+      "subtopics": [
+        {
+          "id": "curvilinear-coords",
+          "title": "Set up curvilinear coordinates and their basis vectors. (Platzhalter)",
+          "prerequisites": ["metric-viewpoints"]
+        }
+      ]
     },
     {
       "id": "connection",
       "partOf": "differential-geometry",
       "title": "Connections & Christoffel Symbols",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "What a connection provides, the Levi-Civita connection, Christoffel symbols from the metric.",
       "prerequisites": ["metric", "tensors"],
       "content": []
@@ -564,7 +570,7 @@
     {
       "id": "differential-geometry",
       "title": "Differential Geometry & Tensors",
-      "level": "advanced",
+      "category": "math-concept",
       "description": "Manifolds, tensors, metrics, covariant derivatives, curvature. The mathematics of curved spacetime — the steepest single step on the road to general relativity. Its learning goals live in the areas it builds on: tangent spaces, tensors, the metric, and connections.",
       "prerequisites": ["connection"],
       "content": [
@@ -586,7 +592,7 @@
     {
       "id": "general-relativity",
       "title": "General Relativity",
-      "level": "advanced",
+      "category": "method",
       "description": "Einstein's field equations, geodesics, black holes, gravitational waves — and the FLRW metric that cosmology is built on.",
       "prerequisites": ["special-relativity", "differential-geometry", "lagrangian-mechanics"],
       "featured": true,
@@ -615,7 +621,7 @@
     {
       "id": "nuclear-particle-physics",
       "title": "Nuclear & Particle Physics",
-      "level": "advanced",
+      "category": "field",
       "description": "Nuclei, radioactivity, the particle zoo, the Standard Model at survey level. Needed for Big Bang nucleosynthesis and the particle content of the early universe.",
       "prerequisites": ["quantum-mechanics", "special-relativity"],
       "content": [
@@ -630,7 +636,7 @@
     {
       "id": "astrophysics",
       "title": "Introductory Astrophysics",
-      "level": "advanced",
+      "category": "field",
       "description": "Stars, stellar evolution, galaxies, distance ladder, telescopes and observations. The observational context that cosmology's data comes from.",
       "prerequisites": ["classical-mechanics", "electromagnetism", "thermodynamics"],
       "featured": true,
@@ -653,7 +659,7 @@
     {
       "id": "cosmology",
       "title": "Cosmology",
-      "level": "goal",
+      "category": "field",
       "description": "The universe as a whole: expansion, the Big Bang, cosmic microwave background, nucleosynthesis, dark matter and dark energy, inflation. The summit of this graph.",
       "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics", "galaxies-large-scale-structure"],
       "featured": true,
@@ -689,7 +695,7 @@
     {
       "id": "probability-statistics",
       "title": "Probability & Statistics",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Random variables, distributions, expectation, statistical inference. The language of measurement, quantum amplitudes and statistical physics.",
       "prerequisites": ["calculus-1"],
       "content": [
@@ -704,7 +710,7 @@
     {
       "id": "complex-analysis",
       "title": "Complex Analysis",
-      "level": "foundation",
+      "category": "math-concept",
       "description": "Analytic functions, contour integrals, residues. A workhorse for waves, quantum mechanics and field theory calculations.",
       "prerequisites": ["multivariable-calculus"],
       "content": [
@@ -719,7 +725,7 @@
     {
       "id": "computational-physics",
       "title": "Computational Physics",
-      "level": "core",
+      "category": "method",
       "description": "Solving physics numerically: integration, ODE solvers, Monte Carlo, simulations. Modern physics is done with code as much as with pencils.",
       "prerequisites": ["calculus-1", "linear-algebra"],
       "content": [
@@ -734,7 +740,6 @@
     {
       "id": "optics",
       "title": "Optics & Light",
-      "level": "core",
       "description": "Geometric and wave optics, interference, diffraction, polarization, lasers. How we actually see the universe — every telescope is applied optics.",
       "prerequisites": ["waves-oscillations", "electromagnetism"],
       "content": [
@@ -749,7 +754,7 @@
     {
       "id": "fluid-dynamics",
       "title": "Fluid Dynamics",
-      "level": "advanced",
+      "category": "method",
       "description": "Flow, viscosity, turbulence, the Navier–Stokes equations. From weather to stellar interiors to accretion disks.",
       "prerequisites": ["classical-mechanics", "multivariable-calculus", "differential-equations"],
       "content": [
@@ -764,7 +769,7 @@
     {
       "id": "chaos-nonlinear-dynamics",
       "title": "Chaos & Nonlinear Dynamics",
-      "level": "advanced",
+      "category": "method",
       "description": "Attractors, bifurcations, sensitivity to initial conditions. Why deterministic systems can still be unpredictable.",
       "prerequisites": ["classical-mechanics", "differential-equations"],
       "content": [
@@ -779,7 +784,7 @@
     {
       "id": "atomic-molecular-physics",
       "title": "Atomic & Molecular Physics",
-      "level": "advanced",
+      "category": "field",
       "description": "Atomic structure, spectra, transitions, lasers and cold atoms. Where quantum mechanics meets the lab bench — and where spectral lines from distant stars are decoded.",
       "prerequisites": ["quantum-mechanics", "electromagnetism"],
       "content": [
@@ -794,7 +799,7 @@
     {
       "id": "plasma-physics",
       "title": "Plasma Physics",
-      "level": "advanced",
+      "category": "field",
       "description": "Ionized matter — most of the visible universe. Magnetohydrodynamics, waves in plasmas, fusion.",
       "prerequisites": ["electromagnetism", "fluid-dynamics", "statistical-mechanics"],
       "content": [
@@ -809,7 +814,7 @@
     {
       "id": "condensed-matter",
       "title": "Condensed Matter Physics",
-      "level": "goal",
+      "category": "field",
       "description": "Crystals, electrons in solids, semiconductors, superconductivity. The physics of materials — and the biggest field of physics by far.",
       "prerequisites": ["quantum-mechanics", "statistical-mechanics"],
       "featured": true,
@@ -825,7 +830,7 @@
     {
       "id": "quantum-field-theory",
       "title": "Quantum Field Theory",
-      "level": "advanced",
+      "category": "method",
       "description": "Fields as the fundamental objects; particles as their excitations. The framework beneath particle physics and much of modern theory.",
       "prerequisites": ["quantum-mechanics", "special-relativity", "lagrangian-mechanics"],
       "content": [
@@ -847,7 +852,6 @@
     {
       "id": "standard-model",
       "title": "The Standard Model",
-      "level": "goal",
       "description": "Quarks, leptons, gauge bosons, the Higgs — our best theory of matter and forces, tested to extraordinary precision.",
       "prerequisites": ["quantum-field-theory", "nuclear-particle-physics"],
       "featured": true,
@@ -863,7 +867,7 @@
     {
       "id": "quantum-computing",
       "title": "Quantum Computing & Information",
-      "level": "goal",
+      "category": "field",
       "description": "Qubits, entanglement, quantum algorithms and error correction. A young field where the quantum weirdness becomes a resource.",
       "prerequisites": ["quantum-mechanics", "linear-algebra", "probability-statistics"],
       "featured": true,
@@ -885,7 +889,6 @@
     {
       "id": "stellar-astrophysics",
       "title": "Stellar Structure & Evolution",
-      "level": "advanced",
       "description": "How stars work: hydrostatic balance, fusion, the life cycle from cloud to white dwarf, neutron star or black hole.",
       "prerequisites": ["astrophysics", "thermodynamics", "nuclear-particle-physics"],
       "content": [
@@ -900,7 +903,6 @@
     {
       "id": "galaxies-large-scale-structure",
       "title": "Galaxies & Large-Scale Structure",
-      "level": "advanced",
       "description": "Galaxy types, dynamics, dark-matter halos, and the cosmic web that galaxy surveys map — the observational backbone of cosmology.",
       "prerequisites": ["astrophysics"],
       "content": [
@@ -915,7 +917,7 @@
     {
       "id": "black-holes-gravitational-waves",
       "title": "Black Holes & Gravitational Waves",
-      "level": "goal",
+      "category": "field",
       "description": "Event horizons, mergers, and the ripples in spacetime LIGO hears. General relativity's most dramatic predictions, now observational science.",
       "prerequisites": ["general-relativity", "stellar-astrophysics"],
       "featured": true,
@@ -931,7 +933,6 @@
     {
       "id": "quantum-gravity-frontiers",
       "title": "Quantum Gravity Frontiers",
-      "level": "goal",
       "description": "String theory, loop quantum gravity, holography — the open problem of uniting general relativity with quantum mechanics.",
       "prerequisites": ["general-relativity", "quantum-field-theory"],
       "content": [
@@ -946,6 +947,40 @@
           "title": "Reality Is Not What It Seems",
           "author": "Carlo Rovelli",
           "note": "Popular-level view from the loop-quantum-gravity side."
+        }
+      ]
+    },
+    {
+      "id": "relativistic-hydro",
+      "title": "Relativistic Hydrodynamics",
+      "category": "method",
+      "description": "Platzhalter — Sophie ergänzt echten Content. Fluid dynamics for matter moving at speeds where relativity matters (heavy-ion collisions, neutron-star mergers).",
+      "prerequisites": ["fluid-dynamics", "special-relativity", "differential-geometry"],
+      "featured": false,
+      "content": [],
+      "subtopics": [
+        {
+          "id": "basics",
+          "title": "Relativistic fluid basics (Platzhalter)",
+          "description": "Platzhalter — Sophie ergänzt echten Content.",
+          "prerequisites": ["fluid-dynamics", "special-relativity", "la-tensors/einstein"]
+        },
+        {
+          "id": "viscous",
+          "title": "Viscous & dissipative flow (Platzhalter)",
+          "description": "Platzhalter — Sophie ergänzt echten Content.",
+          "prerequisites": ["basics", "metric/curvilinear-coords", "la-tensors/vec-dual-operators"]
+        },
+        {
+          "id": "israel-stuart",
+          "title": "Israel-Stewart theory (Platzhalter)",
+          "description": "Platzhalter — Sophie ergänzt echten Content. The second-order theory that repairs acausal first-order viscous hydrodynamics.",
+          "prerequisites": ["viscous", "metric/metric-under-coords", "la-tensors/dual-transforms"],
+          "outcomes": [
+            { "id": "first-order-problem", "text": "Platzhalter — explain why first-order viscous hydrodynamics is acausal." },
+            { "id": "relaxation", "text": "Platzhalter — write down the relaxation equations for the dissipative currents.", "needs": ["first-order-problem"] },
+            { "id": "apply", "text": "Platzhalter — apply the theory to a simple expanding flow.", "needs": ["relaxation"] }
+          ]
         }
       ]
     }

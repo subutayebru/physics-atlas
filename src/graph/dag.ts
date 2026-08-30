@@ -370,6 +370,38 @@ export function expandedCurriculumFor(goalRef: UnitId, topics: Topic[]): Curricu
   });
 }
 
+export interface GoalPath {
+  /** Units on the path (incl. the goal itself) — cytoscape node ids when expanded */
+  units: Set<UnitId>;
+  /** units ∪ their parent topic ids — the GraphView highlight set */
+  highlight: Set<string>;
+  /** Annotated topics contributing ≥1 unit — auto-expand these */
+  expand: Set<string>;
+}
+
+/**
+ * The map's goal-path view of `expandedCurriculumFor`: which units are on
+ * the path to `goalRef`, which nodes GraphView should highlight (units plus
+ * their compound parents — dimming the parent would dim the topic edges
+ * too), and which annotated topics to auto-expand. No independent
+ * traversal — Curriculum and Map must see the same closure.
+ */
+export function goalPathFor(goalRef: UnitId, topics: Topic[]): GoalPath {
+  const groups = expandedCurriculumFor(goalRef, topics);
+  const units = new Set<UnitId>();
+  const highlight = new Set<string>();
+  const expand = new Set<string>();
+  for (const g of groups) {
+    highlight.add(g.topic.id);
+    if (g.topic.subtopics?.length) expand.add(g.topic.id);
+    for (const u of g.units) {
+      units.add(u.unit.id);
+      highlight.add(u.unit.id);
+    }
+  }
+  return { units, highlight, expand };
+}
+
 export function unitDone(unit: Unit, done: Set<string>): boolean {
   return done.has(unit.id) || (unit.subtopic !== undefined && done.has(unit.topic.id));
 }

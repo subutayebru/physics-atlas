@@ -11,7 +11,7 @@ import {
   unitDone,
   buildUnitGraph,
 } from '../graph/dag';
-import { LEVEL_COLORS, LEVEL_LABELS } from '../graph/levelColors';
+import { CATEGORY_COLORS, CATEGORY_LABELS, categoryOf } from '../graph/categoryColors';
 import ContentList from './ContentList';
 import SubgoalChecklist from './SubgoalChecklist';
 import GraphView from './GraphView';
@@ -84,7 +84,7 @@ export default function TopicPage({
 
   const subtopics = subtopicsInOrder(topic);
   const usedIn = dependents.get(topic.id) ?? [];
-  const color = LEVEL_COLORS[topic.level];
+  const color = CATEGORY_COLORS[categoryOf(topic)];
 
   // Resolve the open unit against this topic or any of its sub-areas
   const openParsed = openUnitId ? parseUnitId(openUnitId) : null;
@@ -126,10 +126,10 @@ export default function TopicPage({
       <article className="topic-page-inner">
         <header className="topic-page-header">
           <h2 className="topic-page-title">
-            <span className="level-dot" style={{ background: color, color }} aria-hidden />
+            <span className="cat-dot" style={{ background: color, color }} aria-hidden />
             {topic.title}
           </h2>
-          <p className="topic-page-level">{LEVEL_LABELS[topic.level]}</p>
+          <p className="topic-page-category">{CATEGORY_LABELS[categoryOf(topic)]}</p>
           <p className="topic-description">{topic.description}</p>
           {(topic.outcomes?.length ?? 0) > 0 && (
             <SubgoalChecklist
@@ -251,8 +251,8 @@ export default function TopicPage({
                   title={`Open the ${area.title} page`}
                 >
                   <span
-                    className="level-dot"
-                    style={{ background: LEVEL_COLORS[area.level], color: LEVEL_COLORS[area.level] }}
+                    className="cat-dot"
+                    style={{ background: CATEGORY_COLORS[categoryOf(area)], color: CATEGORY_COLORS[categoryOf(area)] }}
                     aria-hidden
                   />
                   {area.title}
