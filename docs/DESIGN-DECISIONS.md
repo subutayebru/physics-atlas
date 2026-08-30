@@ -130,7 +130,7 @@ field, a method/formalism, or a math concept.
 
 | Option | Status | Notes |
 |---|---|---|
-| **`Topic.category?: 'field' \| 'method' \| 'math-concept'`, optional** | ✅ Chosen | Replaces `level` outright (`src/graph/categoryColors.ts`). Palette re-measured for both surfaces (`--page` dark `#070b14`, light `#f3f5fa`): field `#199e70` (5.78/3.12), method `#e2574c` (5.34/3.38), math-concept `#3987e5` (5.41/3.34), uncategorized `#7a86a0` — the light theme's existing `--muted` (5.38/3.35). Worst adjacent CVD pair (Machado matrices, ΔE76 Lab): Protanopie field/method 14.4; the neutral stays 18.9+ from every category so "not yet categorized" never reads as a fourth content group. Sophie's mapping (34/40 topics) is authoritative — six topics (`lagrangian-mechanics`, `optics`, `standard-model`, `quantum-gravity-frontiers`, `stellar-astrophysics`, `galaxies-large-scale-structure`) intentionally carry no `category` yet: an unclassified topic is a valid, permanent content state (render neutral grey, legend entry "Not yet categorized"), not a migration remnant the validator should flag. |
+| **`Topic.category?: 'field' \| 'method' \| 'math-concept'`, optional** | ✅ Chosen | Replaces `level` outright (`src/graph/categoryColors.ts`). Palette re-measured for both surfaces (`--page` dark `#070b14`, light `#f3f5fa`): field `#199e70` (5.78/3.12), method `#e2574c` (5.34/3.38), math-concept `#3987e5` (5.41/3.34), uncategorized `#7a86a0` — the light theme's existing `--muted` (5.38/3.35). Worst adjacent CVD pair (Machado matrices, ΔE76 Lab): Protanopie field/method 14.4; the neutral stays 18.9+ from every category so "not yet categorized" never reads as a fourth content group. Sophie's mapping (34/40 topics) is authoritative — six topics (`lagrangian-mechanics`, `optics`, `standard-model`, `quantum-gravity-frontiers`, `stellar-astrophysics`, `galaxies-large-scale-structure`) intentionally carry no `category` yet: an unclassified topic is a valid, permanent content state (render neutral grey, legend entry "Not yet categorized"), not a migration remnant the validator should flag. **Update (2026-08-30, Decision 11):** those six topics are gone — deleted outright in feature-14, not just left uncategorized. |
 | Mandatory `category` | ↩ rejected | Would force Sophie to invent classifications for topics she doesn't yet have an opinion on — exactly the noise that makes color-coding untrustworthy. |
 | Keep `level` alongside `category` | ↩ pathway | If the altitude information turns out to be useful after all (e.g. a "how advanced is this" filter), re-add it as a second optional field rather than reviving it as the color driver. |
 
@@ -156,6 +156,21 @@ Also decided:
 - A fourth content category (e.g. `application`) — ↩ pathway, revisit if the
   "uncategorized" group turns out to be a real cluster rather than a
   temporary gap.
+
+## Decision 11 — Real deletion, default-open subtopics, viewport-only hover-zoom (2026-08-30)
+
+Direct feedback after the first look at feature-13 live: the six uncategorized
+topics read as unfinished clutter, subtopics hid behind a toggle nobody
+found, and hovering did nothing to help orient on the large map.
+
+| Option | Status | Notes |
+|---|---|---|
+| **Delete the six uncategorized topics outright** (`lagrangian-mechanics`, `optics`, `standard-model`, `quantum-gravity-frontiers`, `stellar-astrophysics`, `galaxies-large-scale-structure`) | ✅ Chosen | Removed from `topics.json` with their prerequisite references cleaned up (not left as dangling ids). No new filter/hide logic needed — Search, Home, the legend and GraphView all just reflect the smaller list. Accepted content regression: `general-relativity`, `quantum-field-theory`, `black-holes-gravitational-waves` and `cosmology` each lose one prerequisite step; `quantum-mechanics` loses its only optional prerequisite. Sophie re-adds any of these later as properly `category`-tagged topics when she has real content for them. |
+| Keep them, just hide from the map | ↩ rejected | Would need a second "hidden" concept next to the existing optional `category`; the six topics had no content or classification anyway — nothing worth preserving in the live data. |
+| **Annotated topics default-open on the map** | ✅ Chosen | `expandedIds` now initializes to all topics with `subtopics`, not an empty set (`MapView.tsx`). The ⊕/⊖ toggle still works for manual collapse — this only changes the starting state. Makes subtopics part of the normal map reading experience instead of a feature nobody discovers, and is also the structural precondition for cheap hover-zoom below (child nodes already exist in the graph on hover, so zooming is a pure viewport op, never a re-layout). |
+| **Hover-zoom as a pure `cy.animate({fit})` viewport op, gated to `large && !goalId`** | ✅ Chosen | Second, independent use of the same pattern the search-jump `focus` effect already uses (`GraphView.tsx`) — no new mechanism. Dwelling over an open topic node (`node.isParent()`) fits the viewport to that node + its children with padding, then reverts to the exact pre-hover pan/zoom on mouse-out; both directions animate (respecting `prefers-reduced-motion`) and use the project's existing 350ms interaction-timing convention (the double-tap window). Explicitly **not** a fisheye/lens distortion — cytoscape has no such primitive, and a real lens would fight the dagre layout. Gated off once a goal is picked (`goalId` set): the view is then deliberately pinned to the highlighted path, and re-fitting on every hover would fight that focus. |
+| Fisheye / isolate-lens on hover | ↩ pathway | Would need a custom rendering layer (cytoscape has no built-in lens); revisit only if plain zoom/pan turns out to be insufficient for orientation on a much bigger graph. |
+| Hover-zoom always on, even with a goal picked | ↩ rejected | Would undo the goal-path focus (Decision 10) on every stray hover — confusing right when the user most wants the view to hold still. |
 
 ## Multi-agent workflow (web-dev-agent-system)
 

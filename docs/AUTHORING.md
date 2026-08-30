@@ -78,7 +78,7 @@ Append an object to the `topics` array:
   "title": "Quantum Field Theory",
   "category": "method",
   "description": "One or two sentences: what is this and why would someone learn it?",
-  "prerequisites": ["quantum-mechanics", "special-relativity", "lagrangian-mechanics"],
+  "prerequisites": ["quantum-mechanics", "special-relativity"],
   "featured": false,
   "content": []
 }
@@ -94,6 +94,7 @@ Field rules:
 | `prerequisites` | ids of topics to learn **directly before** this one. Only direct edges — don't list calculus on cosmology; the graph walks the chain for you. `[]` for entry-point topics. |
 | `featured` | `true` shows the topic in the goal picker on the landing view. Optional. |
 | `content` | list of learning resources, see below. `[]` is allowed (validator warns but passes). |
+| `subtopics` | **Optional** — a missing `subtopics` array is a valid, permanent state (a plain node), not a gap to fill; ~28 of the current topics have none yet, Sophie annotates incrementally. See [below](#subtopics-optional-per-topic) for the format. When present, the topic renders open on the map by default (its subtopics shown as child nodes), collapsible via the ⊕/⊖ toggle. |
 
 ## Adding content to a topic
 

@@ -337,27 +337,6 @@
       ]
     },
     {
-      "id": "lagrangian-mechanics",
-      "title": "Advanced Mechanics (Lagrangian & Hamiltonian)",
-      "description": "Action principles, Lagrangians, Hamiltonians, symmetries and conservation laws. The formulation of mechanics that general relativity and field theory are built on.",
-      "prerequisites": ["classical-mechanics", "multivariable-calculus"],
-      "content": [
-        {
-          "type": "book",
-          "title": "Classical Mechanics",
-          "author": "John R. Taylor",
-          "note": "Chapters 6–7 and 13 are the Lagrangian/Hamiltonian core."
-        },
-        {
-          "type": "video",
-          "title": "The Theoretical Minimum — Classical Mechanics",
-          "author": "Leonard Susskind (Stanford)",
-          "url": "https://theoreticalminimum.com/courses",
-          "note": "Susskind teaches mechanics through the action principle from the start."
-        }
-      ]
-    },
-    {
       "id": "special-relativity",
       "title": "Special Relativity",
       "category": "method",
@@ -393,7 +372,6 @@
       "category": "method",
       "description": "Wavefunctions, Schrödinger equation, operators, spin, hydrogen atom. Needed for atomic physics, particle physics and the statistical mechanics of the early universe.",
       "prerequisites": ["linear-algebra", "differential-equations", "waves-oscillations"],
-      "optionalPrerequisites": ["lagrangian-mechanics"],
       "outcomes": [
         { "id": "explain-how-quantum-states-operators-and", "text": "Explain how quantum states, operators, and the measurement postulates replace classical trajectories" },
         { "id": "solve-the-schr-dinger-equation-for-the-s", "text": "Solve the Schrödinger equation for the standard one-dimensional and central-potential model systems" },
@@ -594,7 +572,7 @@
       "title": "General Relativity",
       "category": "method",
       "description": "Einstein's field equations, geodesics, black holes, gravitational waves — and the FLRW metric that cosmology is built on.",
-      "prerequisites": ["special-relativity", "differential-geometry", "lagrangian-mechanics"],
+      "prerequisites": ["special-relativity", "differential-geometry"],
       "featured": true,
       "content": [
         {
@@ -661,7 +639,7 @@
       "title": "Cosmology",
       "category": "field",
       "description": "The universe as a whole: expansion, the Big Bang, cosmic microwave background, nucleosynthesis, dark matter and dark energy, inflation. The summit of this graph.",
-      "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics", "galaxies-large-scale-structure"],
+      "prerequisites": ["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics"],
       "featured": true,
       "content": [
         {
@@ -734,20 +712,6 @@
           "title": "Computational Physics",
           "author": "Mark Newman",
           "note": "Python-based, self-contained, excellent exercises."
-        }
-      ]
-    },
-    {
-      "id": "optics",
-      "title": "Optics & Light",
-      "description": "Geometric and wave optics, interference, diffraction, polarization, lasers. How we actually see the universe — every telescope is applied optics.",
-      "prerequisites": ["waves-oscillations", "electromagnetism"],
-      "content": [
-        {
-          "type": "book",
-          "title": "Optics",
-          "author": "Eugene Hecht",
-          "note": "The standard text; readable and comprehensive."
         }
       ]
     },
@@ -832,7 +796,7 @@
       "title": "Quantum Field Theory",
       "category": "method",
       "description": "Fields as the fundamental objects; particles as their excitations. The framework beneath particle physics and much of modern theory.",
-      "prerequisites": ["quantum-mechanics", "special-relativity", "lagrangian-mechanics"],
+      "prerequisites": ["quantum-mechanics", "special-relativity"],
       "content": [
         {
           "type": "notes",
@@ -846,21 +810,6 @@
           "title": "Quantum Field Theory for the Gifted Amateur",
           "author": "Lancaster & Blundell",
           "note": "The gentlest real QFT book."
-        }
-      ]
-    },
-    {
-      "id": "standard-model",
-      "title": "The Standard Model",
-      "description": "Quarks, leptons, gauge bosons, the Higgs — our best theory of matter and forces, tested to extraordinary precision.",
-      "prerequisites": ["quantum-field-theory", "nuclear-particle-physics"],
-      "featured": true,
-      "content": [
-        {
-          "type": "book",
-          "title": "Modern Particle Physics",
-          "author": "Mark Thomson",
-          "note": "Modern, experiment-aware treatment of the full Standard Model."
         }
       ]
     },
@@ -887,39 +836,11 @@
       ]
     },
     {
-      "id": "stellar-astrophysics",
-      "title": "Stellar Structure & Evolution",
-      "description": "How stars work: hydrostatic balance, fusion, the life cycle from cloud to white dwarf, neutron star or black hole.",
-      "prerequisites": ["astrophysics", "thermodynamics", "nuclear-particle-physics"],
-      "content": [
-        {
-          "type": "book",
-          "title": "An Introduction to the Theory of Stellar Structure and Evolution",
-          "author": "Dina Prialnik",
-          "note": "Compact and quantitative without being overwhelming."
-        }
-      ]
-    },
-    {
-      "id": "galaxies-large-scale-structure",
-      "title": "Galaxies & Large-Scale Structure",
-      "description": "Galaxy types, dynamics, dark-matter halos, and the cosmic web that galaxy surveys map — the observational backbone of cosmology.",
-      "prerequisites": ["astrophysics"],
-      "content": [
-        {
-          "type": "book",
-          "title": "Galaxies in the Universe",
-          "author": "Sparke & Gallagher",
-          "note": "Broad survey-level introduction to galactic astronomy."
-        }
-      ]
-    },
-    {
       "id": "black-holes-gravitational-waves",
       "title": "Black Holes & Gravitational Waves",
       "category": "field",
       "description": "Event horizons, mergers, and the ripples in spacetime LIGO hears. General relativity's most dramatic predictions, now observational science.",
-      "prerequisites": ["general-relativity", "stellar-astrophysics"],
+      "prerequisites": ["general-relativity"],
       "featured": true,
       "content": [
         {
@@ -927,26 +848,6 @@
           "title": "Gravity: An Introduction to Einstein's General Relativity",
           "author": "James Hartle",
           "note": "Physics-first GR with strong black-hole and gravitational-wave chapters."
-        }
-      ]
-    },
-    {
-      "id": "quantum-gravity-frontiers",
-      "title": "Quantum Gravity Frontiers",
-      "description": "String theory, loop quantum gravity, holography — the open problem of uniting general relativity with quantum mechanics.",
-      "prerequisites": ["general-relativity", "quantum-field-theory"],
-      "content": [
-        {
-          "type": "book",
-          "title": "A First Course in String Theory",
-          "author": "Barton Zwiebach",
-          "note": "The most accessible technical entry point."
-        },
-        {
-          "type": "book",
-          "title": "Reality Is Not What It Seems",
-          "author": "Carlo Rovelli",
-          "note": "Popular-level view from the loop-quantum-gravity side."
         }
       ]
     },

@@ -38,7 +38,9 @@ export default function MapView({
 }: MapViewProps) {
   const map = useMemo(() => buildTopicMap(topics), [topics]);
   const dependents = useMemo(() => dependentsMap(topics), [topics]);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(
+    () => new Set(topics.filter((t) => t.subtopics?.length).map((t) => t.id)),
+  );
   const [goalPick, setGoalPick] = useState<string | null>(null);
 
   const toggleExpand = (id: string) =>
@@ -134,7 +136,7 @@ export default function MapView({
           <p className="map-hint">
             Click a concept to keep its whole tree lit — <span className="ink-pre">silver</span> is
             what it builds on, <span className="ink-post">gold</span> is everything it unlocks.
-            Double-click a topic with subtopics to open it up.
+            Topics with subtopics start open — double-click one to collapse or reopen it.
           </p>
         )}
 

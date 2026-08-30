@@ -268,6 +268,12 @@ export default function GraphView({
   const onToggleExpandRef = useRef(onToggleExpand);
   onToggleExpandRef.current = onToggleExpand;
   const lastTapRef = useRef<{ id: string; t: number }>({ id: '', t: 0 });
+  const goalIdRef = useRef(goalId);
+  goalIdRef.current = goalId;
+  const hoverZoomEnterRef = useRef<number | null>(null);
+  const hoverZoomExitRef = useRef<number | null>(null);
+  const preHoverViewportRef = useRef<{ zoom: number; pan: cytoscape.Position } | null>(null);
+  const hoverZoomActiveIdRef = useRef<string | null>(null);
 
   // (Re)build the graph when the topic set (or expansion) changes
   useEffect(() => {
@@ -395,10 +401,85 @@ export default function GraphView({
       if (containerRef.current) containerRef.current.style.cursor = '';
     });
 
+    // Hover-zoom: on the big explorer map, before a goal is chosen, dwelling
+    // over an open (expanded) topic softly zooms the viewport to it + its
+    // subtopics — a pure fit/revert, no re-layout, no expandedIds change.
+    const clearHoverZoomTimers = () => {
+      if (hoverZoomEnterRef.current !== null) {
+        window.clearTimeout(hoverZoomEnterRef.current);
+        hoverZoomEnterRef.current = null;
+      }
+      if (hoverZoomExitRef.current !== null) {
+        window.clearTimeout(hoverZoomExitRef.current);
+        hoverZoomExitRef.current = null;
+      }
+    };
+    const zoomToNode = (n: cytoscape.NodeSingular) => {
+      if (!preHoverViewportRef.current) {
+        preHoverViewportRef.current = { zoom: cy.zoom(), pan: cy.pan() };
+      }
+      hoverZoomActiveIdRef.current = n.id();
+      const eles = n.union(n.children());
+      cy.stop();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        cy.fit(eles, 180);
+        return;
+      }
+      cy.animate({ fit: { eles, padding: 180 } }, { duration: 500, easing: 'ease-in-out-cubic' });
+    };
+    cy.on('mouseover', 'node', (e) => {
+      const n = e.target;
+      if (!large || goalIdRef.current) return;
+      // Moving from a compound topic's header onto its own child subtopics
+      // is still "inside" that hover session — cancel a pending revert
+      // instead of treating the child as a new, ineligible target.
+      const activeId = hoverZoomActiveIdRef.current;
+      if (activeId && !n.isParent() && n.parent().id() === activeId) {
+        if (hoverZoomExitRef.current !== null) {
+          window.clearTimeout(hoverZoomExitRef.current);
+          hoverZoomExitRef.current = null;
+        }
+        return;
+      }
+      if (!n.isParent()) return;
+      if (hoverZoomExitRef.current !== null) {
+        window.clearTimeout(hoverZoomExitRef.current);
+        hoverZoomExitRef.current = null;
+        zoomToNode(n);
+        return;
+      }
+      if (hoverZoomEnterRef.current !== null) window.clearTimeout(hoverZoomEnterRef.current);
+      hoverZoomEnterRef.current = window.setTimeout(() => {
+        hoverZoomEnterRef.current = null;
+        zoomToNode(n);
+      }, 350);
+    });
+    cy.on('mouseout', 'node', () => {
+      if (hoverZoomEnterRef.current !== null) {
+        window.clearTimeout(hoverZoomEnterRef.current);
+        hoverZoomEnterRef.current = null;
+      }
+      if (!preHoverViewportRef.current) return;
+      if (hoverZoomExitRef.current !== null) window.clearTimeout(hoverZoomExitRef.current);
+      hoverZoomExitRef.current = window.setTimeout(() => {
+        hoverZoomExitRef.current = null;
+        hoverZoomActiveIdRef.current = null;
+        const v = preHoverViewportRef.current;
+        preHoverViewportRef.current = null;
+        if (v) {
+          cy.stop();
+          cy.viewport(v);
+        }
+      }, 180);
+    });
+
     if (import.meta.env.DEV) (window as unknown as { __cy?: cytoscape.Core }).__cy = cy;
 
     cyRef.current = cy;
     return () => {
+      clearHoverZoomTimers();
+      preHoverViewportRef.current = null;
+      hoverZoomActiveIdRef.current = null;
       cy.destroy();
       cyRef.current = null;
     };
