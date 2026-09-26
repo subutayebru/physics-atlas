@@ -1,111 +1,130 @@
-# Physics Atlas (sophie_scicom) — Entwicklungsplan
+# Physics Atlas (sophie_scicom) — Development Plan
 
-> Single-Source-of-Truth für den Multi-Agent-Workflow (Web-Dev). Die Agents
-> lesen dieses File bei jedem Run als Projekt-Kontext. Schlank halten.
+> Single source of truth for the agent workflow. The agents read this file on
+> every run as project context. Keep it lean.
 
-## Projekt-Vision
+## Project Vision
 
-Eine zugängliche Datenbank von Physik-Lerninhalten, organisiert als
-**Prerequisite-DAG** (gerichteter azyklischer Graph — kein Baum: Calculus,
-Mechanik etc. speisen viele Pfade). Ein Lernziel (z.B. Cosmology) sitzt oben
-und verbindet sich über seine Voraussetzungen bis zu den Fundamentals. An
-jedem Topic hängt Content (Bücher, YouTube-Lectures, Kurse). Sophie pflegt
-die Inhalte; Lernende wählen ein Ziel — ehrgeizig (Cosmology) oder bescheiden
-(Special Relativity) — und bekommen ein generiertes Curriculum.
+An accessible database of physics learning content, organised as a
+**prerequisite DAG** (directed acyclic graph — not a tree: calculus,
+mechanics etc. feed many paths). A learning goal (e.g. Cosmology) sits at the
+top and connects through its prerequisites down to the fundamentals. Each
+topic carries content (books, YouTube lectures, courses). Sophie maintains
+the content; learners pick a goal — ambitious (Cosmology) or modest
+(Special Relativity) — and get a generated curriculum.
 
-**Typ:** Statische SPA — kein Backend (v1)
-**Stack:** React 19 + TypeScript + Vite, Cytoscape.js + dagre für den Graphen
-**Zielgruppe:** Selbstlerner:innen; Content-Autorin ist Sophie (non-dev)
+**Type:** Static SPA — no backend (v1)
+**Stack:** React 19 + TypeScript + Vite, Cytoscape.js + dagre for the graph
+**Audience:** Self-learners; the content author is Sophie (non-dev)
 
-Design-Entscheidungen + bewusst offen gehaltene Alternativen:
-`docs/DESIGN-DECISIONS.md` (nicht löschen — alle Optionen bleiben als Pfade).
+Design decisions + deliberately open alternatives:
+`docs/DESIGN-DECISIONS.md` (don't delete — every option stays as a path).
 
-## Stack-Commands
+## Language
 
-| Command | Wert | Verwendung |
+Everything in this repo is written in **English** — code, comments, docs, plans, reviews,
+backlog/roadmap entries and commit messages.
+
+## Stack Commands
+
+| Command | Value | Use |
 |---|---|---|
 | Install | `npm install` | Dependencies |
-| Build | `npm run build` | **Hard Gate** — tsc + vite build, muss clean durchlaufen |
-| Typecheck | `npx tsc -b` | Typecheck-Gate |
+| Build | `npm run build` | **Hard gate** — tsc + vite build, must run clean |
+| Typecheck | `npx tsc -b` | Typecheck gate |
 | Lint | `npm run lint` | oxlint |
-| Test | `npm run validate` | Daten-Gate: topics.json (ids, refs, Zyklen) — es gibt (noch) keine Unit-Tests |
-| Dev-Server | `npm run dev` | Vite |
-| Dev-URL | `http://localhost:5173` | Chrome-DevTools-Navigationsziel; `?mode=explore` für den Explorer-View |
-| DB-Migrate | *(leer — kein Backend)* | |
+| Validate | `npm run validate` | Data gate: topics.json (ids, refs, cycles) — there are no unit tests (yet) |
+| Smoke | `CHROME_BIN=/usr/bin/google-chrome npm run smoke` | Browser smoke via puppeteer; needs a running dev server |
+| Dev server | `npm run dev` | Vite |
+| Dev URL | `http://localhost:5173` | Chrome DevTools navigation target; `?mode=explore` for the explorer view |
+| DB migrate | *(empty — no backend)* | |
 
-## Architektur-Überblick
+## Architecture Overview
 
 ```
 sophie_scicom/
 ├── src/
-│   ├── data/         # topics.json (DIE Datenbank) + types.ts (Schema)
-│   ├── graph/        # dag.ts (ancestors, topologische Curriculum-Ordnung), levelColors.ts
-│   ├── components/   # GraphView (Cytoscape-Wrapper), GoalView, ExplorerView,
+│   ├── data/         # topics.json (THE database) + types.ts (schema)
+│   ├── graph/        # dag.ts (ancestors, topological curriculum ordering), levelColors.ts
+│   ├── components/   # GraphView (Cytoscape wrapper), GoalView, ExplorerView,
 │   │                 # ContentList, Legend
-│   ├── App.tsx       # Mode-Switch (goal | explore), liest ?mode= aus der URL
-│   └── App.css       # alle Styles; Tokens als CSS-Variablen in :root
-├── scripts/          # validate-topics.mjs (+ Template-Scripts)
+│   ├── App.tsx       # mode switch (goal | explore), reads ?mode= from the URL
+│   └── App.css       # all styles; tokens as CSS variables in :root
+├── scripts/          # validate-topics.mjs (+ template scripts)
 └── docs/             # DESIGN-DECISIONS.md, AUTHORING.md
 ```
 
-## Wichtige Patterns / Module
+## Key Patterns / Modules
 
-- **`src/data/topics.json`** — einzige Datenquelle. Schema-Regeln in
-  `docs/AUTHORING.md`. Nach jeder Daten-Änderung `npm run validate`.
-- **`src/graph/dag.ts`** — `ancestorsOf()` (transitive Prerequisites),
-  `curriculumFor()` (topologisch sortiertes Curriculum),
-  `expandedCurriculumFor()` (Unit-Granularität: Unit-Refs sind `topicId` oder
-  `topicId/subId`, Subtopic-Auflösungsregeln gespiegelt im Validator).
-  Graph-Logik gehört hierhin, nicht in Komponenten.
-- **`src/graph/levelColors.ts`** — validierte Level-Palette (foundation
-  `#1baf7a`, core `#2a78d6`, advanced `#4a3aa7`, goal `#eb6834`). Keine
-  Magic-Hex-Werte in Komponenten; App-Chrome-Tokens in `App.css :root`.
-- **`GraphView.tsx`** — einziger Ort mit Cytoscape-Kontakt. Selektion/
-  Highlight via Klassen (`chosen`, `dimmed`, `onpath`) ohne Re-Layout.
-- **Layout-Konvention:** dagre `rankDir: 'BT'` — Ziele oben, Fundamentals
-  unten. Kanten zeigen von Prerequisite → abhängigem Topic.
+- **`src/data/topics.json`** — the only data source. Schema rules in
+  `docs/AUTHORING.md`. Run `npm run validate` after every data change.
+- **`src/graph/dag.ts`** — `ancestorsOf()` (transitive prerequisites),
+  `curriculumFor()` (topologically sorted curriculum),
+  `expandedCurriculumFor()` (unit granularity: unit refs are `topicId` or
+  `topicId/subId`, subtopic resolution rules mirrored in the validator).
+  Graph logic belongs here, not in components.
+- **`src/graph/levelColors.ts`** — validated level palette (foundation
+  `#1baf7a`, core `#2a78d6`, advanced `#4a3aa7`, goal `#eb6834`). No
+  magic hex values in components; app-chrome tokens in `App.css :root`.
+- **`GraphView.tsx`** — the only place that touches Cytoscape. Selection/
+  highlight via classes (`chosen`, `dimmed`, `onpath`) without re-layout.
+- **Layout convention:** dagre `rankDir: 'BT'` — goals at the top, fundamentals
+  at the bottom. Edges point from prerequisite → dependent topic.
 
-## Subsysteme (für QA-/Live-QA-Heuristik)
+## Subsystems (scope selection for the live-qa agent)
 
-- `GraphRendering` (Cytoscape, Layout, Highlighting)
-- `CurriculumLogic` (dag.ts, Ordnung, Ancestors)
-- `DataSchema` (topics.json, Validator)
-- `Routing` (Mode-Switch, URL-Param)
-- `DesignSystem` (Tokens, Palette, Legend)
+- `GraphRendering` (Cytoscape, layout, highlighting)
+- `CurriculumLogic` (dag.ts, ordering, ancestors)
+- `DataSchema` (topics.json, validator)
+- `Routing` (mode switch, URL param)
+- `DesignSystem` (tokens, palette, legend)
 - `Accessibility`
 - `Performance`
 
-## Konventionen
+## Conventions
 
-- TypeScript strict, 2-Space-Indent, keine neuen Dependencies ohne Plan.
-- Default keine Kommentare; nur nicht-offensichtliche WHYs.
-- Edit > Write: existierende Files modifizieren.
-- a11y-First: semantisches HTML, sichtbare Labels (Node-Farben tragen nie
-  allein Bedeutung — Legende + Ink-Labels sind Pflicht).
-- Content-Änderungen (topics.json) brauchen `npm run validate` als Gate.
-- Keine Design-Assets generieren — Assets liefert der User.
+- TypeScript strict, 2-space indent, no new dependencies without a plan.
+- No comments by default; only non-obvious WHYs.
+- Edit > Write: modify existing files.
+- a11y-first: semantic HTML, visible labels (node colours never carry meaning
+  alone — legend + ink labels are mandatory).
+- Content changes (topics.json) need `npm run validate` as a gate.
+- Don't generate design assets — the user supplies assets.
 
-## Live-QA-Modus
+## Agent System
 
-Schalter: `live-qa: auto-per-wave`
+Five agents + a playbook in `.claude/agents/` — details in `orchestrator.md`.
 
-## GitHub-Integration
+| Agent | When |
+|---|---|
+| `planner` | only shape-critical features (graph/layout, schema, new view mode, content deletion) |
+| `developer` | every feature |
+| `reviewer` | every feature — runs the gates, checks against the conventions above |
+| `committer` | after a green review, and at wave close |
+| `live-qa` | only at wave close (browser) |
 
-Schalter: `github: disabled` · `close-policy: after-live-qa`
-(Projekt hat noch kein eigenes GitHub-Repo — liegt im dev-bru-Monorepo.
-Nach Repo-Split auf `enabled` stellen.)
+**Wave** = whatever has been committed since the last `live-qa:` commit; it closes after
+3 features, when `## Open` is empty, or on request. No lock file, no counter — git is the
+source of truth.
 
-## Bewusst nicht jetzt
+Artifacts: plans in `.claude/plans/`, reviews and wave reports in `.claude/reviews/`.
+Start: `./start-dev-session.sh`.
 
-- Kein Backend, keine Accounts, kein CMS — Datenpflege via topics.json + git.
-- Keine native Mobile-App.
-- Kein D3-/React-Flow-Rewrite (bewusste Pfade, siehe DESIGN-DECISIONS.md).
-- Der `idea-generator` soll keine neuen Physik-*Inhalte* erfinden — Content
-  kuratiert Sophie.
+Deliberately **no** GitHub issue workflow, even though the repo now has its own remote
+(`github.com/subutayebru/physics-atlas`): backlog and roadmap live in the repo and are
+committed with every feature — a parallel issue tracker would be, for solo development, a
+second place for the same truth. No agent pushes; you do that by hand.
 
-## Nächste größere Themen (Roadmap-Hooks)
+## Deliberately not now
 
-- Progress-Tracking (localStorage-Checkmarks pro Topic, % im Curriculum)
-- Default-Modus-Entscheidung (goal-first vs. explorer) nach User-Vergleich
-- Deployment (eigenes Repo + GitHub Pages)
-- Suche + Filter nach Content-Typ
+- No backend, no accounts, no CMS — data upkeep via topics.json + git.
+- No native mobile app.
+- No D3/React Flow rewrite (deliberate paths, see DESIGN-DECISIONS.md).
+- Agents don't invent new physics *content* — Sophie curates content.
+
+## Next bigger topics (roadmap hooks)
+
+- Progress tracking (localStorage checkmarks per topic, % in the curriculum)
+- Default-mode decision (goal-first vs. explorer) after user comparison
+- Deployment (own repo + GitHub Pages)
+- Search + filter by content type

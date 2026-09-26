@@ -531,7 +531,7 @@
       "subtopics": [
         {
           "id": "curvilinear-coords",
-          "title": "Set up curvilinear coordinates and their basis vectors. (Platzhalter)",
+          "title": "Set up curvilinear coordinates and their basis vectors. (placeholder)",
           "prerequisites": ["metric-viewpoints"]
         }
       ]
@@ -855,32 +855,32 @@
       "id": "relativistic-hydro",
       "title": "Relativistic Hydrodynamics",
       "category": "method",
-      "description": "Platzhalter — Sophie ergänzt echten Content. Fluid dynamics for matter moving at speeds where relativity matters (heavy-ion collisions, neutron-star mergers).",
+      "description": "Placeholder — Sophie will add real content. Fluid dynamics for matter moving at speeds where relativity matters (heavy-ion collisions, neutron-star mergers).",
       "prerequisites": ["fluid-dynamics", "special-relativity", "differential-geometry"],
       "featured": false,
       "content": [],
       "subtopics": [
         {
           "id": "basics",
-          "title": "Relativistic fluid basics (Platzhalter)",
-          "description": "Platzhalter — Sophie ergänzt echten Content.",
+          "title": "Relativistic fluid basics (placeholder)",
+          "description": "Placeholder — Sophie will add real content.",
           "prerequisites": ["fluid-dynamics", "special-relativity", "la-tensors/einstein"]
         },
         {
           "id": "viscous",
-          "title": "Viscous & dissipative flow (Platzhalter)",
-          "description": "Platzhalter — Sophie ergänzt echten Content.",
+          "title": "Viscous & dissipative flow (placeholder)",
+          "description": "Placeholder — Sophie will add real content.",
           "prerequisites": ["basics", "metric/curvilinear-coords", "la-tensors/vec-dual-operators"]
         },
         {
           "id": "israel-stuart",
-          "title": "Israel-Stewart theory (Platzhalter)",
-          "description": "Platzhalter — Sophie ergänzt echten Content. The second-order theory that repairs acausal first-order viscous hydrodynamics.",
+          "title": "Israel-Stewart theory (placeholder)",
+          "description": "Placeholder — Sophie will add real content. The second-order theory that repairs acausal first-order viscous hydrodynamics.",
           "prerequisites": ["viscous", "metric/metric-under-coords", "la-tensors/dual-transforms"],
           "outcomes": [
-            { "id": "first-order-problem", "text": "Platzhalter — explain why first-order viscous hydrodynamics is acausal." },
-            { "id": "relaxation", "text": "Platzhalter — write down the relaxation equations for the dissipative currents.", "needs": ["first-order-problem"] },
-            { "id": "apply", "text": "Platzhalter — apply the theory to a simple expanding flow.", "needs": ["relaxation"] }
+            { "id": "first-order-problem", "text": "Placeholder — explain why first-order viscous hydrodynamics is acausal." },
+            { "id": "relaxation", "text": "Placeholder — write down the relaxation equations for the dissipative currents.", "needs": ["first-order-problem"] },
+            { "id": "apply", "text": "Placeholder — apply the theory to a simple expanding flow.", "needs": ["relaxation"] }
           ]
         }
       ]

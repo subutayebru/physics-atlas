@@ -1,5 +1,5 @@
 {
-  "//": "Chrome DevTools MCP — Browser-basierte Analyse/Tests fuer die QA-Agents (qa-tester, live-qa-analyst, design-reviewer, design-researcher). Wird beim Start von Claude Code automatisch geladen. Voraussetzung: Node/npx vorhanden und ein installierter Chrome/Chromium. Beim ersten Tool-Load erscheinen die mcp__chrome-devtools__* Tools.",
+  "//": "Chrome DevTools MCP — browser-based checks for the live-qa agent. Loaded automatically when Claude Code starts. Requires Node/npx and an installed Chrome/Chromium. The mcp__chrome-devtools__* tools appear on first tool load.",
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",

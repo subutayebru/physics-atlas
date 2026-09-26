@@ -1,6 +1,6 @@
 ---
 feature-id: 14
-title: Topic-Cleanup + Subtopics default-sichtbar + Hover-Zoom im Explorer
+title: Topic cleanup + subtopics visible by default + hover zoom in the explorer
 issue:
 requires-design-assets: false
 estimated-complexity: high
@@ -11,159 +11,159 @@ runtime-budget-minutes: 20
 
 ## Context
 
-Follow-up zu feature-13 (Commit `8f5b03b`, Kategorie-Farben + Goal-Highlighting), aus
-direktem Feedback nach dem ersten Blick auf die live App:
+Follow-up to feature-13 (commit `8f5b03b`, category colours + goal highlighting), from
+direct feedback after the first look at the live app:
 
-1. Die 6 in feature-13 unkategorisiert gelassenen Topics sind auf der Map noch als graue
-   Nodes sichtbar. Gewollt ist: komplett weg aus der App — nicht ausgeblendet, sondern aus
-   `topics.json` gelöscht, inklusive aller Prerequisite-Referenzen darauf. Das ist ein
-   bewusst akzeptierter Content-Rückschritt: general-relativity, quantum-field-theory,
-   black-holes-gravitational-waves und cosmology werden je einen Schritt kürzer,
-   quantum-mechanics verliert sein einziges optionales Prerequisite.
-2. Subtopics sollen zur normalen Kartenstruktur gehören, nicht hinter einem Toggle versteckt
-   sein. Aktuell startet jedes Topic eingeklappt (⊕-Klick/Doppel-Tap nötig) — auch die 7
-   Topics, die schon Subtopics haben. Gewollt: diese 7 zeigen ihre Subtopics beim Laden
-   sofort offen.
-3. Hovern über ein Topic (bevor ein Lernziel gewählt ist) soll die Ansicht sanft auf dieses
-   Topic + seine Subtopics zoomen, der Rest der Map bleibt sichtbar, dann wieder zurück.
-   Bestätigter Scope: nur im Vor-Ziel-Explorationszustand — sobald ein Lernziel aktiv ist,
-   bleibt die Ansicht auf den hervorgehobenen Pfad fokussiert, kein Hover-Zoom mehr.
-4. Das eigentliche feature-13-Ziel — bei gewähltem Lernziel nur die relevanten Subtopics
-   hervorheben, irrelevante ausblenden — funktioniert bereits korrekt (verifiziert am
-   `relativistic-hydro/israel-stuart`-Beispiel: `metric/curvilinear-coords` leuchtet,
-   `metric/lengths-angles-volumes` bleibt gedimmt; klassische vs. relativistische
-   Hydrodynamik: `fluid-dynamics` hat schlicht keine Kante zu `differential-geometry`).
-   Kein neuer Code hier — nur ein Verifikations-Pass, dass Punkt 2/3 das nicht kaputt machen.
+1. The 6 topics left uncategorised in feature-13 are still visible on the map as grey
+   nodes. What's wanted: gone from the app entirely — not hidden, but deleted from
+   `topics.json`, including every prerequisite reference to them. This is a
+   deliberately accepted content regression: general-relativity, quantum-field-theory,
+   black-holes-gravitational-waves and cosmology each get one step shorter,
+   quantum-mechanics loses its only optional prerequisite.
+2. Subtopics should be part of the normal map structure, not hidden behind a toggle.
+   Currently every topic starts collapsed (⊕ click/double tap needed) — including the 7
+   topics that already have subtopics. What's wanted: these 7 show their subtopics open
+   immediately on load.
+3. Hovering a topic (before a learning goal is picked) should smoothly zoom the view to that
+   topic + its subtopics, with the rest of the map staying visible, then back again.
+   Confirmed scope: only in the pre-goal exploration state — once a learning goal is active,
+   the view stays focused on the highlighted path, no more hover zoom.
+4. The actual feature-13 goal — with a learning goal picked, highlight only the relevant
+   subtopics and fade out the irrelevant ones — already works correctly (verified on the
+   `relativistic-hydro/israel-stuart` example: `metric/curvilinear-coords` lights up,
+   `metric/lengths-angles-volumes` stays dimmed; classical vs. relativistic
+   hydrodynamics: `fluid-dynamics` simply has no edge to `differential-geometry`).
+   No new code here — only a verification pass that points 2/3 don't break it.
 
-Content für die ~28 Topics ohne Subtopics ist bewusst aufgeschoben — Sophie füllt das
-später. Wird in der Doku explizit als erwarteter, dokumentierter Zustand festgehalten,
-nicht stillschweigend offen gelassen.
+Content for the ~28 topics without subtopics is deliberately deferred — Sophie fills it in
+later. This is recorded explicitly in the docs as an expected, documented state, not left
+silently open.
 
 ## Critical Files
 
-- `src/data/topics.json` — 6 Topic-Einträge löschen, 5 hängende Prerequisite-Refs bereinigen
-- `src/components/MapView.tsx:41` — `expandedIds`-Default (leer → alle annotierten Topics)
-- `src/components/GraphView.tsx` — neuer Hover-Zoom-Mechanismus (rein intern, keine neuen Props)
-- `docs/AUTHORING.md`, `docs/DESIGN-DECISIONS.md` — Doku für aufgeschobenen Content + Decision 11
-- `BACKLOG.md`, `ROADMAP.md` — Projekt-Bookkeeping
+- `src/data/topics.json` — delete 6 topic entries, clean up 5 dangling prerequisite refs
+- `src/components/MapView.tsx:41` — `expandedIds` default (empty → all annotated topics)
+- `src/components/GraphView.tsx` — new hover-zoom mechanism (fully internal, no new props)
+- `docs/AUTHORING.md`, `docs/DESIGN-DECISIONS.md` — docs for deferred content + Decision 11
+- `BACKLOG.md`, `ROADMAP.md` — project bookkeeping
 
-## Wiederverwendete Patterns
+## Reused Patterns
 
-- `GraphView.tsx:456-469` (`focus`-Effekt: `cy.animate({fit:{eles,padding}})`,
-  `prefers-reduced-motion`-Check via `window.matchMedia`) — Hover-Zoom ist ein zweiter,
-  thematisch identischer Aufruf statt eines neuen Mechanismus.
-- `MapView.tsx:60-77` (`autoAddedRef`, goal-getriebenes Auto-Expand über `goalPathFor()`
-  aus `src/graph/dag.ts`) — bleibt unverändert; der neue Default-Expand-Floor ist immer eine
-  Obermenge von `goalPathFor().expand`, die beiden Mechanismen können sich nicht ins Gehege
-  kommen (siehe Datenmodell-Abschnitt).
-- `GraphView.tsx:374` (350ms-Fenster für Doppel-Tap-Erkennung) — gleiche Timing-Konvention
-  für den Hover-Zoom-Dwell wiederverwendet statt einer neuen Magic Number.
-- `scripts/validate-topics.mjs:182-194` (Prerequisite-Auflösung, harter Fehler bei unbekannter
-  ID) — unverändert, die Datenbereinigung ist exakt darauf ausgelegt, hier sauber
-  durchzulaufen; kein Script-Change nötig.
-- `Home.tsx:14` (`topics.filter(t => t.featured)`) — kein Code-Change; `standard-model`
-  fällt automatisch aus den Featured-Chips, sobald das Topic aus den Daten verschwindet.
+- `GraphView.tsx:456-469` (`focus` effect: `cy.animate({fit:{eles,padding}})`,
+  `prefers-reduced-motion` check via `window.matchMedia`) — hover zoom is a second,
+  thematically identical call instead of a new mechanism.
+- `MapView.tsx:60-77` (`autoAddedRef`, goal-driven auto-expand via `goalPathFor()`
+  from `src/graph/dag.ts`) — stays unchanged; the new default-expand floor is always a
+  superset of `goalPathFor().expand`, so the two mechanisms can't get in each other's way
+  (see the data model section).
+- `GraphView.tsx:374` (350 ms window for double-tap detection) — the same timing convention
+  is reused for the hover-zoom dwell instead of a new magic number.
+- `scripts/validate-topics.mjs:182-194` (prerequisite resolution, hard error on an unknown
+  ID) — unchanged; the data cleanup is designed exactly so that this runs through cleanly;
+  no script change needed.
+- `Home.tsx:14` (`topics.filter(t => t.featured)`) — no code change; `standard-model`
+  drops out of the featured chips automatically once the topic disappears from the data.
 
-## Datenmodell / Relations
+## Data Model / Relations
 
-**Löschen** (vollständige Topic-Einträge aus `topics.json`, keine `partOf`-Ziele, keine
-eigenen Subtopics, von keiner anderen Stelle im Repo referenziert außer den unten
-gelisteten Prerequisite-Refs):
+**Delete** (complete topic entries from `topics.json`; no `partOf` targets, no subtopics of
+their own, not referenced anywhere else in the repo except the prerequisite refs listed
+below):
 
 `lagrangian-mechanics`, `optics`, `standard-model`, `quantum-gravity-frontiers`,
 `stellar-astrophysics`, `galaxies-large-scale-structure`
 
-**Referenzen bereinigen** (sonst harter `npm run validate`-Fehler):
+**Clean up references** (otherwise a hard `npm run validate` error):
 
-| Topic | Vorher | Nachher |
+| Topic | Before | After |
 |---|---|---|
-| `quantum-mechanics` | `optionalPrerequisites: ["lagrangian-mechanics"]` | Feld ganz entfernen |
+| `quantum-mechanics` | `optionalPrerequisites: ["lagrangian-mechanics"]` | remove the field entirely |
 | `general-relativity` | `["special-relativity", "differential-geometry", "lagrangian-mechanics"]` | `["special-relativity", "differential-geometry"]` |
 | `quantum-field-theory` | `["quantum-mechanics", "special-relativity", "lagrangian-mechanics"]` | `["quantum-mechanics", "special-relativity"]` |
 | `black-holes-gravitational-waves` | `["general-relativity", "stellar-astrophysics"]` | `["general-relativity"]` |
 | `cosmology` | `["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics", "galaxies-large-scale-structure"]` | `["general-relativity", "statistical-mechanics", "astrophysics", "nuclear-particle-physics"]` |
 
-Exakte Zeilennummern beim Implementieren frisch per `grep -n '"id"'` bestimmen — die Datei
-ist groß und handgepflegt, Zeilen verschieben sich schnell.
+Determine exact line numbers fresh via `grep -n '"id"'` when implementing — the file is
+large and hand-maintained, lines shift quickly.
 
 ## Implementation Steps
 
-1. **`src/data/topics.json`** — die 6 Topic-Blöcke löschen, die 5 Referenzen wie oben
-   bereinigen (von unten nach oben löschen oder nach jedem Schritt neu `grep`en).
-2. **`npm run validate`** direkt danach laufen lassen — erwartet: 35 statt 41 Topics, 0 Fehler.
-3. **`src/components/MapView.tsx:41`** — Lazy-Initializer ändern:
+1. **`src/data/topics.json`** — delete the 6 topic blocks, clean up the 5 references as
+   above (delete bottom-up, or re-`grep` after each step).
+2. **`npm run validate`** right afterwards — expected: 35 instead of 41 topics, 0 errors.
+3. **`src/components/MapView.tsx:41`** — change the lazy initializer:
    ```ts
    const [expandedIds, setExpandedIds] = useState<Set<string>>(
      () => new Set(topics.filter((t) => t.subtopics?.length).map((t) => t.id)),
    );
    ```
-   `toggleExpand` und der ⊕/⊖-Button bleiben unverändert. `.map-hint`-Text (nahegelegen)
-   optional anpassen — beschreibt aktuell nur das Öffnen, sollte auch das Einklappen
-   erwähnen, da die meisten annotierten Topics jetzt offen starten.
-4. **`src/components/GraphView.tsx`** — Hover-Zoom, komplett intern, keine neuen Props:
-   - Gating: nur wenn `large === true`, nur wenn `!goalId`, nur für Nodes mit
-     `node.isParent()` (manuell eingeklappte oder Blatt-Topics no-open automatisch).
-   - Neue Refs: Enter-Timer, Exit-Timer, `preHoverViewportRef` (`{zoom, pan}`, einmal pro
-     Hover-*Session* gesetzt, nicht pro Node).
-   - `mouseover` auf berechtigtem Node: ~350ms Dwell, dann (falls `preHoverViewportRef`
-     leer) aktuellen Viewport merken, dann `cy.stop()` +
+   `toggleExpand` and the ⊕/⊖ button stay unchanged. Optionally adjust the `.map-hint` text
+   (nearby) — it currently describes only opening, and should also mention collapsing, since
+   most annotated topics now start open.
+4. **`src/components/GraphView.tsx`** — hover zoom, fully internal, no new props:
+   - Gating: only when `large === true`, only when `!goalId`, only for nodes with
+     `node.isParent()` (manually collapsed or leaf topics are automatically excluded).
+   - New refs: enter timer, exit timer, `preHoverViewportRef` (`{zoom, pan}`, set once per
+     hover *session*, not per node).
+   - `mouseover` on an eligible node: ~350 ms dwell, then (if `preHoverViewportRef` is
+     empty) remember the current viewport, then `cy.stop()` +
      `cy.animate({fit:{eles: node.union(node.children()), padding: ~160-200}}, {duration:500,
-     easing:'ease-in-out-cubic'})` (bzw. `cy.fit()` sofort bei `prefers-reduced-motion`).
-   - `mouseout`: ~150-200ms Exit-Timer, dann `cy.viewport({zoom, pan})` aus dem gemerkten
-     Wert wiederherstellen, Session zurücksetzen. Ein neuer `mouseover` vor Ablauf des
-     Exit-Timers bricht ihn ab und fitted direkt neu, kein Zurückspring-Flackern.
-   - Beide Timer im bestehenden `cy.destroy()`-Teardown (Element-Rebuild-Effekt) clearen.
-   - Bestehende Hover-Highlight-Klassen (`hover-pre`/`hover-post`/`hovered`) unangetastet —
-     Hover-Zoom ist eine separate `cy.on(...)`-Registrierung, keine Vermischung.
-5. **Verifikation der bereits funktionierenden Goal-Dimming-Logik** (kein Code-Change) —
-   siehe Verification-Abschnitt.
-6. **`docs/AUTHORING.md`** — Beispiel-`prerequisites` (aktuell noch mit
-   `lagrangian-mechanics`, modelliert auf `quantum-field-theory`) korrigieren; neue Zeile
-   für `subtopics` in der Feldtabelle (analog zum bestehenden `category`-Eintrag): optional,
-   fehlend ist ein gültiger Dauerzustand (schlichter Node), kein Mangel; wenn vorhanden,
-   rendert standardmäßig offen auf der Map.
-7. **`docs/DESIGN-DECISIONS.md`** — kurzer Verweis-Satz an Decision 10 (die 6 Topics sind
-   jetzt gelöscht, nicht mehr nur unkategorisiert); neue **Decision 11** — echtes Löschen
-   statt Ausblenden (+ akzeptierter Curriculum-Rückschritt), Default-Open als strukturelle
-   Voraussetzung für günstiges Hover-Zoom, Hover-Zoom als reine Viewport-Operation
-   (explizit kein Fisheye/Lens — cytoscape hat kein solches Primitiv), gegated auf
-   Vor-Ziel-Exploration auf der großen Map.
-8. **`BACKLOG.md`** — feature-14-Zeile unter `## Open` ergänzen (Format wie bestehende
-   Einträge).
-9. **`ROADMAP.md`** — Eintrag unter dem Insert-Marker (Format wie feature-13-Block).
+     easing:'ease-in-out-cubic'})` (or `cy.fit()` immediately under `prefers-reduced-motion`).
+   - `mouseout`: ~150–200 ms exit timer, then restore `cy.viewport({zoom, pan})` from the
+     remembered value, reset the session. A new `mouseover` before the exit timer expires
+     cancels it and re-fits directly, no snap-back flicker.
+   - Clear both timers in the existing `cy.destroy()` teardown (element rebuild effect).
+   - Leave the existing hover-highlight classes (`hover-pre`/`hover-post`/`hovered`)
+     untouched — hover zoom is a separate `cy.on(...)` registration, no mixing.
+5. **Verification of the already-working goal-dimming logic** (no code change) —
+   see the Verification section.
+6. **`docs/AUTHORING.md`** — correct the example `prerequisites` (currently still with
+   `lagrangian-mechanics`, modelled on `quantum-field-theory`); new row for `subtopics` in the
+   field table (analogous to the existing `category` entry): optional, absent is a valid
+   permanent state (plain node), not a deficiency; when present, renders open by default on
+   the map.
+7. **`docs/DESIGN-DECISIONS.md`** — short reference sentence added to Decision 10 (the 6
+   topics are now deleted, no longer just uncategorised); new **Decision 11** — real deletion
+   instead of hiding (+ accepted curriculum regression), default-open as the structural
+   precondition for cheap hover zoom, hover zoom as a pure viewport operation
+   (explicitly no fisheye/lens — Cytoscape has no such primitive), gated to pre-goal
+   exploration on the large map.
+8. **`BACKLOG.md`** — add the feature-14 line under `## Open` (same format as the existing
+   entries).
+9. **`ROADMAP.md`** — entry under the insert marker (same format as the feature-13 block).
 10. **Gates**: `npm run validate`, `npx tsc -b`, `npm run lint`, `npm run build`.
 
 ## Verification
 
-- `npm run validate` → 35 topics, 0 Fehler.
-- `npx tsc -b`, `npm run lint`, `npm run build` — alle clean.
-- `npm run dev`, manueller Pass:
-  - Alle 6 gelöschten Topics: keine Suchtreffer, nicht auf der Map, keine hängenden Kanten;
-    Home zeigt 8 statt 9 Featured-Chips (kein Standard-Model-Chip mehr).
+- `npm run validate` → 35 topics, 0 errors.
+- `npx tsc -b`, `npm run lint`, `npm run build` — all clean.
+- `npm run dev`, manual pass:
+  - All 6 deleted topics: no search hits, not on the map, no dangling edges;
+    home shows 8 instead of 9 featured chips (no Standard Model chip any more).
   - `?mode=goal&goal=general-relativity`, `…quantum-field-theory`,
-    `…black-holes-gravitational-waves`, `…cosmology` laden sauber mit den verkürzten
-    Prerequisite-Listen, keine Console-Errors, kein kaputter Chip für den entfernten Schritt.
-  - Frischer Load von `?mode=map` (kein Ziel gewählt): `calculus-1`, `linear-algebra`,
+    `…black-holes-gravitational-waves`, `…cosmology` load cleanly with the shortened
+    prerequisite lists, no console errors, no broken chip for the removed step.
+  - Fresh load of `?mode=map` (no goal picked): `calculus-1`, `linear-algebra`,
     `differential-equations`, `waves-oscillations`, `quantum-mechanics`, `metric`,
-    `relativistic-hydro` zeigen ihre Subtopics sofort; ⊖/⊕ klappt weiterhin manuell.
-  - Hover über eines dieser 7 Topics zoomt sanft auf Topic+Subtopics, ohne dass andere
-    Node-Positionen springen (Indiz für ungewollte `expandedIds`-Mutation); Wechsel zu
-    einem Nachbar-Topic re-fitted ohne Zwischen-Flackern; Maus raus → sanft zurück zur
-    Vorher-Ansicht; `prefers-reduced-motion` → sofortiger Schnitt ohne Animation; Hover
-    über ein Blatt-Topic (z.B. `electromagnetism`) → keine Viewport-Änderung, nur die
-    bestehende Hover-Hervorhebung.
-  - Bei gewähltem Lernziel: Hover löst **kein** Zoom mehr aus.
-  - `relativistic-hydro/israel-stuart`-Dimming-Beispiel unverändert korrekt.
+    `relativistic-hydro` show their subtopics immediately; ⊖/⊕ still collapses/expands manually.
+  - Hovering one of these 7 topics zooms smoothly to topic+subtopics without other
+    node positions jumping (a sign of an unintended `expandedIds` mutation); moving to
+    a neighbouring topic re-fits without intermediate flicker; mouse out → smoothly back to
+    the previous view; `prefers-reduced-motion` → instant cut without animation; hovering a
+    leaf topic (e.g. `electromagnetism`) → no viewport change, only the existing hover
+    highlight.
+  - With a learning goal picked: hover triggers **no** zoom.
+  - The `relativistic-hydro/israel-stuart` dimming example is still correct.
 
-## Annahmen
+## Assumptions
 
-- Curriculum-Rückschritt (general-relativity/quantum-field-theory/
-  black-holes-gravitational-waves/cosmology je einen Schritt kürzer, quantum-mechanics ohne
-  optionales Prerequisite) ist vom User bewusst und explizit akzeptiert, kein Bug.
-- Exakte Timing-Werte (350ms Dwell, 150-200ms Exit, 500ms Animationsdauer, 160-200px
-  Padding) sind vernünftige, an bestehenden Codewerten orientierte Startpunkte — im
-  Dev-Server visuell nachjustierbar, kein Hard-Requirement.
-- Hover-Zoom-Revert-Ziel: der exakte Viewport-Stand vor Hover-Beginn (nicht ein generisches
-  Fit-All) — bewahrt manuelles Pan/Zoom des Users vor dem Hover.
-- `docs/DESIGN-DECISIONS.md`: Decision 10 bekommt nur einen kurzen Verweis-Zusatz statt
-  einer Neufassung — der historische Eintrag bleibt stehen, Decision 11 dokumentiert das Update.
+- The curriculum regression (general-relativity/quantum-field-theory/
+  black-holes-gravitational-waves/cosmology each one step shorter, quantum-mechanics without
+  an optional prerequisite) is deliberately and explicitly accepted by the user, not a bug.
+- The exact timing values (350 ms dwell, 150–200 ms exit, 500 ms animation duration,
+  160–200 px padding) are reasonable starting points based on existing code values —
+  adjustable visually in the dev server, not a hard requirement.
+- Hover-zoom revert target: the exact viewport state before the hover began (not a generic
+  fit-all) — preserves the user's manual pan/zoom from before the hover.
+- `docs/DESIGN-DECISIONS.md`: Decision 10 only gets a short reference addition instead of a
+  rewrite — the historical entry stays, Decision 11 documents the update.

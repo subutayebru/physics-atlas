@@ -7,7 +7,10 @@ import puppeteer from 'puppeteer-core';
 const OUT = process.env.SMOKE_OUT ?? '/tmp';
 const URL = process.env.DEV_URL ?? 'http://localhost:5173';
 const CHROME =
-  process.env.CHROME_BIN ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  process.env.CHROME_BIN ??
+  (process.platform === 'darwin'
+    ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+    : '/usr/bin/google-chrome');
 
 const browser = await puppeteer.launch({
   executablePath: CHROME,

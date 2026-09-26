@@ -1,82 +1,81 @@
 # Physics Atlas — Roadmap
 
-> Pro Feature ein Block. Status-Lifecycle: 🟡 Planned → ✅ Implemented (oder
-> ❌ Skipped). Eingefügt **newest-first** direkt unter dem Marker. Planner und
-> Committer editieren diese Datei — keine manuellen Edits, sonst brechen die
-> Marker.
+> One block per feature. Status lifecycle: 🟡 Planned → ✅ Implemented (or
+> ❌ Skipped). Inserted **newest first** directly below the marker. The planner and
+> committer edit this file — no manual edits, otherwise the markers break.
 
 <!-- ROADMAP-INSERT-HERE: planner inserts new entries directly below this line, newest first -->
 
-## feature-14: Topic-Cleanup + Subtopics default-sichtbar + Hover-Zoom im Explorer
+## feature-14: Topic cleanup + subtopics visible by default + hover zoom in the explorer
 
 **Status:** ✅ Implemented <!-- status-line: feature-14 -->
-**Geplant:** 2026-08-30T16:37:00Z
+**Planned:** 2026-08-30T16:37:00Z
 **Plan:** [.claude/plans/feature-14-topic-cleanup-default-subtopics-hover-zoom.md](.claude/plans/feature-14-topic-cleanup-default-subtopics-hover-zoom.md)
-**Komplexität:** high
+**Complexity:** high
 
-### Kern-Entscheidungen (Warum so geplant)
-- Echtes Löschen statt Ausblenden für die 6 unkategorisierten Topics — keine neue Filterlogik nötig, Search/Home/Legende/GraphView spiegeln automatisch die kleinere Liste. Bewusst akzeptierter Content-Rückschritt: general-relativity/quantum-field-theory/black-holes-gravitational-waves/cosmology werden je einen Schritt kürzer.
-- Default-Open statt Collapse-by-default für annotierte Topics löst das Hover-Zoom-Layout-Risiko strukturell: Subtopic-Kindknoten existieren beim Hover schon im Graphen, also reine Viewport-Operation (`cy.animate({fit})`) statt `expandedIds`-Änderung + teurem Re-Layout.
-- Hover-Zoom ist bewusst kein Fisheye/Isolate-Lens (cytoscape hat kein solches Primitiv) — reiner Viewport-Fit/Revert, exakt das bestehende `focus`-Pattern (Suche-Jump) wiederverwendet, gegated auf `large && !goalId`.
-- Annahme: die vier verkürzten Curricula sind kein Bug, sondern vom User bewusst akzeptiert.
+### Key decisions (why it's planned this way)
+- Real deletion instead of hiding for the 6 uncategorised topics — no new filter logic needed; search/home/legend/GraphView automatically reflect the shorter list. Deliberately accepted content regression: general-relativity/quantum-field-theory/black-holes-gravitational-waves/cosmology each get one step shorter.
+- Default-open instead of collapse-by-default for annotated topics structurally removes the hover-zoom layout risk: the subtopic child nodes already exist in the graph on hover, so it's a pure viewport operation (`cy.animate({fit})`) instead of an `expandedIds` change + expensive re-layout.
+- Hover zoom is deliberately not a fisheye/isolate lens (Cytoscape has no such primitive) — a pure viewport fit/revert, reusing exactly the existing `focus` pattern (search jump), gated on `large && !goalId`.
+- Assumption: the four shortened curricula aren't a bug but were deliberately accepted by the user.
 
-### Wiederverwendete Patterns
-- `GraphView.tsx:456-469` (`focus`-Effekt, `cy.animate({fit})`, `prefers-reduced-motion`) — Hover-Zoom ist ein zweiter, thematisch identischer Aufruf statt eines neuen Mechanismus.
-- `MapView.tsx:60-77` (`autoAddedRef`) — Default-Expand-Floor kollidiert nicht mit dem bestehenden Goal-Auto-Expand, da `goalPathFor().expand` immer eine Teilmenge der jetzt default-offenen annotierten Topics ist.
-- `GraphView.tsx:374` (350ms Doppel-Tap-Fenster) — gleiche Timing-Konvention für den Hover-Zoom-Dwell.
+### Reused patterns
+- `GraphView.tsx:456-469` (`focus` effect, `cy.animate({fit})`, `prefers-reduced-motion`) — hover zoom is a second, thematically identical call instead of a new mechanism.
+- `MapView.tsx:60-77` (`autoAddedRef`) — the default-expand floor doesn't clash with the existing goal auto-expand, because `goalPathFor().expand` is always a subset of the now default-open annotated topics.
+- `GraphView.tsx:374` (350 ms double-tap window) — same timing convention for the hover-zoom dwell.
 
-**Implementiert:** 2026-08-30T16:45:51Z
+**Implemented:** 2026-08-30T16:45:51Z
 
-### Implementiert
-- `src/data/topics.json` — 6 Topics entfernt (lagrangian-mechanics, optics, standard-model, quantum-gravity-frontiers, stellar-astrophysics, galaxies-large-scale-structure), 5 hängende Prerequisite-Refs bereinigt (quantum-mechanics, general-relativity, quantum-field-theory, black-holes-gravitational-waves, cosmology)
-- `src/components/MapView.tsx:41` — `expandedIds`-Default: Lazy-Initializer ändert Default von `Set()` auf alle Topics mit Subtopics
-- `src/components/GraphView.tsx` — Hover-Zoom-Mechanismus (350ms Dwell → `cy.animate({fit})`, 150-200ms Exit → Viewport-Revert); nur wenn `large && !goalId`; Timings wiederverwenden aus `focus`-Effekt
-- `docs/AUTHORING.md` — Beispiel-Topics korrigiert (lagrangian-mechanics entfernt), neue Feldtabelle-Zeile für `subtopics` (optional, Default-Open wenn vorhanden)
-- `docs/DESIGN-DECISIONS.md` — Verweis-Satz an Decision 10 (Topics jetzt gelöscht), neue Decision 11 (echtes Löschen statt Ausblenden, Default-Open, Hover-Zoom als reine Viewport-Operation)
+### Implemented
+- `src/data/topics.json` — 6 topics removed (lagrangian-mechanics, optics, standard-model, quantum-gravity-frontiers, stellar-astrophysics, galaxies-large-scale-structure), 5 dangling prerequisite refs cleaned up (quantum-mechanics, general-relativity, quantum-field-theory, black-holes-gravitational-waves, cosmology)
+- `src/components/MapView.tsx:41` — `expandedIds` default: the lazy initializer changes the default from `Set()` to all topics with subtopics
+- `src/components/GraphView.tsx` — hover-zoom mechanism (350 ms dwell → `cy.animate({fit})`, 150–200 ms exit → viewport revert); only when `large && !goalId`; timings reused from the `focus` effect
+- `docs/AUTHORING.md` — example topics corrected (lagrangian-mechanics removed), new field-table row for `subtopics` (optional, default-open when present)
+- `docs/DESIGN-DECISIONS.md` — reference sentence added to Decision 10 (topics now deleted), new Decision 11 (real deletion instead of hiding, default-open, hover zoom as a pure viewport operation)
 
-### QA-Outcome
-**QA:** Review-/QA-Agenten-Schritt auf explizite User-Anweisung übersprungen. Developer-Hard-Gate PASS: `npm run validate` (35 topics, 0 Fehler), `npx tsc -b`, `npm run lint`, `npm run build` — alle clean bei Iteration 1/3. Kein unabhängiger QA-/Code-/Design-Review durchgeführt.
+### QA outcome
+**QA:** Review/QA agent step skipped on explicit user instruction. Developer hard gate PASS: `npm run validate` (35 topics, 0 errors), `npx tsc -b`, `npm run lint`, `npm run build` — all clean at iteration 1/3. No independent QA/code/design review performed.
 
 <!-- impl-marker: feature-14 -->
 
-## feature-13: Kategorie-Farben + Goal-Highlighting im Explorer
+## feature-13: Category colours + goal highlighting in the explorer
 
 **Status:** ✅ Implemented <!-- status-line: feature-13 -->
-**Geplant:** 2026-08-30T14:36:10Z
+**Planned:** 2026-08-30T14:36:10Z
 **Plan:** [.claude/plans/feature-13-category-colors-goal-highlight.md](.claude/plans/feature-13-category-colors-goal-highlight.md)
-**Komplexität:** high
+**Complexity:** high
 
-### Kern-Entscheidungen (Warum so geplant)
-- `level` wird durch `category` (field/method/math-concept) **ersetzt**, nicht ergänzt — zwei parallele Klassifikationen sind für eine Non-Dev-Autorin eine Fehlerquelle, und die "Höhe" zeigt das dagre-BT-Layout ohnehin schon. Palette gemessen statt geraten: `#199e70`/`#e2574c`/`#3987e5` plus Neutral `#7a86a0` (= bestehendes `--muted`), Kontrast ≥3.0 auf beiden Surfaces, schlechtestes CVD-Paar ΔE 14.4 (bestehende Palette: 13.4).
-- `category` ist **optional**, nicht Pflicht: Sophie klassifiziert 34 der 40 Topics, 6 bleiben bewusst leer und rendern neutral grau ("Not yet categorized" als vierter Legenden-Eintrag). Ein Pflichtfeld würde erfundene Zuordnungen erzwingen und die Farbkodierung entwerten; der Validator prüft nur den Wert *falls* gesetzt. `'uncategorized'` existiert nur als Render-Fallback (`categoryOf()`), nie als Wert in topics.json.
-- Der Ziel-Pfad braucht **Cross-Topic-Unit-Kanten** in GraphView: heute werden Kanten nur topic-level gezeichnet, dadurch stünden hervorgehobene Areas wie `metric`/`la-tensors` als unverbundene Inseln da. Das ist der eigentliche Architektur-Eingriff des Features.
-- Pilot-Content wird **inline in topics.json** authored statt als `content/goals/*.md`: der Markdown-Compiler legt für jeden Prerequisite-Bullet eine neue Unit an, was (a) mit handgeschriebenen Subtopics gleicher ID kollidiert und (b) keine groben Topic-Refs erlaubt. `fluid-dynamics`/`special-relativity` bleiben deshalb bewusst unannotiert — sie zu annotieren würde bestehende Curricula (Cosmology, Black Holes) auf Platzhalter-Lernziele zusammenschrumpfen lassen.
-- Das Mapping kommt von Sophie und ist verbindlich — auch die überraschenden Zuordnungen (Elektromagnetismus, Thermodynamik, klassische Mechanik als `method`): sie trennt "Handwerkszeug, das man beherrscht" von "Phänomenbereich, den man erforscht". Nicht während der Implementierung nachjustieren.
+### Key decisions (why it's planned this way)
+- `level` is **replaced** by `category` (field/method/math-concept), not supplemented — two parallel classifications are a source of errors for a non-dev author, and the dagre BT layout already shows the "height". Palette measured rather than guessed: `#199e70`/`#e2574c`/`#3987e5` plus neutral `#7a86a0` (= existing `--muted`), contrast ≥3.0 on both surfaces, worst CVD pair ΔE 14.4 (existing palette: 13.4).
+- `category` is **optional**, not required: Sophie classifies 34 of the 40 topics, 6 are deliberately left empty and render neutral grey ("Not yet categorized" as a fourth legend entry). A required field would force invented assignments and devalue the colour coding; the validator checks the value only *if* set. `'uncategorized'` exists only as a render fallback (`categoryOf()`), never as a value in topics.json.
+- The goal path needs **cross-topic unit edges** in GraphView: today edges are drawn only at topic level, so highlighted areas like `metric`/`la-tensors` would stand as unconnected islands. That is the real architectural change of this feature.
+- Pilot content is authored **inline in topics.json** instead of as `content/goals/*.md`: the Markdown compiler creates a new unit for each prerequisite bullet, which (a) collides with hand-written subtopics of the same ID and (b) doesn't allow coarse topic refs. `fluid-dynamics`/`special-relativity` are therefore deliberately left unannotated — annotating them would shrink existing curricula (Cosmology, Black Holes) down to placeholder learning goals.
+- The mapping comes from Sophie and is binding — including the surprising assignments (electromagnetism, thermodynamics, classical mechanics as `method`): she separates "tools you master" from "phenomena you study". Don't adjust it during implementation.
 
-### Wiederverwendete Patterns
-- `GraphView.tsx:386-395` (`highlightIds`/`dimmed`/`onpath`) — arbeitet rein über Node-IDs, die bei expandierten Topics exakt den `UnitId`s aus dag.ts entsprechen; es braucht kein neues Highlight-System, nur ein besser berechnetes Set.
-- `dag.ts:300-371` (`expandedCurriculumFor`) — die neue `goalPathFor()` ist ein dünner Adapter darauf statt einer zweiten Traversierung, damit Map und Curriculum nie auseinanderdriften.
-- `GraphView.tsx:279-299` + `MapView.tsx:40-48` (`expandedIds`/⊕-Toggle) — Auto-Expand füttert denselben State, mit `autoAddedRef` damit manuelle Toggles nicht bekämpft werden.
-- `GraphView.tsx:42-47` + `App.css:684` (Gold-Vokabular `sel-post`/`.ink-post`) — Gold heißt im Projekt schon "Ziel"; die Ziel-Markierung erbt die Hexwerte statt neue einzuführen.
-- `GraphView.tsx:371` (`✓`-Label-Badge) — dieselbe Stelle liefert das `★`-Badge, damit Gold nicht allein Bedeutung trägt.
+### Reused patterns
+- `GraphView.tsx:386-395` (`highlightIds`/`dimmed`/`onpath`) — works purely on node IDs, which for expanded topics match the `UnitId`s from dag.ts exactly; no new highlight system is needed, just a better-computed set.
+- `dag.ts:300-371` (`expandedCurriculumFor`) — the new `goalPathFor()` is a thin adapter over it instead of a second traversal, so map and curriculum never drift apart.
+- `GraphView.tsx:279-299` + `MapView.tsx:40-48` (`expandedIds`/⊕ toggle) — auto-expand feeds the same state, with `autoAddedRef` so manual toggles aren't fought.
+- `GraphView.tsx:42-47` + `App.css:684` (gold vocabulary `sel-post`/`.ink-post`) — gold already means "goal" in this project; the goal marker inherits the hex values instead of introducing new ones.
+- `GraphView.tsx:371` (`✓` label badge) — the same place provides the `★` badge, so gold doesn't carry meaning alone.
 
-**Implementiert:** 2026-08-30T16:00:00Z
-**QA-Report:** Developer-Hard-Gate (QA-Agenten übersprungen)
+**Implemented:** 2026-08-30T16:00:00Z
+**QA report:** Developer hard gate (QA agents skipped)
 
-### Implementiert
+### Implemented
 - `src/data/types.ts` — `TopicLevel` → `TopicCategory` (field/method/math-concept, optional)
-- `src/graph/categoryColors.ts` (rename) — 4-Einträge-Palette (field grün, method rot, math-concept blau, uncategorized neutral)
-- `src/data/topics.json` — 34 Topics bekommen `category`, 6 bleiben ohne; neues Topic `relativistic-hydro` + Subtopic `metric/curvilinear-coords`
-- `scripts/validate-topics.mjs` — `category` Wert-Prüfung (keine Pflicht)
-- `src/graph/dag.ts` — neue Funktion `goalPathFor()` (Unit-Closure + Highlight-Set + Auto-Expand-Set)
-- `src/components/GraphView.tsx` — Gold-Klasse `goal-node`, Cross-Topic-Unit-Edges, Label-Badges für Subtopics
-- `src/components/MapView.tsx` — Goal-Bar mit CTA, Auto-Expand, `goalPick`-State
-- `src/App.css` — `--gold`/`--silver` Theme-Tokens, `.goal-bar` Glass-Panel, `.level-dot` → `.cat-dot`
-- `docs/AUTHORING.md` — Schema-Doku (category statt level)
-- `docs/DESIGN-DECISIONS.md` — Decision 10 (Farbe = Kategorie)
-- Komponenten-Updates: Legend, GoalView, TopicPage, SearchBox, Home, TopicPrintSheet
+- `src/graph/categoryColors.ts` (rename) — 4-entry palette (field green, method red, math-concept blue, uncategorized neutral)
+- `src/data/topics.json` — 34 topics get `category`, 6 stay without; new topic `relativistic-hydro` + subtopic `metric/curvilinear-coords`
+- `scripts/validate-topics.mjs` — `category` value check (not required)
+- `src/graph/dag.ts` — new function `goalPathFor()` (unit closure + highlight set + auto-expand set)
+- `src/components/GraphView.tsx` — gold class `goal-node`, cross-topic unit edges, label badges for subtopics
+- `src/components/MapView.tsx` — goal bar with CTA, auto-expand, `goalPick` state
+- `src/App.css` — `--gold`/`--silver` theme tokens, `.goal-bar` glass panel, `.level-dot` → `.cat-dot`
+- `docs/AUTHORING.md` — schema docs (category instead of level)
+- `docs/DESIGN-DECISIONS.md` — Decision 10 (colour = category)
+- Component updates: Legend, GoalView, TopicPage, SearchBox, Home, TopicPrintSheet
 
-### QA-Outcome
-**QA:** Review-/QA-Agenten-Schritt auf explizite User-Anweisung übersprungen. Developer-Hard-Gate PASS: `npm run validate` (41 topics, 54 subtopics, 35 subgoals, 0 Fehler), `npx tsc -b`, `npm run lint`, `npm run build` — alle clean bei Iteration 1/3. Kein unabhängiger QA-/Code-/Design-Review durchgeführt.
+### QA outcome
+**QA:** Review/QA agent step skipped on explicit user instruction. Developer hard gate PASS: `npm run validate` (41 topics, 54 subtopics, 35 subgoals, 0 errors), `npx tsc -b`, `npm run lint`, `npm run build` — all clean at iteration 1/3. No independent QA/code/design review performed.
 
 <!-- impl-marker: feature-13 -->

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# preflight.sh — Verbindungs-/Voraussetzungs-Check ("Doctor") für das Web-Dev-Multi-Agent-Template.
+# preflight.sh — connectivity/prerequisite check ("doctor") for the Physics Atlas agent system.
 #
-# Prüft, ob alles da ist, was die Agents brauchen:
-#   - Node + npx (Stack-Commands, Chrome DevTools MCP via npx)
-#   - Chrome/Chromium (Chrome DevTools MCP steuert einen echten Browser)
-#   - Chrome DevTools MCP registriert (.mcp.json vorhanden)
-#   - git-Repo + (optional) GitHub-Remote + gh CLI authentifiziert (für PM-Integration)
+# Checks that everything the agents need is present:
+#   - Node + npx (stack commands, Chrome DevTools MCP via npx)
+#   - Chrome/Chromium (Chrome DevTools MCP drives a real browser)
+#   - Chrome DevTools MCP registered (.mcp.json present)
+#   - git repo + (optional) GitHub remote + authenticated gh CLI (for manual GitHub work)
 #
-# Nutzung:
-#   bash scripts/preflight.sh             # voller Report
-#   bash scripts/preflight.sh --quiet     # nur WARN/FAIL-Zeilen + Schlusszeile (für Start-Hook)
+# Usage:
+#   bash scripts/preflight.sh             # full report
+#   bash scripts/preflight.sh --quiet     # only WARN/FAIL lines + final line (for the start script)
 #
-# Exit-Code: 0 wenn keine harten Blocker (Node/Chrome), 1 wenn ein harter Blocker fehlt.
-# GitHub-Themen sind NIE harte Blocker — das System läuft auch rein lokal.
+# Exit code: 0 if there are no hard blockers (Node/npx), 1 if a hard blocker is missing.
+# GitHub issues are NEVER hard blockers — the system also runs purely locally.
 set -uo pipefail
 
 QUIET=0
@@ -23,7 +23,7 @@ REPO_ROOT="$( cd -- "$SCRIPT_DIR/.." &> /dev/null && pwd )"
 cd "$REPO_ROOT"
 
 HARD_FAIL=0
-GITHUB_READY=1   # 1 = gh + remote da
+GITHUB_READY=1   # 1 = gh + remote present
 
 say()  { [[ $QUIET -eq 0 ]] && echo "$@"; return 0; }
 ok()   { echo "  ✅ $*"; }
@@ -31,7 +31,7 @@ warn() { echo "  ⚠️  $*"; }
 fail() { echo "  ❌ $*"; }
 
 say ""
-say "==> Preflight-Check für $REPO_ROOT"
+say "==> Preflight check for $REPO_ROOT"
 say ""
 
 # --- Node + npx --------------------------------------------------------------
@@ -39,84 +39,87 @@ say "Node / npx:"
 if command -v node >/dev/null 2>&1; then
     ok "node $(node --version)"
 else
-    fail "node nicht gefunden — die Stack-Commands (build/dev/test) brauchen Node. Installiere Node.js."
+    fail "node not found — the stack commands (build/dev/validate) need Node. Install Node.js."
     HARD_FAIL=1
 fi
 if command -v npx >/dev/null 2>&1; then
-    ok "npx vorhanden (Chrome DevTools MCP wird via npx geladen)"
+    ok "npx present (Chrome DevTools MCP is loaded via npx)"
 else
-    fail "npx nicht gefunden — Chrome DevTools MCP wird per 'npx chrome-devtools-mcp' geladen."
+    fail "npx not found — Chrome DevTools MCP is loaded via 'npx chrome-devtools-mcp'."
     HARD_FAIL=1
 fi
 
 # --- Chrome / Chromium -------------------------------------------------------
 say ""
-say "Browser (für Chrome DevTools MCP):"
+say "Browser (for Chrome DevTools MCP):"
 CHROME_FOUND=0
 for c in \
+    "${CHROME_BIN:-}" \
+    "/usr/bin/google-chrome" \
+    "/usr/bin/google-chrome-stable" \
+    "/usr/bin/chromium" \
+    "/usr/bin/chromium-browser" \
+    "/snap/bin/chromium" \
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-    "/Applications/Chromium.app/Contents/MacOS/Chromium" \
-    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"; do
-    [[ -x "$c" ]] && { ok "gefunden: $c"; CHROME_FOUND=1; break; }
+    "/Applications/Chromium.app/Contents/MacOS/Chromium"; do
+    [[ -x "$c" ]] && { ok "found: $c"; CHROME_FOUND=1; break; }
 done
 if [[ $CHROME_FOUND -eq 0 ]]; then
     if command -v google-chrome >/dev/null 2>&1 || command -v chromium >/dev/null 2>&1 || command -v chromium-browser >/dev/null 2>&1; then
-        ok "Chrome/Chromium im PATH gefunden"
+        ok "Chrome/Chromium found in PATH"
     else
-        warn "Kein Chrome/Chromium/Edge gefunden. Chrome DevTools MCP kann beim ersten Lauf eine Instanz herunterladen, sicherer ist eine installierte Chrome-Version."
+        warn "No Chrome/Chromium found. Chrome DevTools MCP can download an instance on first run, but an installed Chrome is safer."
     fi
 fi
 
-# --- Chrome DevTools MCP registriert ----------------------------------------
+# --- Chrome DevTools MCP registered -----------------------------------------
 say ""
 say "Chrome DevTools MCP:"
 if [[ -f ".mcp.json" ]] && grep -q "chrome-devtools" ".mcp.json"; then
-    ok ".mcp.json registriert den chrome-devtools-Server"
+    ok ".mcp.json registers the chrome-devtools server"
 else
-    warn ".mcp.json fehlt oder enthält keinen chrome-devtools-Server — die QA-Agents haben dann keine Browser-Tools."
+    warn ".mcp.json is missing or has no chrome-devtools server — the live-qa agent will have no browser tools."
 fi
 
 # --- git + GitHub ------------------------------------------------------------
 say ""
-say "Git / GitHub (für project-manager-Integration, optional):"
+say "Git / remote (the committer commits locally; pushing is done by hand):"
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    ok "git-Repo erkannt"
+    ok "git repo detected"
 else
-    warn "kein git-Repo — der committer braucht ein Repo. (git init?)"
+    warn "no git repo — the committer needs one. (git init?)"
     GITHUB_READY=0
 fi
 
 if command -v gh >/dev/null 2>&1; then
-    ok "gh CLI vorhanden ($(gh --version | head -1))"
+    ok "gh CLI present ($(gh --version | head -1))"
     if gh auth status >/dev/null 2>&1; then
-        ok "gh authentifiziert"
+        ok "gh authenticated"
     else
-        warn "gh nicht authentifiziert — 'gh auth login' für GitHub-Tracking."
-        GITHUB_READY=0
+        warn "gh not authenticated — run 'gh auth login' if you work with GitHub by hand."
     fi
 else
-    warn "gh CLI nicht gefunden — GitHub-Tracking (Issues/Labels/Milestones) ist dann aus. Installiere die GitHub CLI für volle Nachvollziehbarkeit."
-    GITHUB_READY=0
+    warn "gh CLI not found — only relevant if you work with GitHub by hand. The agent system doesn't need it."
 fi
 
 if git remote get-url origin >/dev/null 2>&1 && git remote get-url origin 2>/dev/null | grep -q github.com; then
-    ok "origin zeigt auf GitHub ($(git remote get-url origin))"
+    ok "origin points to GitHub ($(git remote get-url origin))"
 else
-    warn "origin zeigt nicht auf github.com — ohne GitHub-Remote läuft das System lokal (github: disabled)."
+    warn "no github.com origin — the agent system still runs; it never pushes anyway."
     GITHUB_READY=0
 fi
 
-# --- Fazit -------------------------------------------------------------------
+# --- Summary -----------------------------------------------------------------
 say ""
 if [[ $HARD_FAIL -eq 1 ]]; then
-    echo "==> Preflight: ❌ Harte Voraussetzung fehlt (Node/npx). Bitte beheben."
+    echo "==> Preflight: ❌ Hard prerequisite missing (Node/npx). Please fix."
 elif [[ $GITHUB_READY -eq 1 ]]; then
-    echo "==> Preflight: ✅ Bereit. GitHub-Tracking verfügbar (empfohlen: github: enabled)."
+    echo "==> Preflight: ✅ Ready. Remote present — pushing stays manual."
 else
-    echo "==> Preflight: ✅ Lauffähig (lokal). GitHub-Tracking NICHT verfügbar → github: disabled."
+    echo "==> Preflight: ✅ Ready (local only). No GitHub remote — commits stay local."
 fi
 
-# GITHUB_READY für aufrufende Scripts hinterlegen (init-template.sh liest das)
+# Store GITHUB_READY for calling scripts
 echo "$GITHUB_READY" > "$REPO_ROOT/.claude/.preflight-github-ready" 2>/dev/null || true
 
 [[ $HARD_FAIL -eq 1 ]] && exit 1 || exit 0

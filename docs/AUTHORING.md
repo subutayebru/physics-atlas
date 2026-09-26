@@ -90,7 +90,7 @@ Field rules:
 |---|---|
 | `id` | kebab-case (`lower-case-with-dashes`), unique. Never change an id later without updating everyone who lists it as a prerequisite. |
 | `title` | Human-readable name shown on the node. |
-| `category` | **Optional** — lass das Feld weg, solange du dir nicht sicher bist; solche Topics erscheinen neutral grau mit dem Legenden-Eintrag *Not yet categorized*, und der Validator meckert nicht. Nachtragen ist ein Ein-Wort-Diff. Falls gesetzt: `field` — a domain of physical phenomena you study (electromagnetism, cosmology, condensed matter). `method` — a formalism/tool applied across fields (Lagrangian mechanics, QFT, fluid dynamics, numerics). `math-concept` — mathematics (calculus, linear algebra, tensors, the metric). Drives node color and the legend. |
+| `category` | **Optional** — leave the field out as long as you're not sure; such topics appear neutral grey with the legend entry *Not yet categorized*, and the validator won't complain. Adding it later is a one-word diff. If set: `field` — a domain of physical phenomena you study (electromagnetism, cosmology, condensed matter). `method` — a formalism/tool applied across fields (Lagrangian mechanics, QFT, fluid dynamics, numerics). `math-concept` — mathematics (calculus, linear algebra, tensors, the metric). Drives node color and the legend. |
 | `prerequisites` | ids of topics to learn **directly before** this one. Only direct edges — don't list calculus on cosmology; the graph walks the chain for you. `[]` for entry-point topics. |
 | `featured` | `true` shows the topic in the goal picker on the landing view. Optional. |
 | `content` | list of learning resources, see below. `[]` is allowed (validator warns but passes). |

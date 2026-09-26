@@ -181,11 +181,15 @@ found, and hovering did nothing to help orient on the large map.
 Preflight: ✅ (gh CLI missing → `github: disabled` until the repo split).
 
 Remaining manual step: create `.claude/settings.local.json` from
-`.claude/settings.local.json.example` (replace `{{PROJECT_ROOT_ABS}}` with
-`/Users/de01sav095/dev-bru/sophie_scicom`) — it grants the agent session its
+`.claude/settings.local.json.example` — it grants the agent session its
 Bash/Write permissions, so it must be created by the user, then restart
-Claude Code so `.mcp.json` loads. Start a session with
-`bash start-dev-session.command`.
+Claude Code so `.mcp.json` loads.
+
+**Slimmed down 2026-09-25:** the 13 template agents were reduced to five
+(`planner`, `developer`, `reviewer`, `committer`, `live-qa`) plus the
+`orchestrator.md` playbook; waves are derived from `live-qa:` commits instead
+of a lock file, and the GitHub issue workflow was dropped. See `CLAUDE.md` →
+Agent System. Start a session with `./start-dev-session.sh`.
 
 ## Roadmap hooks (later)
 
