@@ -1,6 +1,25 @@
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_ORDER } from '../graph/categoryColors';
+import { TYPE_COLORS, TYPE_ORDER } from '../graph/typeColors';
+import { NODE_TYPE_LABELS } from '../data/types';
 
-export default function Legend() {
+export default function Legend({ variant = 'category' }: { variant?: 'category' | 'type' }) {
+  if (variant === 'type') {
+    return (
+      <div className="legend legend-type">
+        {TYPE_ORDER.map((type) => (
+          <span key={type} className="legend-entry">
+            <span
+              className="type-dot"
+              style={{ background: TYPE_COLORS[type], color: TYPE_COLORS[type] }}
+              aria-hidden
+            />
+            {NODE_TYPE_LABELS[type]}
+          </span>
+        ))}
+        <span className="legend-entry legend-size-note">larger circle = more general</span>
+      </div>
+    );
+  }
   return (
     <div className="legend">
       {CATEGORY_ORDER.map((category) => (

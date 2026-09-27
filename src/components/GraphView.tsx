@@ -1,14 +1,26 @@
 import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
-import type { Topic } from '../data/types';
+import type { ConceptGraph, Topic } from '../data/types';
 import { buildTopicMap, buildUnitGraph, parseUnitId, resolveSubtopicRef } from '../graph/dag';
 import { CATEGORY_COLORS, categoryOf } from '../graph/categoryColors';
+import { buildConceptIndex, edgeSentence, nodeRadius } from '../graph/concepts';
+import type { ConceptIndex } from '../graph/concepts';
+import { TYPE_COLORS } from '../graph/typeColors';
 
 cytoscape.use(dagre);
 
+const FADE_PX = 6;
+const LABEL_PX = 8;
+
 interface GraphViewProps {
-  topics: Topic[];
+  /**
+   * The input variant: pass exactly one of `topics` (topic/subtopic DAG) or
+   * `concepts` (typed concept graph — circles sized by generality, 1-hop
+   * hover, sentence edges, zoom-linked fade).
+   */
+  topics?: Topic[];
+  concepts?: ConceptGraph;
   selectedId: string | null;
   /** Nodes to emphasize (e.g. selected topic + its ancestors); others dim. */
   highlightIds: Set<string> | null;
@@ -39,6 +51,8 @@ interface GraphViewProps {
 
 const styleFor = (large: boolean, light: boolean) => {
   const ink = light ? '#1c2333' : '#eef2fb';
+  const surface = light ? '#f3f5fa' : '#070b14';
+  const fadeDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? '0s' : '0.3s';
   const edge = light ? 'rgba(70, 90, 135, 0.4)' : 'rgba(160, 180, 224, 0.28)';
   const edgeArrow = light ? 'rgba(70, 90, 135, 0.5)' : 'rgba(160, 180, 224, 0.35)';
   const onpath = light ? 'rgba(47, 111, 196, 0.85)' : 'rgba(143, 183, 255, 0.85)';
@@ -77,8 +91,33 @@ const styleFor = (large: boolean, light: boolean) => {
     },
   },
   {
+    selector: 'node.concept-node',
+    style: {
+      shape: 'ellipse',
+      width: 'data(size)',
+      height: 'data(size)',
+      padding: '0px',
+      'background-opacity': 0.55,
+      'text-valign': 'bottom',
+      'text-margin-y': 4,
+      'text-max-width': '140px',
+      'font-size': 12,
+      'transition-property': 'opacity, text-opacity, background-opacity, border-width, border-color',
+      'transition-duration': fadeDuration,
+    },
+  },
+  // Zoom-linked fade (concept variant) — before chosen/dimmed/sel/hover so an
+  // explicitly selected or hovered node is never left invisible.
+  {
+    selector: 'node.zoom-faded',
+    style: { opacity: 0.3, 'text-opacity': 0, 'transition-duration': fadeDuration },
+  },
+  { selector: 'node.label-hidden', style: { 'text-opacity': 0, 'transition-duration': fadeDuration } },
+  {
     selector: 'node.chosen',
     style: {
+      opacity: 1,
+      'text-opacity': 1,
       'border-width': 3,
       'background-opacity': 0.35,
       'font-weight': 'bold',
@@ -137,6 +176,8 @@ const styleFor = (large: boolean, light: boolean) => {
       'transition-timing-function': 'ease-in-out',
     },
   },
+  { selector: 'edge.concept-edge', style: { 'transition-duration': fadeDuration } },
+  { selector: 'edge.zoom-faded', style: { opacity: 0.12 } },
   {
     selector: 'edge.optional-edge',
     style: { 'line-style': 'dashed', 'line-dash-pattern': [6, 5] },
@@ -178,6 +219,21 @@ const styleFor = (large: boolean, light: boolean) => {
       'target-arrow-color': goldArrow,
     },
   },
+  {
+    selector: 'edge.concept-edge.sentence-shown',
+    style: {
+      opacity: 1,
+      label: 'data(sentence)',
+      color: ink,
+      'font-size': 11,
+      'font-family': 'system-ui, -apple-system, "Segoe UI", sans-serif',
+      'text-rotation': 'autorotate',
+      'text-background-color': surface,
+      'text-background-opacity': 0.85,
+      'text-background-padding': 3,
+      'z-index': 20,
+    },
+  },
   // Hover states — defined last so they win over dimmed/onpath/sel while active.
   // Others recede but stay clearly visible. Direction is color-coded:
   // silver = prerequisites (what it stands on), gold = what it unlocks.
@@ -187,6 +243,7 @@ const styleFor = (large: boolean, light: boolean) => {
     selector: 'node.hover-pre',
     style: {
       opacity: 1,
+      'text-opacity': 1,
       'border-width': 2.5,
       'border-color': silver,
       'background-opacity': 0.3,
@@ -205,6 +262,7 @@ const styleFor = (large: boolean, light: boolean) => {
     selector: 'node.hover-post',
     style: {
       opacity: 1,
+      'text-opacity': 1,
       'border-width': 2.5,
       'border-color': gold,
       'background-opacity': 0.3,
@@ -223,6 +281,7 @@ const styleFor = (large: boolean, light: boolean) => {
     selector: 'node.hovered',
     style: {
       opacity: 1,
+      'text-opacity': 1,
       'font-size': large ? 16.5 : 14,
       padding: large ? '17px' : '13px',
       'border-width': 3,
@@ -234,20 +293,138 @@ const styleFor = (large: boolean, light: boolean) => {
       'underlay-padding': 10,
     },
   },
+  // Circles are sized by generality — keep the grow small and the fill
+  // stronger than the topic boxes' tint, or small circles vanish on hover.
+  { selector: 'node.concept-node.hovered', style: { padding: '3px' } },
+  {
+    selector: 'node.concept-node.chosen, node.concept-node.hovered',
+    style: { 'background-opacity': 0.85 },
+  },
 ] as unknown as cytoscape.StylesheetJson;
 };
 
-const layoutFor = (large: boolean) =>
+const layoutFor = (large: boolean, concepts: boolean) =>
   ({
     name: 'dagre',
     rankDir: 'BT',
-    nodeSep: large ? 44 : 24,
+    nodeSep: concepts ? 60 : large ? 44 : 24,
     rankSep: large ? 110 : 60,
     padding: large ? 32 : 16,
   }) as cytoscape.LayoutOptions;
 
+function topicElements(
+  topics: Topic[],
+  expandedIds: Set<string> | undefined,
+  unitPathIds: Set<string> | null,
+): cytoscape.ElementDefinition[] {
+  const present = new Set(topics.map((t) => t.id));
+  const elements: cytoscape.ElementDefinition[] = [
+    ...topics.map((t) => ({
+      data: { id: t.id, title: t.title, label: t.title, color: CATEGORY_COLORS[categoryOf(t)] },
+    })),
+    ...topics.flatMap((t) =>
+      t.prerequisites
+        .filter((p) => present.has(p))
+        .map((p) => ({ data: { id: `${p}->${t.id}`, source: p, target: t.id } })),
+    ),
+    ...topics.flatMap((t) =>
+      (t.optionalPrerequisites ?? [])
+        .filter((p) => present.has(p) && !t.prerequisites.includes(p))
+        .map((p) => ({
+          data: { id: `${p}~opt->${t.id}`, source: p, target: t.id },
+          classes: 'optional-edge',
+        })),
+    ),
+  ];
+
+  // Compound expansion: an opened annotated topic renders its subtopics as
+  // child nodes with their internal (same-topic) prerequisite order. Edges
+  // to other topics stay at the topic level (drawn to the compound box).
+  const tmap = buildTopicMap(topics);
+  for (const t of topics) {
+    if (!expandedIds?.has(t.id) || !t.subtopics?.length) continue;
+    for (const s of t.subtopics)
+      elements.push({
+        data: {
+          id: `${t.id}/${s.id}`,
+          parent: t.id,
+          title: s.title,
+          label: s.title,
+          color: CATEGORY_COLORS[categoryOf(t)],
+        },
+        classes: 'subtopic-node',
+      });
+    for (const s of t.subtopics) {
+      const uid = `${t.id}/${s.id}`;
+      const addInternal = (raw: string, optional: boolean) => {
+        const r = resolveSubtopicRef(raw, t, tmap);
+        if (r && r !== uid && parseUnitId(r).topicId === t.id)
+          elements.push({
+            data: { id: `${r}=>${uid}${optional ? '~o' : ''}`, source: r, target: uid },
+            classes: optional ? 'optional-edge' : undefined,
+          });
+      };
+      for (const raw of s.prerequisites) addInternal(raw, false);
+      for (const raw of s.optionalPrerequisites ?? []) addInternal(raw, true);
+    }
+  }
+
+  // Cross-topic unit edges for an active goal path: GraphView otherwise
+  // only draws topic-level edges, so units in different (unexpanded)
+  // topics would render as disconnected islands even though the goal
+  // path connects them at unit granularity.
+  if (unitPathIds) {
+    const unitMap = buildUnitGraph(topics);
+    const nodeIdFor = (u: string) => {
+      const { topicId, subId } = parseUnitId(u);
+      return subId && expandedIds?.has(topicId) ? u : topicId;
+    };
+    const seenEdges = new Set<string>();
+    for (const u of unitPathIds) {
+      const unit = unitMap.get(u);
+      if (!unit) continue;
+      const targetId = nodeIdFor(u);
+      for (const p of unit.prerequisites) {
+        if (!unitPathIds.has(p)) continue;
+        const sourceId = nodeIdFor(p);
+        if (sourceId === targetId) continue;
+        const edgeId = `${sourceId}~u->${targetId}`;
+        if (seenEdges.has(edgeId)) continue;
+        seenEdges.add(edgeId);
+        elements.push({ data: { id: edgeId, source: sourceId, target: targetId } });
+      }
+    }
+  }
+  return elements;
+}
+
+function conceptElements(graph: ConceptGraph, index: ConceptIndex): cytoscape.ElementDefinition[] {
+  return [
+    ...graph.nodes.map((n) => {
+      const radius = nodeRadius(n, index.degree.get(n.id) ?? 0);
+      return {
+        data: {
+          id: n.id,
+          title: n.label,
+          label: n.label,
+          color: TYPE_COLORS[n.type],
+          size: 2 * radius,
+          radius,
+          type: n.type,
+        },
+        classes: 'concept-node',
+      };
+    }),
+    ...graph.edges.map((e) => ({
+      data: { id: e.id, source: e.source, target: e.target, sentence: edgeSentence(e, index.byId) },
+      classes: 'concept-edge',
+    })),
+  ];
+}
+
 export default function GraphView({
   topics,
+  concepts,
   selectedId,
   highlightIds,
   doneIds,
@@ -275,80 +452,11 @@ export default function GraphView({
   const preHoverViewportRef = useRef<{ zoom: number; pan: cytoscape.Position } | null>(null);
   const hoverZoomActiveIdRef = useRef<string | null>(null);
 
-  // (Re)build the graph when the topic set (or expansion) changes
+  // (Re)build the graph when the topic/concept set (or expansion) changes
   useEffect(() => {
-    const present = new Set(topics.map((t) => t.id));
-    const elements: cytoscape.ElementDefinition[] = [
-      ...topics.map((t) => ({
-        data: { id: t.id, label: t.title, color: CATEGORY_COLORS[categoryOf(t)] },
-      })),
-      ...topics.flatMap((t) =>
-        t.prerequisites
-          .filter((p) => present.has(p))
-          .map((p) => ({ data: { id: `${p}->${t.id}`, source: p, target: t.id } })),
-      ),
-      ...topics.flatMap((t) =>
-        (t.optionalPrerequisites ?? [])
-          .filter((p) => present.has(p) && !t.prerequisites.includes(p))
-          .map((p) => ({
-            data: { id: `${p}~opt->${t.id}`, source: p, target: t.id },
-            classes: 'optional-edge',
-          })),
-      ),
-    ];
-
-    // Compound expansion: an opened annotated topic renders its subtopics as
-    // child nodes with their internal (same-topic) prerequisite order. Edges
-    // to other topics stay at the topic level (drawn to the compound box).
-    const tmap = buildTopicMap(topics);
-    for (const t of topics) {
-      if (!expandedIds?.has(t.id) || !t.subtopics?.length) continue;
-      for (const s of t.subtopics)
-        elements.push({
-          data: { id: `${t.id}/${s.id}`, parent: t.id, label: s.title, color: CATEGORY_COLORS[categoryOf(t)] },
-          classes: 'subtopic-node',
-        });
-      for (const s of t.subtopics) {
-        const uid = `${t.id}/${s.id}`;
-        const addInternal = (raw: string, optional: boolean) => {
-          const r = resolveSubtopicRef(raw, t, tmap);
-          if (r && r !== uid && parseUnitId(r).topicId === t.id)
-            elements.push({
-              data: { id: `${r}=>${uid}${optional ? '~o' : ''}`, source: r, target: uid },
-              classes: optional ? 'optional-edge' : undefined,
-            });
-        };
-        for (const raw of s.prerequisites) addInternal(raw, false);
-        for (const raw of s.optionalPrerequisites ?? []) addInternal(raw, true);
-      }
-    }
-
-    // Cross-topic unit edges for an active goal path: GraphView otherwise
-    // only draws topic-level edges, so units in different (unexpanded)
-    // topics would render as disconnected islands even though the goal
-    // path connects them at unit granularity.
-    if (unitPathIds) {
-      const unitMap = buildUnitGraph(topics);
-      const nodeIdFor = (u: string) => {
-        const { topicId, subId } = parseUnitId(u);
-        return subId && expandedIds?.has(topicId) ? u : topicId;
-      };
-      const seenEdges = new Set<string>();
-      for (const u of unitPathIds) {
-        const unit = unitMap.get(u);
-        if (!unit) continue;
-        const targetId = nodeIdFor(u);
-        for (const p of unit.prerequisites) {
-          if (!unitPathIds.has(p)) continue;
-          const sourceId = nodeIdFor(p);
-          if (sourceId === targetId) continue;
-          const edgeId = `${sourceId}~u->${targetId}`;
-          if (seenEdges.has(edgeId)) continue;
-          seenEdges.add(edgeId);
-          elements.push({ data: { id: edgeId, source: sourceId, target: targetId } });
-        }
-      }
-    }
+    const elements = concepts
+      ? conceptElements(concepts, buildConceptIndex(concepts))
+      : topicElements(topics ?? [], expandedIds, unitPathIds);
 
     const cy = cytoscape({
       container: containerRef.current,
@@ -357,15 +465,39 @@ export default function GraphView({
       wheelSensitivity: 0.3,
       autoungrabify: true,
     });
-    cy.layout(layoutFor(large)).run();
+    cy.layout(layoutFor(large, Boolean(concepts))).run();
     cy.fit(undefined, large ? 40 : 24);
+
+    // Zoom-linked fade: small (specific) circles recede as you zoom out and
+    // return as you zoom in. rAF-throttled — 'zoom' fires per wheel tick.
+    let fadeFrame = 0;
+    const applyFade = () => {
+      fadeFrame = 0;
+      const z = cy.zoom();
+      cy.batch(() => {
+        cy.nodes().forEach((n) => {
+          const px = (n.data('radius') as number) * z;
+          n.toggleClass('zoom-faded', px < FADE_PX);
+          n.toggleClass('label-hidden', px >= FADE_PX && px < LABEL_PX);
+        });
+        cy.edges().forEach((e) => {
+          e.toggleClass('zoom-faded', e.source().hasClass('zoom-faded') && e.target().hasClass('zoom-faded'));
+        });
+      });
+    };
+    if (concepts) {
+      applyFade();
+      cy.on('zoom', () => {
+        if (!fadeFrame) fadeFrame = window.requestAnimationFrame(applyFade);
+      });
+    }
 
     // One core-level tap handler (not a delegated 'node' one) so a tap on a
     // subtopic child fires exactly once with the true target — a delegated
     // handler would also fire for the compound parent it bubbles through and
     // re-select the whole topic. Single tap selects; a quick second tap on an
     // annotated topic toggles it open/closed into its subtopics.
-    const annotated = new Set(topics.filter((t) => t.subtopics?.length).map((t) => t.id));
+    const annotated = new Set((topics ?? []).filter((t) => t.subtopics?.length).map((t) => t.id));
     cy.on('tap', (e) => {
       const tgt = e.target;
       if (tgt === cy) {
@@ -386,20 +518,34 @@ export default function GraphView({
 
     // Hover: grow the node a touch and light up its related tree —
     // prerequisites in silver, unlocked topics in gold; soften the rest.
+    // Concepts light 1 hop only: a transitive closure over mixed relation
+    // types ("relates" chains) would light half the graph.
     cy.on('mouseover', 'node', (e) => {
       const n = e.target;
       cy.batch(() => {
         cy.elements().addClass('hover-soft');
-        n.predecessors().removeClass('hover-soft').addClass('hover-pre');
-        n.successors().removeClass('hover-soft').addClass('hover-post');
+        if (concepts) {
+          n.incomers().removeClass('hover-soft').addClass('hover-pre');
+          n.outgoers().removeClass('hover-soft').addClass('hover-post');
+          n.connectedEdges().addClass('sentence-shown');
+        } else {
+          n.predecessors().removeClass('hover-soft').addClass('hover-pre');
+          n.successors().removeClass('hover-soft').addClass('hover-post');
+        }
         n.removeClass('hover-soft').addClass('hovered');
       });
       if (containerRef.current) containerRef.current.style.cursor = 'pointer';
     });
     cy.on('mouseout', 'node', () => {
-      cy.batch(() => cy.elements().removeClass('hover-soft hover-pre hover-post hovered'));
+      cy.batch(() =>
+        cy.elements().removeClass('hover-soft hover-pre hover-post hovered sentence-shown'),
+      );
       if (containerRef.current) containerRef.current.style.cursor = '';
     });
+    if (concepts) {
+      cy.on('mouseover', 'edge.concept-edge', (e) => e.target.addClass('sentence-shown'));
+      cy.on('mouseout', 'edge.concept-edge', (e) => e.target.removeClass('sentence-shown'));
+    }
 
     // Hover-zoom: on the big explorer map, before a goal is chosen, dwelling
     // over an open (expanded) topic softly zooms the viewport to it + its
@@ -477,28 +623,24 @@ export default function GraphView({
 
     cyRef.current = cy;
     return () => {
+      if (fadeFrame) window.cancelAnimationFrame(fadeFrame);
       clearHoverZoomTimers();
       preHoverViewportRef.current = null;
       hoverZoomActiveIdRef.current = null;
       cy.destroy();
       cyRef.current = null;
     };
-  }, [topics, large, expandedIds, theme, unitPathIds]);
+  }, [topics, concepts, large, expandedIds, theme, unitPathIds]);
 
   // Apply selection/path highlighting without re-layout
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
-    const tmap = buildTopicMap(topics);
     cy.batch(() => {
       cy.elements().removeClass('chosen dimmed onpath done sel-soft sel-pre sel-post goal-node');
       cy.nodes().forEach((n) => {
-        const { topicId, subId } = parseUnitId(n.id());
-        const topic = tmap.get(topicId);
-        if (!topic) return;
-        const sub = subId ? topic.subtopics?.find((s) => s.id === subId) : undefined;
-        if (subId && !sub) return;
-        const title = sub ? sub.title : topic.title;
+        const title = n.data('title') as string | undefined;
+        if (title === undefined) return;
         const isDone = doneIds?.has(n.id()) ?? false;
         const isGoal = goalId != null && n.id() === goalId;
         n.data('label', `${isGoal ? '★ ' : ''}${isDone ? '✓ ' : ''}${title}`);
@@ -529,7 +671,7 @@ export default function GraphView({
         if (goalId) cy.$id(goalId).addClass('goal-node');
       }
     });
-  }, [selectedId, highlightIds, doneIds, topics, directionalSelect, goalId]);
+  }, [selectedId, highlightIds, doneIds, topics, concepts, directionalSelect, goalId]);
 
   // Glide to the focused concept (search / home jumps) — a smooth pan+zoom
   // that frames the concept with its immediate connections, rather than a

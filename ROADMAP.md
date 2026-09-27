@@ -27,7 +27,7 @@
 
 ## feature-16: Concept map view — type colours, generality-sized nodes, sentence edges, zoom-linked fade
 
-**Status:** 🟡 Planned <!-- status-line: feature-16 -->
+**Status:** ✅ Implemented <!-- status-line: feature-16 -->
 **Planned:** 2026-09-27T11:35:35Z
 **Plan:** [.claude/plans/feature-16-concept-map-rendering.md](.claude/plans/feature-16-concept-map-rendering.md)
 **Complexity:** high
@@ -43,6 +43,22 @@
 - `src/components/GraphView.tsx:517-528` (`highlightIds`/`dimmed`) — concept selection feeds a neighbour set instead of new classes.
 - `src/components/GraphView.tsx:537-550` (`focus`, `cy.animate({fit})`) — index and relation clicks glide to the node.
 - `src/graph/categoryColors.ts:3-17` — measured-palette module format for `typeColors.ts`.
+
+**Implemented:** 2026-09-27T19:56:24Z
+
+### Implemented
+- `src/graph/typeColors.ts` — new, validated 12-type colour palette (WCAG contrast ≥3:1)
+- `src/graph/concepts.ts` — added `effectiveGenerality()`, `nodeRadius()`, `neighbourIds()`
+- `src/components/GraphView.tsx` — second input variant (concepts), concept element builder, concept node/edge styles, 1-hop hover, zoom-linked fade, edge sentence on hover
+- `src/components/ConceptMapView.tsx` — new view (graph pane + glass detail card + legend + browse-by-type index)
+- `src/components/Legend.tsx` — `variant` prop for type legend rendering
+- `src/App.tsx` — `Mode` += `'concepts'`, URL sync, header tab
+- `src/App.css` — concept card blocks, `.type-dot`, type-by-type index
+- `scripts/smoke-test.mjs` — concept-mode step (node count, edge count, card text assertions)
+- `docs/AUTHORING.md` + `docs/DESIGN-DECISIONS.md` — Decision 13 (type colours, generality-sized nodes, zoom fade)
+
+### Review
+**PASS** — validate/build/lint clean. [.claude/reviews/feature-16.md](.claude/reviews/feature-16.md)
 
 <!-- impl-marker: feature-16 -->
 

@@ -6,7 +6,7 @@ Content lives in **two places**:
 |---|---|---|
 | A **learning goal** ("be able to derive X") with its subgoals + prerequisites | `content/goals/<name>.md` | Markdown outline — [see below](#learning-goals-markdown) |
 | A **topic / area** on the map, or resources (books, videos) | [`src/data/topics.json`](../src/data/topics.json) | JSON |
-| A **concept-graph node/edge** (pilot, not rendered yet) | [`src/data/concepts.json`](../src/data/concepts.json) | JSON — [see below](#concept-graph-pilot) |
+| A **concept-graph node/edge** (pilot, "Concepts (pilot)" tab) | [`src/data/concepts.json`](../src/data/concepts.json) | JSON — [see below](#concept-graph-pilot) |
 
 Either way: edit, run `npm run validate`, done. The site rebuilds the graph
 automatically.
@@ -181,8 +181,8 @@ collapsible "Skills to practice along the way" panel under every curriculum
 ## Concept graph (pilot)
 
 `src/data/concepts.json` is a **second, independent dataset** — it does not
-replace `topics.json` and nothing renders it yet (feature-16 adds the map
-view). It models Sophie's pilot CSVs: concept-level nodes with 12 types and
+replace `topics.json`; it renders in its own view, the "Concepts (pilot)" tab
+(`?mode=concepts`). It models Sophie's pilot CSVs: concept-level nodes with 12 types and
 typed, directional edges that read as sentences, rather than topics.json's
 course-level `Topic`/`Subtopic` shape.
 

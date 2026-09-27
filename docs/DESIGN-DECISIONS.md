@@ -156,6 +156,9 @@ Also decided:
 - A fourth content category (e.g. `application`) — ↩ pathway, revisit if the
   "uncategorized" group turns out to be a real cluster rather than a
   temporary gap.
+- **Note (Decision 13):** category colour still applies to the topic views
+  (full map, learning goal, topic page); only the concept map colours by node
+  type — until feature-18 decides how the two datasets relate.
 
 ## Decision 11 — Real deletion, default-open subtopics, viewport-only hover-zoom (2026-08-30)
 
@@ -209,6 +212,25 @@ Also decided:
   `convert_seed_data.py`'s parsing/sentence logic into
   `scripts/import-concepts-csv.mjs` (brief §4) rather than hand-merging JSON
   a second time.
+
+## Decision 13 — Concept map view: type colour, generality size, sentence edges (2026-09)
+
+The concept graph (Decision 12) gets its own view, `?mode=concepts`
+("Concepts (pilot)" tab), rendered by `GraphView` as a second input variant
+(`concepts` prop) — GraphView stays the only file touching Cytoscape. The
+topic views are unchanged.
+
+| Option | Status | Notes |
+|---|---|---|
+| **Colour = node type, 12-colour palette (`src/graph/typeColors.ts`)** | ✅ Chosen | Derived from the seed's ColorBrewer *Paired* hues by moving each colour's lightness into the band that clears 3:1 on both `--page` surfaces (dark `#070b14` / light `#f3f5fa`) — the pale Paired members (`#ffff99`, `#a6cee3`, `#b2df8a`, `#fb9a99`, `#fdbf6f`, `#cab2d6`) measured 1.04–1.89 on light as-is. All twelve now sit at 3.08–5.79 (dark) / 3.12–5.86 (light); numbers per type in the file header. Paired's hue families are kept, so related types read as siblings; closest pair ΔE76 13.4 (conditions/formalism, same family by design). |
+| **Size = generality, one fallback rule (`nodeRadius()` / `effectiveGenerality()` in `src/graph/concepts.ts`)** | ✅ Chosen | Learning goals are always the smallest circle (r 7); an authored `generality` 1–5 maps to r 8…24; otherwise the degree fallback `min(24, 7 + 5.7·√degree)` reproduces the seed preview's radii. No node has authored generality yet, so sizes shift automatically as Sophie adds values. |
+| **Layout: dagre `BT` over all edges** | ✅ Chosen | Same `layoutFor` as the topic views (only `nodeSep` widened for circles). Every `strict prerequisite for` edge points upward — the ordering the curriculum (feature-17) depends on. Accepted cost: non-prerequisite edges ("is one property of") also read vertically. |
+| `cose` force layout | ↩ pathway | Built into Cytoscape (no dependency); a `layoutFor` change if Sophie finds the vertical reading of non-prerequisite edges misleading. |
+| Concentric-by-generality layout | ↩ rejected | Double-encodes generality (already size) and ignores the edges entirely. |
+| **1-hop highlight** (hover and selection) | ✅ Chosen | A transitive closure over mixed relation types ("relates" chains) is meaningless and lights half the graph; the topic views keep their transitive silver/gold trees. |
+| **Relations as sentences** | ✅ Chosen | On hover only (a hovered node's incident edges, or a hovered edge) — 59 always-on labels would be unreadable — and always in full in the detail card, where the other node's name is a button that selects + focuses it. |
+| **Zoom-linked fade** | ✅ Chosen | A node recedes (`zoom-faded`, opacity 0.3, no label) when its on-screen radius drops below 6 px, its label hides below 8 px; an edge fades when both ends have. Zoomed out, the general concepts remain; zooming in brings back specific ones and learning goals. Faded nodes stay tappable, hover/selection always show them fully, and the tween is off under `prefers-reduced-motion`. Thresholds are tuning values, not requirements. |
+| Shape per type | ↩ pathway | The CVD redundancy channel for twelve hues that cannot all be pairwise CVD-safe. Not built now: every node has a visible text label, the legend names every type, the card states the type in text, and "Browse by type" lists every node grouped by type (also the keyboard path — canvas nodes aren't focusable). |
 
 ## Multi-agent workflow (web-dev-agent-system)
 

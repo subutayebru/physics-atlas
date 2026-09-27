@@ -27,6 +27,24 @@ export function edgeSentence(edge: GraphEdge, byId: ConceptMap): string {
   return EDGE_SENTENCE_TEMPLATES[type].replace('{s}', s).replace('{t}', t);
 }
 
+/**
+ * The sentence split into text runs and node references, so a view can render
+ * the other node's label as a control. Same fallback as edgeSentence().
+ */
+export function sentenceParts(
+  edge: GraphEdge,
+  byId: ConceptMap,
+): (string | { id: string; label: string })[] {
+  const s = { id: edge.source, label: byId.get(edge.source)?.label ?? edge.source };
+  const t = { id: edge.target, label: byId.get(edge.target)?.label ?? edge.target };
+  const type = normalizeRelationship(edge.relationship);
+  const template = type ? EDGE_SENTENCE_TEMPLATES[type] : `{s} — ${edge.relationship} — {t}`;
+  return template
+    .split(/(\{s\}|\{t\})/)
+    .filter((part) => part !== '')
+    .map((part) => (part === '{s}' ? s : part === '{t}' ? t : part));
+}
+
 export interface ConceptIndex {
   byId: ConceptMap;
   incoming: Map<string, GraphEdge[]>;
@@ -52,4 +70,29 @@ export function buildConceptIndex(graph: ConceptGraph): ConceptIndex {
     degree.set(e.target, (degree.get(e.target) ?? 0) + 1);
   }
   return { byId, incoming, outgoing, degree };
+}
+
+/**
+ * The single place for the generality fallback: learning goals are always
+ * the most specific (1), an authored value wins, otherwise the node's degree
+ * stands in until Sophie authors one.
+ */
+export function effectiveGenerality(node: GraphNode, degree: number): number {
+  if (node.type === 'learning_goal') return 1;
+  return node.generality ?? degree;
+}
+
+/** On-canvas circle radius: authored 1–5 → 8…24; degree fallback matches the seed preview. */
+export function nodeRadius(node: GraphNode, degree: number): number {
+  if (node.type === 'learning_goal') return 7;
+  if (node.generality !== undefined) return 8 + (node.generality - 1) * 4;
+  return Math.min(24, 7 + 5.7 * Math.sqrt(degree));
+}
+
+/** The node itself plus its direct in- and out-neighbours. */
+export function neighbourIds(id: string, index: ConceptIndex): Set<string> {
+  const ids = new Set([id]);
+  for (const e of index.incoming.get(id) ?? []) ids.add(e.source);
+  for (const e of index.outgoing.get(id) ?? []) ids.add(e.target);
+  return ids;
 }

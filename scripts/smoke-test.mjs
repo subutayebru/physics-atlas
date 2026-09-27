@@ -276,6 +276,24 @@ const afterTitle = await page.$eval('.sidebar-title', (el) => el.textContent?.tr
 console.log(`promotion: "${beforeTitle}" → "${afterTitle}"`);
 if (beforeTitle === afterTitle) errors.push('promoting a prerequisite did not change the goal');
 
+// --- Concept map (pilot): the second GraphView input variant ---
+await page.goto(`${URL}/?mode=concepts`, { waitUntil: 'networkidle0' });
+await new Promise((r) => setTimeout(r, 600));
+const conceptCounts = await page.evaluate(() => ({
+  nodes: window.__cy?.nodes().length ?? 0,
+  edges: window.__cy?.edges().length ?? 0,
+}));
+console.log(`concept map: ${conceptCounts.nodes} nodes, ${conceptCounts.edges} edges`);
+if (conceptCounts.nodes !== 54 || conceptCounts.edges !== 59)
+  errors.push(`expected 54 concept nodes / 59 edges, got ${conceptCounts.nodes}/${conceptCounts.edges}`);
+await page.evaluate(() => window.__cy.$id('einstein_eq').emit('tap'));
+await page.waitForSelector('.map-card');
+const conceptCard = await page.$eval('.map-card', (el) => el.textContent ?? '');
+console.log('concept card has "leads to Newtonian Gravity":', conceptCard.includes('leads to Newtonian Gravity'));
+if (!conceptCard.includes('leads to Newtonian Gravity'))
+  errors.push('concept card is missing the einstein_eq → newtonian gravity relation sentence');
+await page.screenshot({ path: `${OUT}/concepts.png` });
+
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();
 process.exit(errors.length ? 1 : 0);

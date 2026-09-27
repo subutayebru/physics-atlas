@@ -3,6 +3,8 @@ import { graph as data } from './data/loadGraph';
 import Home from './components/Home';
 import GoalView from './components/GoalView';
 import MapView from './components/MapView';
+import ConceptMapView from './components/ConceptMapView';
+import { concepts } from './data/loadConcepts';
 import TopicPage from './components/TopicPage';
 import SearchBox from './components/SearchBox';
 import Starfield from './components/Starfield';
@@ -11,13 +13,14 @@ import { useProgress } from './lib/useProgress';
 import { useTheme } from './lib/useTheme';
 import './App.css';
 
-type Mode = 'home' | 'map' | 'goal' | 'topic';
+type Mode = 'home' | 'map' | 'goal' | 'topic' | 'concepts';
 
 function initialMode(): Mode {
   const m = new URLSearchParams(window.location.search).get('mode');
   if (m === 'map' || m === 'explore') return 'map';
   if (m === 'goal') return 'goal';
   if (m === 'topic') return 'topic';
+  if (m === 'concepts') return 'concepts';
   return 'home';
 }
 
@@ -167,7 +170,7 @@ export default function App() {
           <button className="app-wordmark" onClick={() => setMode('home')}>
             <h1 className="app-title">Physics Atlas</h1>
           </button>
-          <SearchBox topics={data.topics} onPick={headerSearchPick} />
+          {mode !== 'concepts' && <SearchBox topics={data.topics} onPick={headerSearchPick} />}
           <nav className="mode-tabs" aria-label="View mode">
             <button
               className={`mode-tab ${mode === 'map' ? 'mode-tab-active' : ''}`}
@@ -180,6 +183,12 @@ export default function App() {
               onClick={() => setMode('goal')}
             >
               Learning goal
+            </button>
+            <button
+              className={`mode-tab ${mode === 'concepts' ? 'mode-tab-active' : ''}`}
+              onClick={() => setMode('concepts')}
+            >
+              Concepts (pilot)
             </button>
           </nav>
           {themeButton()}
@@ -236,6 +245,7 @@ export default function App() {
           theme={theme}
         />
       )}
+      {mode === 'concepts' && <ConceptMapView graph={concepts} theme={theme} />}
     </div>
   );
 }
