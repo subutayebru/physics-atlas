@@ -1,0 +1,897 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "spacetime",
+      "type": "physical_system",
+      "label": "Spacetime",
+      "attrs": {
+        "description": "The four-dimensional continuum combining the three dimensions of space with one dimension of time, whose geometry is dynamical in general relativity.",
+        "domain": "General relativity"
+      }
+    },
+    {
+      "id": "quark_gluon_plasma",
+      "type": "physical_system",
+      "label": "Quark-Gluon-Plasma",
+      "attrs": {
+        "description": "A state of strongly interacting matter in which quarks and gluons are not confined inside hadrons.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "nucleus",
+      "type": "physical_system",
+      "label": "Nucleus",
+      "attrs": {
+        "description": "The compact, positively charged core of an atom containing protons and neutrons.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "tangent_vector",
+      "type": "property",
+      "label": "Tangent vector",
+      "attrs": {
+        "description": "A vector that lives in the tangent space at a single point of a manifold, representing an instantaneous direction and rate of change at that point.",
+        "domain": "Differential geometry"
+      }
+    },
+    {
+      "id": "curvature",
+      "type": "property",
+      "label": "Curvature",
+      "attrs": {
+        "description": "A measure of how much a manifold deviates from being flat, captured by how a vector changes when parallel-transported around a closed loop.",
+        "domain": "Differential geometry / General relativity"
+      }
+    },
+    {
+      "id": "energy_momentum",
+      "type": "property",
+      "label": "Energy-Momentum",
+      "attrs": {
+        "description": "The stress-energy tensor: a description of the density and flux of energy and momentum in spacetime, acting as the source of gravity.",
+        "domain": "General relativity"
+      }
+    },
+    {
+      "id": "particle_charge_current",
+      "type": "property",
+      "label": "Particle Charge current",
+      "attrs": {
+        "description": "A current describing the transport of particles or conserved charge through the fluid.",
+        "domain": "Relativistic fluid dynamics"
+      }
+    },
+    {
+      "id": "dissipative_fields",
+      "type": "property",
+      "label": "Dissipative fields",
+      "attrs": {
+        "description": "Hydrodynamic fields describing departures from local equilibrium, including viscous stresses and diffusion currents.",
+        "domain": "Relativistic fluid dynamics"
+      }
+    },
+    {
+      "id": "charge_diffusion",
+      "type": "property",
+      "label": "Charge Diffusion",
+      "attrs": {
+        "description": "The dissipative transport of conserved charge caused by spatial gradients and interactions.",
+        "domain": "Relativistic fluid dynamics"
+      }
+    },
+    {
+      "id": "four_velocity",
+      "type": "property",
+      "label": "Four-velocity",
+      "attrs": {
+        "description": "The relativistic velocity field tangent to the fluid worldlines.",
+        "domain": "Relativity"
+      }
+    },
+    {
+      "id": "fluid_expansion",
+      "type": "property",
+      "label": "Fluid Expansion",
+      "attrs": {
+        "description": "The scalar expansion of a fluid congruence, describing the local rate at which neighboring fluid elements separate.",
+        "domain": "Relativistic fluid dynamics"
+      }
+    },
+    {
+      "id": "half_life",
+      "type": "property",
+      "label": "Half life",
+      "attrs": {
+        "description": "The time required for half of the unstable nuclei in a sample to decay.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "nucleon_number",
+      "type": "property",
+      "label": "Nucleon number",
+      "attrs": {
+        "description": "The total number of protons and neutrons in a nucleus.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "alpha_particle",
+      "type": "property",
+      "label": "alpha particle",
+      "attrs": {
+        "description": "A helium-4 nucleus consisting of two protons and two neutrons.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "gravitational_lensing",
+      "type": "phenomenon",
+      "label": "Gravitational lensing",
+      "attrs": {
+        "description": "The bending of light from a distant source as it passes near a massive object, caused by the curvature of spacetime around that mass.",
+        "domain": "General relativity / Astrophysics"
+      }
+    },
+    {
+      "id": "alpha_decay",
+      "type": "phenomenon",
+      "label": "Alpha decay",
+      "attrs": {
+        "description": "Radioactive decay in which an unstable nucleus emits an alpha particle.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "newtonian_gravity",
+      "type": "model_regime",
+      "label": "Newtonian Gravity",
+      "attrs": {
+        "description": "The classical model in which gravity is treated as an instantaneous attractive force between masses, recovered from general relativity as a low-velocity, weak-field approximation.",
+        "domain": "Classical mechanics"
+      }
+    },
+    {
+      "id": "special_relativity",
+      "type": "model_regime",
+      "label": "Special Relativity",
+      "attrs": {
+        "description": "The theory of spacetime and motion in inertial frames when gravity is neglected.",
+        "domain": "Relativity"
+      }
+    },
+    {
+      "id": "weak_field_limit",
+      "type": "conditions",
+      "label": "Weak-field low-velocity limit",
+      "attrs": {
+        "description": "The regime where gravitational fields are weak and velocities are much smaller than the speed of light, so spacetime curvature can be treated as a small perturbation on flat space.",
+        "domain": "General relativity"
+      }
+    },
+    {
+      "id": "lorentz_invariance",
+      "type": "conditions",
+      "label": "Lorentz invariance",
+      "attrs": {
+        "description": "The requirement that physical laws take the same form in all inertial frames related by Lorentz transformations.",
+        "domain": "Special relativity"
+      }
+    },
+    {
+      "id": "large_number",
+      "type": "conditions",
+      "label": "large number",
+      "attrs": {
+        "description": "The large-sample condition under which radioactive decay is well described statistically.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "linear_algebra",
+      "type": "formalism",
+      "label": "Linear Algebra",
+      "attrs": {
+        "description": "The study of vector spaces and the linear maps between them: vectors, matrices, bases, eigenvalues, and linear transformations.",
+        "domain": "Mathematics"
+      }
+    },
+    {
+      "id": "vector_space",
+      "type": "formalism",
+      "label": "Vector space",
+      "attrs": {
+        "description": "An abstract set of objects (vectors) that can be added together and scaled by numbers, satisfying a fixed set of axioms.",
+        "domain": "Mathematics"
+      }
+    },
+    {
+      "id": "diff_geometry",
+      "type": "formalism",
+      "label": "Differential Geometry",
+      "attrs": {
+        "description": "The study of curves, surfaces, and manifolds using calculus and linear algebra — the mathematical language used to describe curved spacetime.",
+        "domain": "Mathematics"
+      }
+    },
+    {
+      "id": "tangent_space",
+      "type": "formalism",
+      "label": "Tangent Space",
+      "attrs": {
+        "description": "The vector space of all possible tangent vectors at a single point of a manifold — the local 'flat' approximation of the manifold at that point.",
+        "domain": "Differential geometry"
+      }
+    },
+    {
+      "id": "kinetic_theory",
+      "type": "formalism",
+      "label": "Kinetic theory",
+      "attrs": {
+        "description": "A microscopic description of matter in terms of distribution functions and particle interactions.",
+        "domain": "Statistical physics"
+      }
+    },
+    {
+      "id": "coordinate_transformations",
+      "type": "formalism",
+      "label": "Coordinate Transformations",
+      "attrs": {
+        "description": "Changes between coordinate descriptions used to express physical quantities without changing the underlying physics.",
+        "domain": "Relativity"
+      }
+    },
+    {
+      "id": "exponentials",
+      "type": "formalism",
+      "label": "exponentials",
+      "attrs": {
+        "description": "Exponential functions used to model continuous growth or decay processes.",
+        "domain": "Mathematics"
+      }
+    },
+    {
+      "id": "einstein_eq",
+      "type": "equation",
+      "label": "Einstein Field Equations",
+      "attrs": {
+        "description": "Relate the curvature of spacetime directly to the energy and momentum of whatever matter and radiation are present, forming the core field equation of general relativity.",
+        "equation": "Gμν + Λgμν = (8πG / c⁴) Tμν",
+        "variables": [
+          {
+            "symbol": "Gμν",
+            "meaning": "Einstein tensor (spacetime curvature)"
+          },
+          {
+            "symbol": "gμν",
+            "meaning": "Metric tensor"
+          },
+          {
+            "symbol": "Λ",
+            "meaning": "Cosmological constant"
+          },
+          {
+            "symbol": "Tμν",
+            "meaning": "Stress-energy tensor"
+          },
+          {
+            "symbol": "G",
+            "meaning": "Newtonian constant of gravitation"
+          },
+          {
+            "symbol": "c",
+            "meaning": "Speed of light in vacuum"
+          }
+        ],
+        "conditions": [
+          "Valid in any smooth Lorentzian spacetime manifold",
+          "Assumes a classical (non-quantum) description of matter and gravity"
+        ],
+        "representations": [
+          "Tensor (index) notation",
+          "Component form for a specific metric, e.g. Schwarzschild or FLRW",
+          "Linearized weak-field approximation"
+        ]
+      }
+    },
+    {
+      "id": "conservation_equations",
+      "type": "equation",
+      "label": "Conservation equations",
+      "attrs": {
+        "description": "Equations expressing local conservation of energy-momentum and particle or charge currents.",
+        "equation": "∇μTμν = 0,  ∇μJμ = 0",
+        "variables": [],
+        "conditions": [],
+        "representations": []
+      }
+    },
+    {
+      "id": "israel_stewart_equations",
+      "type": "equation",
+      "label": "Israel-Stewart equations",
+      "attrs": {
+        "description": "Causal and stable relativistic dissipative hydrodynamic equations.",
+        "equation": "τΠ DΠ + Π = −ζθ",
+        "variables": [],
+        "conditions": [],
+        "representations": []
+      }
+    },
+    {
+      "id": "decay_equation",
+      "type": "equation",
+      "label": "Decay equation",
+      "attrs": {
+        "description": "An equation describing the exponential decrease of the number of undecayed nuclei over time.",
+        "equation": "N(t) = N₀e^(−λt)",
+        "variables": [],
+        "conditions": [],
+        "representations": []
+      }
+    },
+    {
+      "id": "parallel_transport",
+      "type": "method",
+      "label": "Parallel Transport",
+      "attrs": {
+        "description": "A rule for moving a vector along a curve on a manifold while keeping it 'as parallel as possible' to itself at each step.",
+        "domain": "Differential geometry"
+      }
+    },
+    {
+      "id": "relativistic_viscous_hydrodynamics",
+      "type": "method",
+      "label": "Relativistic Viscous Hydrodynamics",
+      "attrs": {
+        "description": "A continuum description of relativistic fluids that includes dissipative effects such as viscosity.",
+        "domain": "Relativistic fluid dynamics"
+      }
+    },
+    {
+      "id": "fourteen_moment_approximation",
+      "type": "method",
+      "label": "14-moment approximation",
+      "attrs": {
+        "description": "A moment expansion that approximates a kinetic distribution function using a finite set of macroscopic moments.",
+        "domain": "Kinetic theory"
+      }
+    },
+    {
+      "id": "orthogonal_projection",
+      "type": "method",
+      "label": "Orthogonal Projection",
+      "attrs": {
+        "description": "Projection of a tensor or vector onto the subspace orthogonal to the fluid four-velocity.",
+        "domain": "Relativity"
+      }
+    },
+    {
+      "id": "experiment_eddington",
+      "type": "experiment",
+      "label": "1919 Eddington eclipse expedition",
+      "attrs": {
+        "description": "Solar eclipse expeditions led by Arthur Eddington that measured the deflection of starlight by the Sun, providing early observational support for general relativity.",
+        "domain": "General relativity"
+      }
+    },
+    {
+      "id": "rhic",
+      "type": "experiment",
+      "label": "RHIC",
+      "attrs": {
+        "description": "The Relativistic Heavy Ion Collider, used to study matter under extreme temperatures and densities.",
+        "domain": "Nuclear physics"
+      }
+    },
+    {
+      "id": "gravity_goal",
+      "type": "learning_goal",
+      "label": "Understand why planets orbit the Sun",
+      "attrs": {
+        "description": "Understand why planets orbit the Sun, from both the classical (force-based) and relativistic (geometric) points of view."
+      }
+    },
+    {
+      "id": "lg_pt_1",
+      "type": "learning_goal",
+      "label": "Explain all the elements of the equation.",
+      "attrs": {
+        "description": "Given the parallel transport equation, name and explain the role of each term (the components, the connection coefficients, the tangent vector to the curve)."
+      }
+    },
+    {
+      "id": "lg_pt_2",
+      "type": "learning_goal",
+      "label": "Differentiate between the geodesic equation and parallel transport",
+      "attrs": {
+        "description": "Explain how the geodesic equation is the special case of parallel-transporting a curve's own tangent vector along itself."
+      }
+    },
+    {
+      "id": "lg_pt_3",
+      "type": "learning_goal",
+      "label": "Interpret geometrically the action of parallel transport on a vector.",
+      "attrs": {
+        "description": "Describe, in words and pictures, what happens to a vector as it is parallel-transported along a path on a curved manifold."
+      }
+    },
+    {
+      "id": "lg_pt_4",
+      "type": "learning_goal",
+      "label": "Compute component transformations of a transported vector.",
+      "attrs": {
+        "description": "Given a metric/connection and a path, compute how a vector's components change under parallel transport."
+      }
+    },
+    {
+      "id": "lg_pt_5",
+      "type": "learning_goal",
+      "label": "Illustrate the relevance of parallel transport to different curvature types.",
+      "attrs": {
+        "description": "Compare parallel transport around a closed loop in flat, positively-curved, and negatively-curved spaces, and relate the result to curvature."
+      }
+    },
+    {
+      "id": "lg_tv_1",
+      "type": "learning_goal",
+      "label": "Explain why vectors at different points belong to different tangent spaces.",
+      "attrs": {
+        "description": "Explain why two tangent vectors defined at different points of a manifold cannot be compared or added directly without first specifying a way to transport one to the other."
+      }
+    },
+    {
+      "id": "lg_tv_2",
+      "type": "learning_goal",
+      "label": "Construct tangent vectors as derivatives of curves.",
+      "attrs": {
+        "description": "Given a parametrized curve on a manifold, construct its tangent vector at a point as the derivative of the curve with respect to its parameter."
+      }
+    },
+    {
+      "id": "lg_tv_3",
+      "type": "learning_goal",
+      "label": "Differentiate the manifold from its tangent spaces.",
+      "attrs": {
+        "description": "Explain the difference between the (possibly curved) manifold itself and the flat vector space that approximates it at a single point."
+      }
+    },
+    {
+      "id": "lg_alpha_decay_nucleons",
+      "type": "learning_goal",
+      "label": "Predict changes in neutron and proton number after the decay",
+      "attrs": {
+        "description": "Determine how alpha decay changes the neutron number and proton number of the parent nucleus."
+      }
+    },
+    {
+      "id": "lg_alpha_radiation_properties",
+      "type": "learning_goal",
+      "label": "Explain the properties of alpha radiation using information about the properties of an alpha particle",
+      "attrs": {
+        "description": "Use the composition and properties of an alpha particle to explain the behavior of alpha radiation."
+      }
+    },
+    {
+      "id": "resource_mtw",
+      "type": "resource",
+      "label": "Intro to the Einstein Field Equations (sample resource)",
+      "attrs": {
+        "link": "https://example.com/learn/einstein-field-equations",
+        "mediaType": "text",
+        "estimatedMinutes": 45,
+        "rating": 4.6,
+        "reviewCount": 128
+      }
+    },
+    {
+      "id": "res_pt_video",
+      "type": "resource",
+      "label": "Video: visualising parallel transport",
+      "attrs": {
+        "link": "https://example.com/videos/visualising-parallel-transport",
+        "mediaType": "video",
+        "estimatedMinutes": 12,
+        "rating": 4.7,
+        "reviewCount": 210
+      }
+    },
+    {
+      "id": "res_pt_concepttest",
+      "type": "resource",
+      "label": "Concept test: parallel transport",
+      "attrs": {
+        "link": "https://example.com/quizzes/parallel-transport-concept-test",
+        "mediaType": "quiz",
+        "estimatedMinutes": 10,
+        "rating": 4.4,
+        "reviewCount": 76
+      }
+    },
+    {
+      "id": "res_pt_textbook",
+      "type": "resource",
+      "label": "Textbook page: parallel transport",
+      "attrs": {
+        "link": "https://example.com/learn/parallel-transport-ch4",
+        "mediaType": "text",
+        "estimatedMinutes": 30,
+        "rating": 4.3,
+        "reviewCount": 64
+      }
+    },
+    {
+      "id": "misconception_force",
+      "type": "misconception",
+      "label": "Misconception: gravity is a pulling force",
+      "attrs": {
+        "description": "The idea that gravity is a force pulling objects directly toward one another through space, rather than the effect of objects following straight paths (geodesics) through curved spacetime.",
+        "domain": "General relativity"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "linear_algebra",
+      "target": "vector_space",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e2",
+      "source": "vector_space",
+      "target": "diff_geometry",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e3",
+      "source": "vector_space",
+      "target": "tangent_vector",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e4",
+      "source": "diff_geometry",
+      "target": "tangent_vector",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e5",
+      "source": "diff_geometry",
+      "target": "parallel_transport",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e6",
+      "source": "tangent_vector",
+      "target": "parallel_transport",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e7",
+      "source": "curvature",
+      "target": "parallel_transport",
+      "relationship": "Is derived from",
+      "review": "‘Is derived from’ (e7) and ‘Is derived by’ (e39, e40) read in opposite senses for what looks like the same underlying relationship. Sophie to confirm the intended direction for all three, and whether they should collapse to a single edge type (migration brief §3.3)."
+    },
+    {
+      "id": "e8",
+      "source": "curvature",
+      "target": "spacetime",
+      "relationship": "Is one property of"
+    },
+    {
+      "id": "e9",
+      "source": "energy_momentum",
+      "target": "spacetime",
+      "relationship": "Is one property of"
+    },
+    {
+      "id": "e10",
+      "source": "diff_geometry",
+      "target": "einstein_eq",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e11",
+      "source": "einstein_eq",
+      "target": "curvature",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e12",
+      "source": "einstein_eq",
+      "target": "energy_momentum",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e13",
+      "source": "einstein_eq",
+      "target": "newtonian_gravity",
+      "relationship": "Leads to"
+    },
+    {
+      "id": "e14",
+      "source": "newtonian_gravity",
+      "target": "weak_field_limit",
+      "relationship": "Depends on"
+    },
+    {
+      "id": "e15",
+      "source": "einstein_eq",
+      "target": "gravity_goal",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e16",
+      "source": "newtonian_gravity",
+      "target": "gravity_goal",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e17",
+      "source": "resource_mtw",
+      "target": "einstein_eq",
+      "relationship": "Helps understand"
+    },
+    {
+      "id": "e18",
+      "source": "curvature",
+      "target": "gravitational_lensing",
+      "relationship": "Explains"
+    },
+    {
+      "id": "e19",
+      "source": "experiment_eddington",
+      "target": "gravitational_lensing",
+      "relationship": "Links"
+    },
+    {
+      "id": "e20",
+      "source": "misconception_force",
+      "target": "curvature",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e21",
+      "source": "vector_space",
+      "target": "tangent_space",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e22",
+      "source": "tangent_space",
+      "target": "tangent_vector",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e23",
+      "source": "tangent_space",
+      "target": "parallel_transport",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e24",
+      "source": "parallel_transport",
+      "target": "lg_pt_1",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e25",
+      "source": "parallel_transport",
+      "target": "lg_pt_2",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e26",
+      "source": "parallel_transport",
+      "target": "lg_pt_3",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e27",
+      "source": "parallel_transport",
+      "target": "lg_pt_4",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e28",
+      "source": "parallel_transport",
+      "target": "lg_pt_5",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e29",
+      "source": "tangent_vector",
+      "target": "lg_tv_1",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e30",
+      "source": "tangent_vector",
+      "target": "lg_tv_2",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e31",
+      "source": "tangent_vector",
+      "target": "lg_tv_3",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e32",
+      "source": "res_pt_video",
+      "target": "lg_pt_3",
+      "relationship": "Helps understand"
+    },
+    {
+      "id": "e33",
+      "source": "res_pt_concepttest",
+      "target": "lg_pt_3",
+      "relationship": "Helps understand"
+    },
+    {
+      "id": "e34",
+      "source": "res_pt_textbook",
+      "target": "lg_pt_3",
+      "relationship": "Helps understand"
+    },
+    {
+      "id": "e35",
+      "source": "quark_gluon_plasma",
+      "target": "rhic",
+      "relationship": "Described by",
+      "review": "RHIC is the experimental apparatus, not obviously a description of Quark-Gluon-Plasma; ‘Studied by’ or a dedicated Physical system↔Experiment edge type might fit better. Sophie to confirm (migration brief §3.4)."
+    },
+    {
+      "id": "e36",
+      "source": "quark_gluon_plasma",
+      "target": "relativistic_viscous_hydrodynamics",
+      "relationship": "Described by"
+    },
+    {
+      "id": "e37",
+      "source": "relativistic_viscous_hydrodynamics",
+      "target": "conservation_equations",
+      "relationship": "Described by"
+    },
+    {
+      "id": "e38",
+      "source": "relativistic_viscous_hydrodynamics",
+      "target": "israel_stewart_equations",
+      "relationship": "Described by"
+    },
+    {
+      "id": "e39",
+      "source": "kinetic_theory",
+      "target": "fourteen_moment_approximation",
+      "relationship": "Is derived by",
+      "review": "‘Is derived from’ (e7) and ‘Is derived by’ (e39, e40) read in opposite senses for what looks like the same underlying relationship. Sophie to confirm the intended direction for all three, and whether they should collapse to a single edge type (migration brief §3.3)."
+    },
+    {
+      "id": "e40",
+      "source": "fourteen_moment_approximation",
+      "target": "israel_stewart_equations",
+      "relationship": "Is derived by",
+      "review": "‘Is derived from’ (e7) and ‘Is derived by’ (e39, e40) read in opposite senses for what looks like the same underlying relationship. Sophie to confirm the intended direction for all three, and whether they should collapse to a single edge type (migration brief §3.3)."
+    },
+    {
+      "id": "e41",
+      "source": "israel_stewart_equations",
+      "target": "dissipative_fields",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e42",
+      "source": "dissipative_fields",
+      "target": "charge_diffusion",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e43",
+      "source": "conservation_equations",
+      "target": "energy_momentum",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e44",
+      "source": "conservation_equations",
+      "target": "particle_charge_current",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e45",
+      "source": "particle_charge_current",
+      "target": "fluid_expansion",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e46",
+      "source": "four_velocity",
+      "target": "fluid_expansion",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e47",
+      "source": "orthogonal_projection",
+      "target": "four_velocity",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e48",
+      "source": "vector_space",
+      "target": "orthogonal_projection",
+      "relationship": "Strict Prerequisite for"
+    },
+    {
+      "id": "e49",
+      "source": "coordinate_transformations",
+      "target": "fluid_expansion",
+      "relationship": "Relates"
+    },
+    {
+      "id": "e50",
+      "source": "lorentz_invariance",
+      "target": "coordinate_transformations",
+      "relationship": "Is a condition of"
+    },
+    {
+      "id": "e51",
+      "source": "lorentz_invariance",
+      "target": "special_relativity",
+      "relationship": "Is a condition of"
+    },
+    {
+      "id": "e52",
+      "source": "nucleus",
+      "target": "half_life",
+      "relationship": "has a"
+    },
+    {
+      "id": "e53",
+      "source": "nucleus",
+      "target": "nucleon_number",
+      "relationship": "has a"
+    },
+    {
+      "id": "e54",
+      "source": "alpha_particle",
+      "target": "nucleus",
+      "relationship": "is a"
+    },
+    {
+      "id": "e55",
+      "source": "decay_equation",
+      "target": "half_life",
+      "relationship": "relates"
+    },
+    {
+      "id": "e56",
+      "source": "decay_equation",
+      "target": "large_number",
+      "relationship": "assumes a"
+    },
+    {
+      "id": "e57",
+      "source": "exponentials",
+      "target": "decay_equation",
+      "relationship": "has a",
+      "review": "Reads ‘Exponentials has a Decay equation’; the other ‘has a’ edges point from the whole to its part — source/target may be swapped. Sophie to confirm (migration brief §3.2)."
+    },
+    {
+      "id": "e58",
+      "source": "decay_equation",
+      "target": "alpha_decay",
+      "relationship": "describes"
+    },
+    {
+      "id": "e59",
+      "source": "alpha_decay",
+      "target": "nucleus",
+      "relationship": "happens in"
+    }
+  ]
+}

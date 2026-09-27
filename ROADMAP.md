@@ -6,6 +6,81 @@
 
 <!-- ROADMAP-INSERT-HERE: planner inserts new entries directly below this line, newest first -->
 
+## feature-17: Concept learning flow — goal path over strict prerequisites, progress, concept search
+
+**Status:** 🟡 Planned <!-- status-line: feature-17 -->
+**Planned:** 2026-09-27T11:35:35Z
+**Plan:** [.claude/plans/feature-17-concept-learning-flow.md](.claude/plans/feature-17-concept-learning-flow.md)
+**Complexity:** high
+
+### Key decisions (why it's planned this way)
+- Paths are computed over `strict prerequisite for` edges only (named constant `CURRICULUM_EDGE_TYPES`); resources join via `helps understand`; every other relation is context. Widening that set is a pedagogy call for Sophie.
+- Goal flow lives inside the concept map (goal bar + ordered step panel), not in a new view mode, and the topic views (`GoalView`, `TopicPage`, print, category colours) are deliberately left alone until feature-18.
+- Assumption: namespacing concept progress as `concept:<id>` in the existing localStorage store is preferable to a second store.
+
+### Reused patterns
+- `src/graph/dag.ts:252,265` (`dfsClosure`, `kahnOrder`) — exported and reused, so concept and topic curricula order by the same rule.
+- `src/components/MapView.tsx:121-134` + `src/App.css:522` (`.goal-bar`) and `GraphView.tsx:91-102,529` (`goal-node`) — goal marking and goal bar without new UI primitives.
+- `src/components/SearchBox.tsx:28-42` — generalized to caller-supplied entries instead of a second search component.
+
+<!-- impl-marker: feature-17 -->
+
+## feature-16: Concept map view — type colours, generality-sized nodes, sentence edges, zoom-linked fade
+
+**Status:** 🟡 Planned <!-- status-line: feature-16 -->
+**Planned:** 2026-09-27T11:35:35Z
+**Plan:** [.claude/plans/feature-16-concept-map-rendering.md](.claude/plans/feature-16-concept-map-rendering.md)
+**Complexity:** high
+
+### Key decisions (why it's planned this way)
+- New mode `?mode=concepts` next to the existing full map, rendered by the same `GraphView` (second input variant, topic element builder extracted unchanged) — GraphView stays the only Cytoscape file.
+- dagre BT over all edges (existing `layoutFor`) keeps every strict-prerequisite edge pointing upward; `cose` is a recorded pathway. Selection/hover are 1-hop for concepts, because transitive closure over mixed relation types is meaningless.
+- Size = generality through one `nodeRadius()` fallback rule (learning goals always minimal; otherwise the preview's degree heuristic until Sophie authors values). Zoom fade is on-screen-radius-driven, so it follows generality automatically.
+- Assumption: the seed's ColorBrewer placeholder hues are adjusted to reach ≥3:1 on both surfaces; 12 hues can't be CVD-safe pairwise, so text labels, legend and the type named in the card carry the meaning.
+
+### Reused patterns
+- `src/components/GraphView.tsx:240-247` (`layoutFor`) — no second layout engine.
+- `src/components/GraphView.tsx:517-528` (`highlightIds`/`dimmed`) — concept selection feeds a neighbour set instead of new classes.
+- `src/components/GraphView.tsx:537-550` (`focus`, `cy.animate({fit})`) — index and relation clicks glide to the node.
+- `src/graph/categoryColors.ts:3-17` — measured-palette module format for `typeColors.ts`.
+
+<!-- impl-marker: feature-16 -->
+
+## feature-15: Concept graph schema foundation (typed nodes + sentence edges, data + validator + docs, no rendering)
+
+**Status:** ✅ Implemented <!-- status-line: feature-15 -->
+**Planned:** 2026-09-27T11:35:35Z
+**Plan:** [.claude/plans/feature-15-concept-schema-foundation.md](.claude/plans/feature-15-concept-schema-foundation.md)
+**Complexity:** medium
+
+### Key decisions (why it's planned this way)
+- Coexist, don't replace: `src/data/concepts.json` becomes a second dataset next to `topics.json`. The two are different granularities (course-level topics vs. typed concepts); replacing would delete every curriculum, and converting would mean agents invent type/generality assignments. Retirement is feature-18, blocked on Sophie.
+- The 12 node types and the 17 sentence templates live in `src/data/conceptVocabulary.json`, read by both `types.ts` (literal key types) and the validator, so there's no mirrored table to drift. Only authored fields are stored; degree, radius, colour and sentences are derived.
+- The brief's data-quality issues are flagged, not resolved: an optional `review` field on e7/e35/e39/e40/e57 plus automatic validator warnings (casing variants, orphans, example.com links). Assumption: `generality` is an optional integer 1–5, and no values are invented.
+
+### Reused patterns
+- `scripts/validate-topics.mjs:262-285` (`findCycle`) — extracted to `scripts/lib/find-cycle.mjs`, used by both validators.
+- `src/data/loadGraph.ts:1,29` — same typed JSON-loader shape for `loadConcepts.ts`.
+- `scripts/validate-topics.mjs:104-108` + `src/graph/categoryColors.ts:33-36` — the "optional field, validated if present, one fallback function" pattern applied to `generality`.
+
+**Implemented:** 2026-09-27T19:40:05Z
+
+### Implemented
+- `src/data/concepts.json` — new, migrated concept graph (54 nodes, 59 edges, authored fields only)
+- `src/data/conceptVocabulary.json` — new, 12 node types and 17 edge sentence templates
+- `src/data/types.ts` — appended `NodeType`, `EdgeType`, `GraphNode`, `GraphEdge`, `ConceptGraph` types
+- `src/data/loadConcepts.ts` — new, typed export of the concept graph
+- `src/graph/concepts.ts` — new, normalization and indexing functions
+- `scripts/validate-concepts.mjs` — new, concept graph validator chained into `npm run validate`
+- `scripts/lib/find-cycle.mjs` — new, `findCycle` extracted as shared module
+- `docs/AUTHORING.md` — new section "Concept graph (pilot)" with schema and editing guidelines
+- `docs/DESIGN-DECISIONS.md` — Decision 12, rationale for coexistence with `topics.json`
+
+### Review
+**PASS** — validate/build/lint clean. [.claude/reviews/feature-15.md](.claude/reviews/feature-15.md)
+
+<!-- impl-marker: feature-15 -->
+
 ## feature-14: Topic cleanup + subtopics visible by default + hover zoom in the explorer
 
 **Status:** ✅ Implemented <!-- status-line: feature-14 -->

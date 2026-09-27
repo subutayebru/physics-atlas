@@ -8,7 +8,7 @@
     "build:content": "node scripts/compile-content.mjs",
     "build": "node scripts/compile-content.mjs && tsc -b && vite build",
     "lint": "oxlint",
-    "validate": "node scripts/compile-content.mjs && node scripts/validate-topics.mjs",
+    "validate": "node scripts/compile-content.mjs && node scripts/validate-topics.mjs && node scripts/validate-concepts.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "preview": "vite preview"
   },

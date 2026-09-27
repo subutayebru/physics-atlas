@@ -1,0 +1,36 @@
+{
+  "nodeTypes": {
+    "physical_system": "Physical system",
+    "property": "Property/quantity",
+    "phenomenon": "Phenomenon",
+    "model_regime": "Model/behaviour regime",
+    "conditions": "Conditions/assumptions",
+    "formalism": "Mathematical formalism",
+    "equation": "Law/equation",
+    "method": "Method/technique",
+    "experiment": "Experiment/evidence",
+    "learning_goal": "Learning goal",
+    "resource": "Educational resource",
+    "misconception": "Misconception"
+  },
+  "edgeTemplates": {
+    "strict prerequisite for": "{s} is a strict prerequisite for {t}.",
+    "relates": "{s} relates to {t}.",
+    "helps understand": "{s} helps understand {t}.",
+    "described by": "{s} is described by {t}.",
+    "has a": "{s} has a {t}.",
+    "is one property of": "{s} is one property of {t}.",
+    "is derived by": "{s} is derived by {t}.",
+    "is derived from": "{s} is derived from {t}.",
+    "is a condition of": "{s} is a condition of {t}.",
+    "leads to": "{s} leads to {t}.",
+    "depends on": "{s} depends on {t}.",
+    "explains": "{s} explains {t}.",
+    "links": "{s} links to {t}.",
+    "is a": "{s} is a {t}.",
+    "assumes a": "{s} assumes a {t}.",
+    "describes": "{s} describes {t}.",
+    "happens in": "{s} happens in {t}."
+  },
+  "mediaTypes": ["text", "video", "quiz"]
+}

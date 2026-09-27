@@ -1,3 +1,5 @@
+import vocab from './conceptVocabulary.json';
+
 export type TopicCategory = 'field' | 'method' | 'math-concept';
 
 export type ContentType = 'book' | 'video' | 'course' | 'notes' | 'article';
@@ -85,4 +87,82 @@ export interface TopicGraph {
   domain: string;
   topics: Topic[];
   skills?: Skill[];
+}
+
+/**
+ * Concept graph (pilot) — a second, independent dataset (`src/data/concepts.json`)
+ * modeling concept-level nodes with 12 types and typed, directional edges that
+ * read as sentences. Coexists with Topic/Subtopic above; see docs/AUTHORING.md
+ * "Concept graph (pilot)" and docs/DESIGN-DECISIONS.md Decision 12.
+ */
+export const NODE_TYPE_LABELS = vocab.nodeTypes;
+export type NodeType = keyof typeof NODE_TYPE_LABELS;
+
+export const EDGE_SENTENCE_TEMPLATES = vocab.edgeTemplates;
+export type EdgeType = keyof typeof EDGE_SENTENCE_TEMPLATES;
+
+interface ConceptAttrs {
+  description: string;
+  domain?: string;
+}
+
+export interface EquationVariable {
+  symbol: string;
+  meaning: string;
+}
+
+export interface EquationAttrs {
+  description: string;
+  equation: string;
+  variables: EquationVariable[];
+  conditions: string[];
+  representations: string[];
+  domain?: string;
+}
+
+export interface LearningGoalAttrs {
+  description: string;
+}
+
+export interface ResourceAttrs {
+  link: string;
+  mediaType: string;
+  estimatedMinutes: number;
+  rating: number;
+  reviewCount: number;
+}
+
+interface GraphNodeBase {
+  /** snake_case, unique, kept verbatim from Sophie's CSVs */
+  id: string;
+  label: string;
+  /** 1 (most specific) – 5 (most general); optional, drives node size once authored */
+  generality?: number;
+  /** An open question for Sophie — cleared by deleting the field */
+  review?: string;
+}
+
+export type GraphNode =
+  | (GraphNodeBase & {
+      type: Exclude<NodeType, 'equation' | 'learning_goal' | 'resource'>;
+      attrs: ConceptAttrs;
+    })
+  | (GraphNodeBase & { type: 'equation'; attrs: EquationAttrs })
+  | (GraphNodeBase & { type: 'learning_goal'; attrs: LearningGoalAttrs })
+  | (GraphNodeBase & { type: 'resource'; attrs: ResourceAttrs });
+
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  /** Verbatim as authored; the resolved EdgeType comes from normalizeRelationship() */
+  relationship: string;
+  /** An open question for Sophie — cleared by deleting the field */
+  review?: string;
+}
+
+export interface ConceptGraph {
+  version: number;
+  nodes: GraphNode[];
+  edges: GraphEdge[];
 }

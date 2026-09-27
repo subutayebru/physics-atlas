@@ -172,6 +172,44 @@ found, and hovering did nothing to help orient on the large map.
 | Fisheye / isolate-lens on hover | ↩ pathway | Would need a custom rendering layer (cytoscape has no built-in lens); revisit only if plain zoom/pan turns out to be insufficient for orientation on a much bigger graph. |
 | Hover-zoom always on, even with a goal picked | ↩ rejected | Would undo the goal-path focus (Decision 10) on every stray hover — confusing right when the user most wants the view to hold still. |
 
+## Decision 12 — Concept graph as a second dataset (2026-09)
+
+Sophie's pilot CSVs (54 concept-level nodes, 12 types, typed sentence edges —
+`docs/physics-atlas-migration-brief.md`) model a finer granularity than
+`topics.json`'s 35 course-level topics. Landing the schema (feature-15)
+raised the question of how the two relate.
+
+| Option | Status | Notes |
+|---|---|---|
+| **Coexist: `src/data/concepts.json` next to `topics.json`, nothing renders yet** | ✅ Chosen | Different granularities (course-level topic vs. concept-level node); mechanically converting would force the agent to invent type assignments and generality values — Sophie's content, not ours. Both datasets validate independently (`validate-topics.mjs`, `validate-concepts.mjs`) until Sophie decides the mapping (feature-18, blocked). |
+| Replace `topics.json` now | ↩ rejected | Deletes every current curriculum (8 featured goals incl. Cosmology, the compiled parallel-transport goal) for a dataset that only covers three pilot domains. |
+| Convert topics into typed concept nodes mechanically | ↩ rejected | Would mean an agent invents each topic's node type and generality — exactly the "don't invent physics content" line the project draws. |
+
+Also decided:
+
+- **Vocabulary as a shared JSON, not a mirrored table:** `src/data/conceptVocabulary.json`
+  (12 node types, the 17-entry edge sentence template table, known
+  `mediaType`s) is read by both `src/data/types.ts` and
+  `scripts/validate-concepts.mjs` — one source, not two copies that could
+  drift (the risk the existing `dag.ts`/`validate-topics.mjs` mirror comment
+  warns about). Adding a relationship type means adding one row here.
+- **`review` as the flag mechanism:** data-quality questions Sophie needs to
+  resolve (a casing duplicate, a likely-reversed edge, an inconsistent
+  derived-from/by direction, a questionable edge type, two orphan learning
+  goals) are recorded as a `review` string on the node/edge, surfaced by the
+  validator as a warning, never silently fixed. Sophie clears one by
+  deleting the field.
+- **snake_case ids kept from the CSVs**, not renamed to kebab-case — they're
+  a disjoint id space from topics.json by construction, and renaming would
+  break traceability back to Sophie's source files.
+- **`generality` is optional, integer 1–5**, not authored in this migration
+  (the seed only has a degree heuristic) — easiest scale for a non-dev to
+  assign later; the render fallback (feature-16) lives in one function.
+- **Pathway:** if Sophie sends raw CSVs again, port
+  `convert_seed_data.py`'s parsing/sentence logic into
+  `scripts/import-concepts-csv.mjs` (brief §4) rather than hand-merging JSON
+  a second time.
+
 ## Multi-agent workflow (web-dev-agent-system)
 
 **Installed 2026-07-02** (Setup B from `../web-dev-agent-system-main`):

@@ -6,6 +6,7 @@ Content lives in **two places**:
 |---|---|---|
 | A **learning goal** ("be able to derive X") with its subgoals + prerequisites | `content/goals/<name>.md` | Markdown outline — [see below](#learning-goals-markdown) |
 | A **topic / area** on the map, or resources (books, videos) | [`src/data/topics.json`](../src/data/topics.json) | JSON |
+| A **concept-graph node/edge** (pilot, not rendered yet) | [`src/data/concepts.json`](../src/data/concepts.json) | JSON — [see below](#concept-graph-pilot) |
 
 Either way: edit, run `npm run validate`, done. The site rebuilds the graph
 automatically.
@@ -176,6 +177,119 @@ collapsible "Skills to practice along the way" panel under every curriculum
 ```json
 { "id": "dimensional-analysis", "title": "Dimensional analysis & estimation", "description": "…", "content": [] }
 ```
+
+## Concept graph (pilot)
+
+`src/data/concepts.json` is a **second, independent dataset** — it does not
+replace `topics.json` and nothing renders it yet (feature-16 adds the map
+view). It models Sophie's pilot CSVs: concept-level nodes with 12 types and
+typed, directional edges that read as sentences, rather than topics.json's
+course-level `Topic`/`Subtopic` shape.
+
+```json
+{
+  "version": 1,
+  "nodes": [
+    { "id": "parallel_transport", "type": "method", "label": "Parallel transport",
+      "attrs": { "description": "…", "domain": "General relativity" } }
+  ],
+  "edges": [
+    { "id": "e6", "source": "tangent_vector", "target": "parallel_transport",
+      "relationship": "Strict Prerequisite for" }
+  ]
+}
+```
+
+### Node types
+
+The 12 types (key → what it means), from `src/data/conceptVocabulary.json`:
+
+| Type | Meaning |
+|---|---|
+| `physical_system` | Physical system — a thing being modeled (spacetime, a nucleus, a plasma). |
+| `property` | Property/quantity — an attribute of a system (curvature, half-life, four-velocity). |
+| `phenomenon` | Phenomenon — an observed effect (gravitational lensing, alpha decay). |
+| `model_regime` | Model/behaviour regime — a simplified theory valid in some limit (Newtonian gravity, special relativity). |
+| `conditions` | Conditions/assumptions — the regime a model or equation requires (weak-field limit, Lorentz invariance). |
+| `formalism` | Mathematical formalism — the math machinery used (linear algebra, differential geometry). |
+| `equation` | Law/equation — a named equation, with its own attribute shape (below). |
+| `method` | Method/technique — a technique applied to get a result (parallel transport, orthogonal projection). |
+| `experiment` | Experiment/evidence — an observation or apparatus (the 1919 eclipse expedition, RHIC). |
+| `learning_goal` | Learning goal — a "can do X" outcome; a small, minimal node (no `domain`). |
+| `resource` | Educational resource — a book/video/quiz (no `description`/`domain`). |
+| `misconception` | Misconception — a common wrong idea, linked to the concept it's about. |
+
+### Per-type `attrs`
+
+| Type | Fields |
+|---|---|
+| Every type except `equation`, `learning_goal`, `resource` | `description` (required), `domain` (optional) |
+| `equation` | `description`, `equation` (the formula, string), `variables` (`{symbol, meaning}[]`), `conditions` (`string[]`), `representations` (`string[]`), `domain` (optional) |
+| `learning_goal` | `description` only — **no `domain`** |
+| `resource` | `link` (http/https), `mediaType`, `estimatedMinutes` (number), `rating` (0–5), `reviewCount` (integer) — **no `description`/`domain`** |
+
+### Writing an edge
+
+`source` + `relationship` + `target` must read as a sentence: *"{source
+label} {relationship} {target label}."* The `relationship` string is looked
+up (trimmed, case-insensitive) against the template table in
+`conceptVocabulary.json` — an edge whose relationship isn't in the table
+fails validation. The 17 known relationships:
+
+| `relationship` | Sentence template |
+|---|---|
+| `strict prerequisite for` | `{s} is a strict prerequisite for {t}.` |
+| `relates` | `{s} relates to {t}.` |
+| `helps understand` | `{s} helps understand {t}.` |
+| `described by` | `{s} is described by {t}.` |
+| `has a` | `{s} has a {t}.` |
+| `is one property of` | `{s} is one property of {t}.` |
+| `is derived by` | `{s} is derived by {t}.` |
+| `is derived from` | `{s} is derived from {t}.` |
+| `is a condition of` | `{s} is a condition of {t}.` |
+| `leads to` | `{s} leads to {t}.` |
+| `depends on` | `{s} depends on {t}.` |
+| `explains` | `{s} explains {t}.` |
+| `links` | `{s} links to {t}.` |
+| `is a` | `{s} is a {t}.` |
+| `assumes a` | `{s} assumes a {t}.` |
+| `describes` | `{s} describes {t}.` |
+| `happens in` | `{s} happens in {t}.` |
+
+Adding a new relationship type means adding a row to `conceptVocabulary.json`
+first — the validator refuses any edge whose relationship isn't in the table.
+
+### `generality` (1–5)
+
+An optional integer, 1 (most specific) to 5 (most general) — drives node
+size on the map once feature-16 renders it. **Leave it out** until you've
+decided; a missing value falls back to a connection-count heuristic.
+Learning goals are always drawn smallest, regardless of `generality`.
+
+### `review` — an open question for you
+
+A `review` field on a node or edge is an open question, not an error —
+delete it once you've decided. Current open items from the migration:
+
+1. `relates`/`Relates` casing (11× `Relates`, 1× `relates` on `e55`) — same
+   edge type once normalized; validator warns, nothing to fix urgently.
+2. `e57` (`exponentials → decay_equation`, "has a") reads backwards compared
+   to the other `has a` edges — source/target may be swapped.
+3. `e7` ("is derived from"), `e39`/`e40` ("is derived by") read in opposite
+   senses for what looks like one relationship — direction and/or type to
+   be decided.
+4. `e35` (`quark_gluon_plasma → rhic`, "Described by") — RHIC is the
+   experimental apparatus; a different edge type might fit better.
+5. `lg_alpha_decay_nucleons` and `lg_alpha_radiation_properties` (learning
+   goals) have no edges at all — no prerequisite links them to any concept.
+6. Four `resource` nodes link to `example.com` placeholder URLs — replace
+   with real links when you have them.
+
+### Ids
+
+Ids stay **snake_case**, exactly as exported from Sophie's CSVs
+(`quark_gluon_plasma`, `lg_pt_3`) — they're a different id space from
+topics.json's kebab-case ids, kept for traceability back to her source files.
 
 ## Before committing
 
