@@ -294,6 +294,22 @@ if (!conceptCard.includes('leads to Newtonian Gravity'))
   errors.push('concept card is missing the einstein_eq → newtonian gravity relation sentence');
 await page.screenshot({ path: `${OUT}/concepts.png` });
 
+// --- Concept learning flow: goal path over strict prerequisites + progress ---
+await page.goto(`${URL}/?mode=concepts&goal=lg_pt_3`, { waitUntil: 'networkidle0' });
+await page.waitForSelector('.concept-path-step');
+const conceptSteps = await page.$$eval('.concept-path-step', (els) => els.length);
+const conceptGoalMarked = await page.evaluate(() => window.__cy.$id('lg_pt_3').hasClass('goal-node'));
+console.log(`concept path lg_pt_3: ${conceptSteps} steps, goal marked: ${conceptGoalMarked}`);
+if (conceptSteps !== 7) errors.push(`expected 7 concept path steps, got ${conceptSteps}`);
+if (!conceptGoalMarked) errors.push('lg_pt_3 is not marked as the goal node');
+await page.click('.concept-path-step input[type=checkbox]');
+await new Promise((r) => setTimeout(r, 250));
+const conceptProgress = await page.evaluate(() => localStorage.getItem('physics-atlas-progress-v1') ?? '');
+console.log('concept progress key stored:', conceptProgress.includes('"concept:linear_algebra"'));
+if (!conceptProgress.includes('"concept:linear_algebra"'))
+  errors.push('ticking the first concept step did not store concept:linear_algebra');
+await page.screenshot({ path: `${OUT}/concepts-goal.png` });
+
 console.log('console errors:', errors.length ? errors : 'none');
 await browser.close();
 process.exit(errors.length ? 1 : 0);

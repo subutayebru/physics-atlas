@@ -129,6 +129,8 @@ const styleFor = (large: boolean, light: boolean) => {
   {
     selector: 'node.goal-node',
     style: {
+      opacity: 1,
+      'text-opacity': 1,
       'border-width': 3.5,
       'border-color': gold,
       'background-opacity': 0.4,

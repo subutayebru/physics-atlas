@@ -7,8 +7,11 @@ import ConceptMapView from './components/ConceptMapView';
 import { concepts } from './data/loadConcepts';
 import TopicPage from './components/TopicPage';
 import SearchBox from './components/SearchBox';
+import type { SearchEntry } from './components/SearchBox';
 import Starfield from './components/Starfield';
+import { NODE_TYPE_LABELS } from './data/types';
 import { expandedCurriculumFor, parseUnitId } from './graph/dag';
+import { TYPE_COLORS } from './graph/typeColors';
 import { useProgress } from './lib/useProgress';
 import { useTheme } from './lib/useTheme';
 import './App.css';
@@ -44,9 +47,24 @@ function initialGoal(): string {
   return data.topics.some((t) => t.id === topicId) ? topicId : 'cosmology';
 }
 
+function initialConceptGoal(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const g = params.get('goal');
+  if (params.get('mode') !== 'concepts' || !g) return null;
+  return concepts.nodes.some((n) => n.id === g) ? g : null;
+}
+
+const conceptSearchEntries: SearchEntry[] = concepts.nodes.map((n) => ({
+  ref: n.id,
+  title: n.label,
+  context: NODE_TYPE_LABELS[n.type],
+  color: TYPE_COLORS[n.type],
+}));
+
 export default function App() {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [goalRef, setGoalRef] = useState(initialGoal);
+  const [conceptGoal, setConceptGoal] = useState(initialConceptGoal);
   const [topicPageId, setTopicPageId] = useState(initialTopicId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
@@ -80,7 +98,9 @@ export default function App() {
           ? `?mode=goal&goal=${encodeURIComponent(goalRef)}`
           : mode === 'topic'
             ? `?mode=topic&id=${encodeURIComponent(topicPageId)}`
-            : `?mode=${mode}`;
+            : mode === 'concepts' && conceptGoal
+              ? `?mode=concepts&goal=${encodeURIComponent(conceptGoal)}`
+              : `?mode=${mode}`;
     if (window.location.search === target) {
       firstUrlSync.current = false;
       return;
@@ -91,12 +111,13 @@ export default function App() {
     if (firstUrlSync.current) window.history.replaceState(null, '', url);
     else window.history.pushState(null, '', url);
     firstUrlSync.current = false;
-  }, [mode, goalRef, topicPageId]);
+  }, [mode, goalRef, conceptGoal, topicPageId]);
 
   useEffect(() => {
     const onPop = () => {
       setMode(initialMode());
       setGoalRef(initialGoal());
+      setConceptGoal(initialConceptGoal());
       setTopicPageId(initialTopicId());
       setSelectedId(null);
     };
@@ -170,7 +191,17 @@ export default function App() {
           <button className="app-wordmark" onClick={() => setMode('home')}>
             <h1 className="app-title">Physics Atlas</h1>
           </button>
-          {mode !== 'concepts' && <SearchBox topics={data.topics} onPick={headerSearchPick} />}
+          {mode === 'concepts' ? (
+            <SearchBox
+              key="concepts"
+              entries={conceptSearchEntries}
+              onPick={focusOn}
+              placeholder="Search concepts…"
+              label="Search concepts"
+            />
+          ) : (
+            <SearchBox key="topics" topics={data.topics} onPick={headerSearchPick} />
+          )}
           <nav className="mode-tabs" aria-label="View mode">
             <button
               className={`mode-tab ${mode === 'map' ? 'mode-tab-active' : ''}`}
@@ -245,7 +276,19 @@ export default function App() {
           theme={theme}
         />
       )}
-      {mode === 'concepts' && <ConceptMapView graph={concepts} theme={theme} />}
+      {mode === 'concepts' && (
+        <ConceptMapView
+          graph={concepts}
+          progress={progress}
+          goalId={conceptGoal}
+          onGoalChange={setConceptGoal}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onFocus={focusOn}
+          focus={focus}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

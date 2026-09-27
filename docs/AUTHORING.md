@@ -259,6 +259,23 @@ fails validation. The 17 known relationships:
 Adding a new relationship type means adding a row to `conceptVocabulary.json`
 first — the validator refuses any edge whose relationship isn't in the table.
 
+### How the concept curriculum is built
+
+Any concept can be picked as a goal ("★ Show path to this" on its card, or
+`?mode=concepts&goal=<id>`). Only `strict prerequisite for` edges build a
+path: the goal's steps are every concept reachable backwards over those edges,
+ordered by the same rule as topic curricula (a concept comes after everything
+it needs; ties go to the shallower concept, then alphabetically by id).
+Resources join a step via `helps understand`; all other relations are shown as
+context on the card but never add a step. If another relation (e.g.
+`depends on`) should pull concepts into paths, that's a one-line change — ask
+for it.
+
+A goal with no incoming `strict prerequisite for` edge produces a one-step
+path (just the goal) with a "No prerequisites are linked to this goal yet"
+note — currently `lg_alpha_decay_nucleons` and
+`lg_alpha_radiation_properties`.
+
 ### `generality` (1–5)
 
 An optional integer, 1 (most specific) to 5 (most general) — drives node

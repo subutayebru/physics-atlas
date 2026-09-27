@@ -249,7 +249,7 @@ export interface CurriculumGroup {
   optional: boolean;
 }
 
-function dfsClosure(start: string, next: (id: string) => string[]): Set<string> {
+export function dfsClosure(start: string, next: (id: string) => string[]): Set<string> {
   const seen = new Set<string>();
   const stack = [start];
   while (stack.length) {
@@ -262,7 +262,7 @@ function dfsClosure(start: string, next: (id: string) => string[]): Set<string> 
 }
 
 /** Kahn over a prereq adjacency, ties broken by longest-path depth then id. */
-function kahnOrder(prereqsOf: Map<string, string[]>): string[] {
+export function kahnOrder(prereqsOf: Map<string, string[]>): string[] {
   const memo = new Map<string, number>();
   const depth = (id: string): number => {
     if (memo.has(id)) return memo.get(id)!;

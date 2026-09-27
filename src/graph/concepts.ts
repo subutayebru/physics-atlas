@@ -1,5 +1,6 @@
 import { EDGE_SENTENCE_TEMPLATES } from '../data/types';
 import type { ConceptGraph, EdgeType, GraphEdge, GraphNode } from '../data/types';
+import { dfsClosure, kahnOrder } from './dag';
 
 export type ConceptMap = Map<string, GraphNode>;
 
@@ -95,4 +96,51 @@ export function neighbourIds(id: string, index: ConceptIndex): Set<string> {
   for (const e of index.incoming.get(id) ?? []) ids.add(e.source);
   for (const e of index.outgoing.get(id) ?? []) ids.add(e.target);
   return ids;
+}
+
+/**
+ * The relation types that pull a concept into a goal's path. Deliberately
+ * narrow — widening it (e.g. to `depends on`) is a pedagogy call for the author.
+ */
+export const CURRICULUM_EDGE_TYPES: EdgeType[] = ['strict prerequisite for'];
+
+export type ResourceNode = Extract<GraphNode, { type: 'resource' }>;
+
+export interface ConceptPath {
+  /** Steps in learning order, the goal last */
+  order: string[];
+  /** Steps ∪ their resources — the GraphView highlight set */
+  highlight: Set<string>;
+  /** `resource` nodes that `helps understand` each step */
+  resourcesByStep: Map<string, ResourceNode[]>;
+}
+
+/**
+ * The concept counterpart of goalPathFor(): closure over CURRICULUM_EDGE_TYPES,
+ * ordered by the same kahnOrder() rule as topic curricula.
+ */
+export function conceptPathFor(goalId: string, index: ConceptIndex): ConceptPath | null {
+  if (!index.byId.has(goalId)) return null;
+  const prereqsOf = (id: string) =>
+    (index.incoming.get(id) ?? [])
+      .filter((e) => {
+        const type = normalizeRelationship(e.relationship);
+        return type !== null && CURRICULUM_EDGE_TYPES.includes(type);
+      })
+      .map((e) => e.source);
+  const closure = dfsClosure(goalId, prereqsOf);
+  const order = kahnOrder(
+    new Map([...closure].map((id) => [id, prereqsOf(id).filter((p) => closure.has(p))])),
+  );
+  const highlight = new Set(order);
+  const resourcesByStep = new Map<string, ResourceNode[]>();
+  for (const id of order) {
+    const resources = (index.incoming.get(id) ?? [])
+      .filter((e) => normalizeRelationship(e.relationship) === 'helps understand')
+      .map((e) => index.byId.get(e.source))
+      .filter((n): n is ResourceNode => n?.type === 'resource');
+    for (const r of resources) highlight.add(r.id);
+    resourcesByStep.set(id, resources);
+  }
+  return { order, highlight, resourcesByStep };
 }

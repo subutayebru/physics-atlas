@@ -1,30 +1,58 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo } from 'react';
 import { NODE_TYPE_LABELS } from '../data/types';
 import type { ConceptGraph, GraphEdge } from '../data/types';
-import { buildConceptIndex, neighbourIds, sentenceParts } from '../graph/concepts';
+import { buildConceptIndex, conceptPathFor, neighbourIds, sentenceParts } from '../graph/concepts';
 import type { ConceptIndex } from '../graph/concepts';
 import { TYPE_COLORS, TYPE_ORDER } from '../graph/typeColors';
+import type { Progress } from '../lib/useProgress';
 import GraphView from './GraphView';
 import Legend from './Legend';
 
+const PROGRESS_PREFIX = 'concept:';
+
 interface ConceptMapViewProps {
   graph: ConceptGraph;
+  progress: Progress;
+  goalId: string | null;
+  onGoalChange: (id: string | null) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  /** Select + animate-center a node */
+  onFocus: (id: string) => void;
+  focus?: { id: string | null; tick: number };
   theme?: 'dark' | 'light';
 }
 
-export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
+export default function ConceptMapView({
+  graph,
+  progress,
+  goalId,
+  onGoalChange,
+  selectedId,
+  onSelect,
+  onFocus,
+  focus,
+  theme,
+}: ConceptMapViewProps) {
   const index = useMemo(() => buildConceptIndex(graph), [graph]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [focus, setFocus] = useState<{ id: string | null; tick: number }>({ id: null, tick: 0 });
+  const path = useMemo(() => (goalId ? conceptPathFor(goalId, index) : null), [goalId, index]);
+  const selected = selectedId ? index.byId.get(selectedId) : undefined;
   const highlightIds = useMemo(
-    () => (selectedId ? neighbourIds(selectedId, index) : null),
-    [selectedId, index],
+    () => path?.highlight ?? (selected ? neighbourIds(selected.id, index) : null),
+    [path, selected, index],
   );
-
-  const selectAndFocus = (id: string) => {
-    setSelectedId(id);
-    setFocus((f) => ({ id, tick: f.tick + 1 }));
-  };
+  // Concept progress shares the topic store; the prefix keeps the id spaces apart.
+  const doneIds = useMemo(
+    () =>
+      new Set(
+        [...progress.done]
+          .filter((k) => k.startsWith(PROGRESS_PREFIX))
+          .map((k) => k.slice(PROGRESS_PREFIX.length)),
+      ),
+    [progress.done],
+  );
+  const goal = path && goalId ? index.byId.get(goalId) : undefined;
+  const learnedCount = path ? path.order.filter((id) => doneIds.has(id)).length : 0;
 
   const byType = useMemo(
     () =>
@@ -35,7 +63,6 @@ export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
     [graph],
   );
 
-  const selected = selectedId ? index.byId.get(selectedId) : undefined;
   const outgoing = selected ? (index.outgoing.get(selected.id) ?? []) : [];
   const incoming = selected ? (index.incoming.get(selected.id) ?? []) : [];
   const reviews = selected
@@ -51,44 +78,129 @@ export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
           concepts={graph}
           selectedId={selectedId}
           highlightIds={highlightIds}
+          doneIds={doneIds}
           directionalSelect={false}
           focus={focus}
-          onSelect={setSelectedId}
+          onSelect={onSelect}
           large
           theme={theme}
+          goalId={goal ? goal.id : null}
         />
         <Legend variant="type" />
 
-        <details className="concept-index">
-          <summary className="concept-index-summary">Browse by type</summary>
-          {byType.map(({ type, nodes }) => (
-            <div key={type} className="concept-index-group">
-              <h3 className="block-heading">
-                <span
-                  className="type-dot"
-                  style={{ background: TYPE_COLORS[type], color: TYPE_COLORS[type] }}
-                  aria-hidden
-                />
-                {NODE_TYPE_LABELS[type]}
-                <span className="rel-count">{nodes.length}</span>
-              </h3>
-              <ul className="concept-index-list">
-                {nodes.map((n) => (
-                  <li key={n.id}>
-                    <button
-                      className={`concept-index-item ${n.id === selectedId ? 'concept-index-item-active' : ''}`}
-                      onClick={() => selectAndFocus(n.id)}
-                    >
-                      {n.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </details>
+        {goal && path && (
+          <div className="goal-bar" role="status" aria-live="polite">
+            <span className="goal-bar-title">★ Goal: {goal.label}</span>
+            <span className="goal-bar-count">
+              {path.order.length} step{path.order.length === 1 ? '' : 's'} on this path
+            </span>
+            <button className="goal-bar-clear" onClick={() => onGoalChange(null)}>
+              Clear
+            </button>
+          </div>
+        )}
 
-        {!selected && (
+        <div className="concept-side">
+          <details className="concept-index">
+            <summary className="concept-index-summary">Browse by type</summary>
+            {byType.map(({ type, nodes }) => (
+              <div key={type} className="concept-index-group">
+                <h3 className="block-heading">
+                  <span
+                    className="type-dot"
+                    style={{ background: TYPE_COLORS[type], color: TYPE_COLORS[type] }}
+                    aria-hidden
+                  />
+                  {NODE_TYPE_LABELS[type]}
+                  <span className="rel-count">{nodes.length}</span>
+                </h3>
+                <ul className="concept-index-list">
+                  {nodes.map((n) => (
+                    <li key={n.id}>
+                      <button
+                        className={`concept-index-item ${n.id === selectedId ? 'concept-index-item-active' : ''}`}
+                        onClick={() => onFocus(n.id)}
+                      >
+                        {n.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </details>
+
+          {goal && path && (
+            <section className="concept-path" aria-labelledby="concept-path-title">
+              <h2 className="concept-path-title" id="concept-path-title">
+                Path to this goal
+                <span className="rel-count">
+                  {learnedCount} of {path.order.length} learned
+                </span>
+              </h2>
+              <ol className="concept-path-steps">
+                {path.order.map((id) => {
+                  const n = index.byId.get(id)!;
+                  const resources = path.resourcesByStep.get(id) ?? [];
+                  return (
+                    <li
+                      key={id}
+                      className={`concept-path-step ${doneIds.has(id) ? 'concept-path-step-done' : ''}`}
+                    >
+                      <button
+                        className={`concept-path-label ${id === selectedId ? 'concept-index-item-active' : ''}`}
+                        onClick={() => onFocus(id)}
+                      >
+                        <span
+                          className="type-dot"
+                          style={{ background: TYPE_COLORS[n.type], color: TYPE_COLORS[n.type] }}
+                          aria-hidden
+                        />
+                        <span>
+                          {n.label}
+                          <span className="concept-path-type">{NODE_TYPE_LABELS[n.type]}</span>
+                        </span>
+                      </button>
+                      <label className="learned-toggle">
+                        <input
+                          type="checkbox"
+                          checked={doneIds.has(id)}
+                          onChange={() => progress.toggle(PROGRESS_PREFIX + id)}
+                          aria-label={`Learned: ${n.label}`}
+                        />
+                        Learned
+                      </label>
+                      {resources.length > 0 && (
+                        <ul className="concept-path-resources">
+                          {resources.map((r) => (
+                            <li key={r.id}>
+                              <a
+                                className="concept-resource-link"
+                                href={r.attrs.link}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {r.label} ↗
+                              </a>
+                              <span className="concept-resource-meta">
+                                {r.attrs.mediaType} · {r.attrs.estimatedMinutes} min
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+              {path.order.length === 1 && (
+                <p className="concept-empty">No prerequisites are linked to this goal yet.</p>
+              )}
+            </section>
+          )}
+        </div>
+
+        {!selected && !goal && (
           <p className="map-hint">
             Colour = kind of concept, size = how general it is. Hover a line to read it as a
             sentence. Zoom in for specific concepts and learning goals.
@@ -179,7 +291,7 @@ export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
                   edges={outgoing}
                   selfId={selected.id}
                   index={index}
-                  onPick={selectAndFocus}
+                  onPick={onFocus}
                 />
               )}
               {incoming.length > 0 && (
@@ -188,7 +300,7 @@ export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
                   edges={incoming}
                   selfId={selected.id}
                   index={index}
-                  onPick={selectAndFocus}
+                  onPick={onFocus}
                 />
               )}
             </div>
@@ -202,7 +314,15 @@ export default function ConceptMapView({ graph, theme }: ConceptMapViewProps) {
               </div>
             )}
 
-            <button className="map-card-close" onClick={() => setSelectedId(null)} aria-label="Close">
+            {selected.id !== goalId && (
+              <div className="map-card-cta">
+                <button className="map-card-goal" onClick={() => onGoalChange(selected.id)}>
+                  ★ Show path to this
+                </button>
+              </div>
+            )}
+
+            <button className="map-card-close" onClick={() => onSelect(null)} aria-label="Close">
               ×
             </button>
           </aside>

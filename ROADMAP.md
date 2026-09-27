@@ -8,7 +8,7 @@
 
 ## feature-17: Concept learning flow — goal path over strict prerequisites, progress, concept search
 
-**Status:** 🟡 Planned <!-- status-line: feature-17 -->
+**Status:** ✅ Implemented <!-- status-line: feature-17 -->
 **Planned:** 2026-09-27T11:35:35Z
 **Plan:** [.claude/plans/feature-17-concept-learning-flow.md](.claude/plans/feature-17-concept-learning-flow.md)
 **Complexity:** high
@@ -22,6 +22,23 @@
 - `src/graph/dag.ts:252,265` (`dfsClosure`, `kahnOrder`) — exported and reused, so concept and topic curricula order by the same rule.
 - `src/components/MapView.tsx:121-134` + `src/App.css:522` (`.goal-bar`) and `GraphView.tsx:91-102,529` (`goal-node`) — goal marking and goal bar without new UI primitives.
 - `src/components/SearchBox.tsx:28-42` — generalized to caller-supplied entries instead of a second search component.
+
+**Implemented:** 2026-09-27T20:08:20Z
+
+### Implemented
+- `src/graph/dag.ts` — `dfsClosure` and `kahnOrder` exported (no logic change; allows concept curriculum to order by the same rule)
+- `src/graph/concepts.ts` — `CURRICULUM_EDGE_TYPES` (strict prerequisite for only), `conceptPathFor(goalId, index)` for ordered paths and resources
+- `src/components/ConceptMapView.tsx` — goal selection, goal bar ("★ Goal: N steps"), ordered step panel with progress checkboxes and resources per step
+- `src/components/SearchBox.tsx` — generalized to accept prebuilt entries; topic search unchanged
+- `src/components/GraphView.tsx` — `.goal-node` opacity/text-opacity addition (advisory: verify visually at live-qa)
+- `src/App.tsx` — `conceptGoal` state, `?mode=concepts&goal=<id>` URL sync, concept-aware header search
+- `src/App.css` — goal bar and step panel styles
+- `docs/AUTHORING.md` — "How the concept curriculum is built" paragraph
+- `scripts/smoke-test.mjs` — goal-path step
+
+### Review
+**PASS** — validate/build/lint clean. [.claude/reviews/feature-17.md](.claude/reviews/feature-17.md)
+Advisory: GraphView.tsx:132-133 opacity fix reasoned safe from sizing model but not confirmed live — spot-check at wave-close live-qa.
 
 <!-- impl-marker: feature-17 -->
 
