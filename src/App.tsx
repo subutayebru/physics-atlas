@@ -204,22 +204,16 @@ export default function App() {
           )}
           <nav className="mode-tabs" aria-label="View mode">
             <button
-              className={`mode-tab ${mode === 'map' ? 'mode-tab-active' : ''}`}
-              onClick={() => setMode('map')}
+              className={`mode-tab ${mode === 'concepts' ? 'mode-tab-active' : ''}`}
+              onClick={() => setMode('concepts')}
             >
-              Full map
+              Concept map
             </button>
             <button
               className={`mode-tab ${mode === 'goal' ? 'mode-tab-active' : ''}`}
               onClick={() => setMode('goal')}
             >
               Learning goal
-            </button>
-            <button
-              className={`mode-tab ${mode === 'concepts' ? 'mode-tab-active' : ''}`}
-              onClick={() => setMode('concepts')}
-            >
-              Concepts (pilot)
             </button>
           </nav>
           {themeButton()}
@@ -229,7 +223,7 @@ export default function App() {
         <Home
           topics={data.topics}
           onSearchPick={homeSearchPick}
-          onExplore={() => setMode('map')}
+          onExplore={() => setMode('concepts')}
           onPickGoal={pickGoal}
         />
       )}

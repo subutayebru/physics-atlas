@@ -44,7 +44,7 @@ export default function Home({ topics, onSearchPick, onExplore, onPickGoal }: Ho
           ))}
         </div>
         <button className="home-explore" onClick={onExplore}>
-          Explore the full map
+          Explore the concept map
           <span aria-hidden> →</span>
         </button>
       </div>

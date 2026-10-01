@@ -36,7 +36,8 @@ relativity) — and gets a generated curriculum. **v1 is fully static: no backen
 
 | Option | Status | Notes |
 |---|---|---|
-| **Home → Map → Goal** (updated 2026-07-03) | ✅ Current | Landing = cosmic hero (animated spiral galaxies, `Galaxy.tsx`) with hero search + featured-goal chips + "Explore the full map". **Full map** = whole DAG, roomier layout (`large` GraphView variant), floating glass detail card — deliberately *no resources* there; "Build curriculum →" jumps into goal mode. **Learning goal** = curriculum + resources, unchanged. URL: `/`, `?mode=map` (alias `explore`), `?mode=goal`. |
+| **Home → Concept map → Goal** (2026-10-01) | ✅ Current | Home's "Explore the concept map" button and the first header tab now open `?mode=concepts` (the concept map, Decision 12/13) instead of the topic full map. The topic full map has no nav entry point anymore but is unchanged and still reachable at `?mode=map` (alias `explore`); `TopicPage` "Show on map" and the Home hero search's topic hits still deep-link there, since concept ids can't resolve topic ids. **Learning goal** = curriculum + resources, unchanged. |
+| Home → Map → Goal (updated 2026-07-03) | ↩ pathway | The previous current row: landing = cosmic hero (animated spiral galaxies, `Galaxy.tsx`) with hero search + featured-goal chips + "Explore the full map" opening the whole DAG (`large` GraphView variant), floating glass detail card — deliberately *no resources* there; "Build curriculum →" jumps into goal mode. Topic full map still at `?mode=map` (alias `explore`); restore by re-adding the tab + pointing `onExplore` back. |
 | Goal-first as landing | ↩ superseded | The v1 landing (goal picker straight away). Still one click away via header tabs. |
 | Curriculum-list-first | ↩ pathway | Linear syllabus view, graph secondary. Elements of it live inside goal mode (the ordered curriculum sidebar); could be promoted to its own view later. |
 

@@ -6,6 +6,37 @@
 
 <!-- ROADMAP-INSERT-HERE: planner inserts new entries directly below this line, newest first -->
 
+## feature-21: Concepts takes the Full Map's place in navigation
+
+**Status:** ✅ Implemented <!-- status-line: feature-21 -->
+**Planned:** 2026-10-01T21:45:50Z
+**Plan:** [.claude/plans/feature-21-concepts-replace-full-map-nav.md](.claude/plans/feature-21-concepts-replace-full-map-nav.md)
+**Complexity:** low
+
+### Key decisions (why it's planned this way)
+- The "Full map" tab is removed rather than repointed. The existing concepts tab moves into the first slot and is relabeled "Concept map". Home's Explore button opens `?mode=concepts` and reads "Explore the concept map". `MapView`, `initialMode()` and `?mode=map`/`?mode=explore` stay untouched, so restoring the old nav is a small revert.
+- Topic-scoped deep links (Home hero search topic hits, TopicPage "Show on map") still open MapView, because concept ids can't center a topic id and the backlog names only the tab and the Explore button. Assumption: this is acceptable. Sending Home search topic hits to the topic page is a possible follow-up.
+- Assumption: dropping "(pilot)" from the tab label is right now that it's the primary map. The dataset's "pilot" wording in docs stays.
+
+### Reused patterns
+- `src/App.tsx:21-28` (`initialMode()`) — already routes `map`/`explore`/`concepts`, so the hidden route needs no new mechanism.
+- `src/App.tsx:93-114` (URL sync) — `setMode('concepts')` already yields `?mode=concepts[&goal=…]` with history entries.
+- `src/App.tsx:194-204` (header SearchBox keyed on `mode`) — concept search is independent of tab position, so there's no SearchBox change.
+
+**Implemented:** 2026-10-01T21:50:57Z
+
+### Implemented
+- `src/App.tsx` — removed "Full map" header tab, moved concept map to first slot and relabeled "Concept map", changed Home onExplore to `setMode('concepts')`
+- `src/components/Home.tsx` — relabeled explore button from "Explore the full map" to "Explore the concept map"
+- `docs/AUTHORING.md` — updated tab name references from "Concepts (pilot)" to "Concept map"
+- `docs/DESIGN-DECISIONS.md` — added current navigation decision row, demoted old decision to reachable pathway
+- `scripts/smoke-test.mjs` — added nav entry point verification test (Home explore → concepts mode, tab texts, first tab active)
+
+### Review
+**PASS** — validate/build/lint clean. [.claude/reviews/feature-21.md](.claude/reviews/feature-21.md)
+
+<!-- impl-marker: feature-21 -->
+
 ## feature-17: Concept learning flow — goal path over strict prerequisites, progress, concept search
 
 **Status:** ✅ Implemented <!-- status-line: feature-17 -->

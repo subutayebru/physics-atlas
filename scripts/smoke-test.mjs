@@ -276,6 +276,23 @@ const afterTitle = await page.$eval('.sidebar-title', (el) => el.textContent?.tr
 console.log(`promotion: "${beforeTitle}" → "${afterTitle}"`);
 if (beforeTitle === afterTitle) errors.push('promoting a prerequisite did not change the goal');
 
+// --- Home → Explore now lands on the concept map, not the topic full map ---
+await page.goto(`${URL}/`, { waitUntil: 'networkidle0' });
+await page.click('.home-explore');
+await new Promise((r) => setTimeout(r, 600));
+const exploreSearch = await page.evaluate(() => window.location.search);
+console.log('home-explore search:', exploreSearch);
+if (!exploreSearch.startsWith('?mode=concepts'))
+  errors.push(`expected home-explore to land on ?mode=concepts, got ${exploreSearch}`);
+const exploreNodeCount = await page.evaluate(() => window.__cy?.nodes().length ?? 0);
+if (exploreNodeCount !== 54)
+  errors.push(`expected 54 concept nodes after home-explore, got ${exploreNodeCount}`);
+const tabTexts = await page.$$eval('.mode-tab', (els) => els.map((e) => e.textContent?.trim()));
+console.log('mode tabs:', tabTexts);
+if (tabTexts.some((t) => t === 'Full map')) errors.push('a "Full map" tab is still in the header nav');
+const firstTabActive = await page.$eval('.mode-tab', (el) => el.classList.contains('mode-tab-active'));
+if (!firstTabActive) errors.push('first header tab is not active in concepts mode');
+
 // --- Concept map (pilot): the second GraphView input variant ---
 await page.goto(`${URL}/?mode=concepts`, { waitUntil: 'networkidle0' });
 await new Promise((r) => setTimeout(r, 600));
